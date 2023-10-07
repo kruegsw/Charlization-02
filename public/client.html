@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="initial-scale=1.0">
+	<title>Charlization-canvas1</title>
+	<style>
+	</style>
+    <!--<link rel="stylesheet" type="text/css" href="styles.css" />-->
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+    <script src="./socketio.js"></script>
+	<script src="./Board.js"></script>
+	<script src="./Game.js"></script>
+	<script src="./Tile.js"></script>
+	<script src="./Unit.js"></script>
+	<script src="./Player.js"></script>
+	<script src="./Canvas.js"></script>
+</head>
+<body>
+	<canvas id="canvas1" width="1000" height="1000"></canvas>
+</body>
+<script>
+	const game = new Game(
+		canvasID = "canvas1",
+		localPlayer = new Player("sdub", "red"),
+		board = new Board(x = 10, y = 10)
+	)
+
+	const mouse = { x: undefined, y: undefined }
+
+	/////////////// the rest of is just listeners
+
+	document.addEventListener("keydown", (e) => {
+		console.log(e)
+		if (!e.repeat) {
+			if (game.localPlayer.selectedUnit) {
+				e.preventDefault() // prevent screen scrolling when moving selected unit
+				let command = keydownCommand(e.key)
+				if (command.type === "move") {
+					game.moveUnitInDirection(command.direction)
+				}
+				if (command.type === "escape") {
+					game.deselectTile()
+					game.deselectUnit()
+				}
+			}
+		} else {
+			//console.log(`Key "${e.key}" repeating [event: keydown]`);
+		}
+	});
+
+	game.canvas.canvas.addEventListener("click", (event) => {
+		canvas = game.canvas
+		localPlayer = game.localPlayer
+		const rect = canvas.canvas.getBoundingClientRect()
+		mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize)
+		mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize)
+
+		if (this.localPlayer.selectedUnit) {
+			let targetTile = canvas.board.tiles[mouse.x][mouse.y]
+			game.moveUnitToTile(targetTile)
+			localPlayer.selectTile(targetTile)
+			localPlayer.selectUnit(targetTile)
+		} else {
+			const rect = canvas.canvas.getBoundingClientRect()
+			let targetTile = canvas.board.tiles[mouse.x][mouse.y]
+			localPlayer.selectTile(targetTile)
+			localPlayer.selectUnit(targetTile)
+		}
+	})
+
+		/*
+	document.addEventListener("beforeinput", (e) => {
+	console.log(`Key "${e.data}" about to be input [event: beforeinput]`);
+	});
+
+	document.addEventListener("input", (e) => {
+	console.log(`Key "${e.data}" input [event: input]`);
+	});
+
+	document.addEventListener("keyup", (e) => {
+	console.log(`Key "${e.key}" released [event: keyup]`);
+	});
+
+	*/
+
+	function keydownCommand(key) {
+		//console.log(key)
+		if (key === "ArrowUp") { return { type: "move", direction: { x: 0, y: -1 } } }
+		if (key === "ArrowDown") { return { type: "move", direction: { x: 0, y: 1 } } }
+		if (key === "ArrowLeft") { return { type: "move", direction: { x: -1, y: 0 } } }
+		if (key === "ArrowRight") { return { type: "move", direction: { x: 1, y: 0 } } }
+		if (key === "Escape") { return { type: "escape" } }
+	}
+
+	//this.canvas.canvas.addEventListener('mousemove', () => {
+	//	mouse.x = event.x
+	//	mouse.y = event.y
+	//})
+
+</script>
+
+</html>
