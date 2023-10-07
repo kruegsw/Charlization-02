@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="initial-scale=1.0">
+	<meta name="viewport" content="width-device-width, initial-scale=1.0">
 	<title>Charlization-canvas1</title>
 	<style>
 	</style>
@@ -32,6 +32,7 @@
 
 	document.addEventListener("keydown", (e) => {
 		console.log(e)
+		socket.emit('message-from-client-to-server', message = e.key)
 		if (!e.repeat) {
 			if (game.localPlayer.selectedUnit) {
 				e.preventDefault() // prevent screen scrolling when moving selected unit
@@ -97,7 +98,6 @@
 	//	mouse.x = event.x
 	//	mouse.y = event.y
 	//})
-
 </script>
 
 </html>

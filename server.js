@@ -5,7 +5,7 @@ const app = express()
 app.use(express.static('public'))
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/client.html')
-  })
+})
 
 const fs = require("fs");
 const httpServer = require("https").createServer({
@@ -16,13 +16,14 @@ const options = { /* ... */ };
 const io = require("socket.io")(httpServer, options);
 
 io.on("connection", socket => {
-    console.log(`${socket.id} has connected`)
-    socket.on('join-game', message => {
-        console.log(`message from client is ${message}`)
+    //console.log(Object.keys(io.engine.clients))
+
+    socket.on('message-from-client-to-server', message => {
+        console.log(`message from client ${socket.id}: ${message}`)
+        io.emit('message-from-server', `message from client ${socket.id}: ${message}`)
     })
-    socket.on('disconnect', socket => {
-        console.log(`${socket._id} has disconnected`)
-    })
+
+    socket.on('disconnect', () => { })
 })
 
 httpServer.listen(process.env.PORT, () => {

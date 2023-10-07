@@ -1,21 +1,8 @@
 
-const socket = io(`https://localhost:4000`,
-    {transports: ['websocket', 'polling'], // Default value: ["polling", "websocket", "webtransport"]
-    //    auth: {
-    //        token: "this is a token"
-    //},
-    //key: sslPrivateKey,
-    //secure: true,
-    }
-);
+const socket = io(`https://localhost:4000`, { transports: ['websocket', 'polling'] } );
 
-console.log(socket)
+socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 
-socket.on("connect", () => {
-    console.log(`Client ${socket.id} connected to the WebSocket`)
-    socket.emit('join-game', "hello server")
-})
+socket.on("message-from-server", message => console.log(message))
 
-socket.on("disconnect", () => {
-    console.log(`Client ${socket.id} disconnected from WebSocket`)
-})
+socket.on("disconnect", () => { console.log(`Client ${socket.id} disconnected from WebSocket`) })
