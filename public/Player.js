@@ -8,15 +8,19 @@ class Player {
     }
 
     selectUnit(tile) {
-        if (tile.unit.selectable) {
-            this.selectedUnit = tile.unit
-        }	else {
-            this.selectedUnit = undefined
-        }
+        this.selectedUnit = tile.unit
     }
 
     selectTile(tile) {
         this.selectedTile = tile
+    }
+
+    deselectUnit() {
+        this.selectedUnit = null
+    }
+
+    deselectTile() {
+        this.selectedTile = null
     }
 
 }

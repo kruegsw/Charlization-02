@@ -1,53 +1,41 @@
 class Game {
-    constructor(canvasID, localPlayer, board ) {
-        this.localPlayer = localPlayer
-        this.canvas = new Canvas(canvasID, board)
-        this.setPlayersInitialLocations()
-
-        window.requestAnimationFrame(() => {this.canvas.animate()})
-        console.log(this.canvas)
+    constructor(players, board ) {
+        this.players = players
+        this.board = board
     }
 
-    moveUnitInDirection(direction) {
-        let currentTile = this.localPlayer.selectedTile
+    moveUnitInDirection(player, direction) {
+        let currentTile = player.selectedTile
         let x = currentTile.coordinates.x
         let y = currentTile.coordinates.y
         let dx = direction.x
         let dy = direction.y
-        let destinationTile = this.canvas.board.tiles[x+dx][y+dy]
+        let destinationTile = this.board.tiles[x+dx][y+dy]
         
-        currentTile.removeUnit(this.localPlayer.selectedUnit)
-        destinationTile.addUnit(this.localPlayer.selectedUnit)
+        currentTile.removeUnit(player.selectedUnit)
+        destinationTile.addUnit(player.selectedUnit)
 
-        this.localPlayer.selectedUnit.coordinates = destinationTile.coordinates
-        this.localPlayer.selectTile(destinationTile)
+        player.selectedUnit.coordinates = destinationTile.coordinates
+        player.selectTile(destinationTile)
     }
 
-    moveUnitToTile(tile) {
-        let currentTile = this.localPlayer.selectedTile
+    moveUnitToTile(player, tile) {
+        let currentTile = player.selectedTile
         let x = currentTile.coordinates.x
         let y = currentTile.coordinates.y
         let destinationTile = tile
         
-        currentTile.removeUnit(this.localPlayer.selectedUnit)
-        destinationTile.addUnit(this.localPlayer.selectedUnit)
+        currentTile.removeUnit(player.selectedUnit)
+        destinationTile.addUnit(player.selectedUnit)
 
-        this.localPlayer.selectedUnit.coordinates = destinationTile.coordinates
-        this.localPlayer.selectTile(destinationTile)
+        player.selectedUnit.coordinates = destinationTile.coordinates
+        player.selectTile(destinationTile)
     }
 
-    setPlayersInitialLocations() {
-        let x = Math.floor(Math.random() * this.canvas.board.size.x)
-        let y = Math.floor(Math.random() * this.canvas.board.size.y)
-        let tile = this.canvas.board.tiles[x][y]
-        tile.unit = new Unit(this.localPlayer, {x, y})
-    }
-
-    deselectUnit() {
-        this.localPlayer.selectedUnit = null
-    }
-
-    deselectTile() {
-        this.localPlayer.selectedTile = null
+    setPlayersInitialLocations(player) {
+        let x = Math.floor(Math.random() * this.board.size.x)
+        let y = Math.floor(Math.random() * this.board.size.y)
+        let tile = this.board.tiles[x][y]
+        tile.unit = new Unit(player, {x, y})
     }
 }

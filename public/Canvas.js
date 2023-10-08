@@ -5,20 +5,19 @@ class Canvas {
         this.#ctx = this.canvas.getContext("2d")
         this.#adjustCanvasSizeToMatchBrowser()
         this.#adjustCanvasSizeWhenBrowserResizing()
-        this.board = board
-        this.#determineTileSize()
+        this.#determineTileSize(board)
     }
 
-    animate() {
+    animate(board, localPlayer) {
         this.#ctx.clearRect(0, 0, this.canvas.width, this.canvas.height) // clear canvas
-        this.#renderMap() // redraw canvas
-        if (game.localPlayer.selectedUnit) { this.#animateBlinkSelectedUnit() } 
-        window.requestAnimationFrame(() => {this.animate()})
+        this.#renderMap(board) // redraw canvas
+        if (localPlayer.selectedUnit) { this.#animateBlinkSelectedUnit(localPlayer) } 
+        window.requestAnimationFrame(() => {this.animate(board, localPlayer)})
     }
 
-    #animateBlinkSelectedUnit() {
-        let selectedTile = game.localPlayer.selectedTile
-        if ( (Math.floor(Date.now() / 500)) % 3 === 0 ) { this.#renderUnit(selectedTile) } else { this.#renderTerrain(selectedTile) }
+    #animateBlinkSelectedUnit(localPlayer) {
+        let selectedTile = localPlayer.selectedTile
+        if ( (Math.floor(Date.now() / 400)) % 3 === 0 ) { this.#renderTerrain(selectedTile) } else { this.#renderUnit(selectedTile) }
     }
 
     #adjustCanvasSizeToMatchBrowser() {
@@ -32,7 +31,7 @@ class Canvas {
             this.#adjustCanvasSizeToMatchBrowser()
     })}
 
-    #determineTileSize() {
+    #determineTileSize(board) {
         this.tileSize = Math.min( Math.floor(this.canvas.offsetWidth / board.size.x), Math.floor(this.canvas.offsetHeight / board.size.y) )
     }
 
@@ -64,8 +63,8 @@ class Canvas {
         this.#renderUnit(tile)
     }
 
-    #renderMap() {
-        this.board.tiles.forEach( (columnOfTiles, i) => {
+    #renderMap(board) {
+        board.tiles.forEach( (columnOfTiles, i) => {
             columnOfTiles.forEach( (tile, j) => {
               this.#renderTile(tile)
             })

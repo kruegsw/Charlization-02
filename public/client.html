@@ -9,8 +9,8 @@
     <!--<link rel="stylesheet" type="text/css" href="styles.css" />-->
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
     <script src="./socketio.js"></script>
-	<script src="./Board.js"></script>
 	<script src="./Game.js"></script>
+	<script src="./Board.js"></script>
 	<script src="./Tile.js"></script>
 	<script src="./Unit.js"></script>
 	<script src="./Player.js"></script>
@@ -20,11 +20,19 @@
 	<canvas id="canvas1" width="1000" height="1000"></canvas>
 </body>
 <script>
+
+	const localPlayer = new Player("sdub", "red")
 	const game = new Game(
-		canvasID = "canvas1",
-		localPlayer = new Player("sdub", "red"),
+		players = { [socket.id]: localPlayer },
 		board = new Board(x = 10, y = 10)
 	)
+	game.setPlayersInitialLocations(localPlayer)
+	const canvas = new Canvas("canvas1", game.board)
+
+	
+	console.log(game)
+	console.log(`after definition`)
+
 
 	const mouse = { x: undefined, y: undefined }
 
@@ -34,15 +42,17 @@
 		console.log(e)
 		socket.emit('message-from-client-to-server', message = e.key)
 		if (!e.repeat) {
-			if (game.localPlayer.selectedUnit) {
+			if (localPlayer.selectedUnit) {
 				e.preventDefault() // prevent screen scrolling when moving selected unit
 				let command = keydownCommand(e.key)
 				if (command.type === "move") {
-					game.moveUnitInDirection(command.direction)
+					game.moveUnitInDirection(localPlayer, command.direction)
+					localPlayer.deselectTile()
+					localPlayer.deselectUnit()
 				}
 				if (command.type === "escape") {
-					game.deselectTile()
-					game.deselectUnit()
+					localPlayer.deselectTile()
+					localPlayer.deselectUnit()
 				}
 			}
 		} else {
@@ -50,24 +60,24 @@
 		}
 	});
 
-	game.canvas.canvas.addEventListener("click", (event) => {
-		canvas = game.canvas
-		localPlayer = game.localPlayer
+	canvas.canvas.addEventListener("click", (event) => {
 		const rect = canvas.canvas.getBoundingClientRect()
 		mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize)
 		mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize)
 
-		if (this.localPlayer.selectedUnit) {
-			let targetTile = canvas.board.tiles[mouse.x][mouse.y]
-			game.moveUnitToTile(targetTile)
-			localPlayer.selectTile(targetTile)
-			localPlayer.selectUnit(targetTile)
+		if (localPlayer.selectedUnit) {
+			let targetTile = game.board.tiles[mouse.x][mouse.y]
+			game.moveUnitToTile(localPlayer, targetTile)
+			localPlayer.selectTile(localPlayer, targetTile)
+			localPlayer.selectUnit(localPlayer, targetTile)
 		} else {
 			const rect = canvas.canvas.getBoundingClientRect()
-			let targetTile = canvas.board.tiles[mouse.x][mouse.y]
+			let targetTile = game.board.tiles[mouse.x][mouse.y]
 			localPlayer.selectTile(targetTile)
 			localPlayer.selectUnit(targetTile)
 		}
+		//console.log(game.localPlayer.selectedTile)
+		//console.log(game.localPlayer.selectedUnit)
 	})
 
 		/*
@@ -98,6 +108,10 @@
 	//	mouse.x = event.x
 	//	mouse.y = event.y
 	//})
+
+
+	window.requestAnimationFrame(() => {canvas.animate(game.board, localPlayer)})
+
 </script>
 
 </html>
