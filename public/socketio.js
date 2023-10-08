@@ -2,10 +2,10 @@
 const socket = io(`https://localhost:4000`,
     {
         transports: ['websocket', 'polling'],
-        extraHeaders: {
-            username: "sdub",
-            color: "red"
-        }
+        //extraHeaders: {
+        //    username: "sdub",
+        //    color: "red"
+        //}
     }
 );
 
