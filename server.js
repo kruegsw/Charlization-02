@@ -15,12 +15,22 @@ const httpServer = require("https").createServer({
 const options = { /* ... */ };
 const io = require("socket.io")(httpServer, options);
 
-//let gameState
+const Board = require('./Board')
+const Player = require('./Player')
+const Game = require('./Game')
+const board = new Board(x = 10, y = 10)
+const game = new Game(
+    players = {},
+    board
+)
+console.log(game.players)
 
 io.on("connection", socket => {
     //console.log(Object.keys(io.engine.clients))
 
     //if (!gameState) { gameState =  }
+    game.players[socket.id] = new Player("sdub", "red")
+    console.log(game.players)
 
     socket.on('message-from-client-to-server', message => {
         console.log(`message from client ${socket.id}: ${message}`)
