@@ -25,9 +25,15 @@ io.on("connection", socket => {
     //console.log(Object.keys(io.engine.clients))
 
     //if (!gameState) { gameState =  }
-    game.players[socket.id] = new Player({username: "sdub", color: `hsl(${Math.random()*360}, 100%, 50%)` /* hue, saturation, lightness */})
+    game.players[socket.id] = new Player({username: socket.id, color: `hsl(${Math.random()*360}, 100%, 50%)` /* hue, saturation, lightness */})
+    game.setPlayersInitialLocations(game.players[socket.id])
     console.log(game.players)
-    io.emit('gameState-from-server', game)
+
+    io.emit('update-players', game.players)
+
+    io.emit('init-client-game', game )
+
+    //io.emit('gameState-from-server', game.board)
 
     socket.on('message-from-client-to-server', message => {
         console.log(`message from client ${socket.id}: ${message}`)
@@ -36,7 +42,7 @@ io.on("connection", socket => {
 
     socket.on('disconnect', (reason) => {
         console.log(`reason for ${socket.id} disconnect: ${reason}`)
-        delete players[socket.id]
+        delete game.players[socket.id]
         console.log(game.players)
     })
 })

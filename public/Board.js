@@ -2,10 +2,10 @@ class Board {
     constructor({x, y}) {
         this.size = {x: x, y: y}
         this.tiles = []
-        this.buildMap()
+        this.randomdMap()
     }
 
-    buildMap() {
+    randomdMap() {
         for (let i = 0; i < this.size.x; i++) {
             let column = []
             for (let j = 0; j < this.size.y; j++) {

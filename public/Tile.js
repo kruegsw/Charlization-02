@@ -1,32 +1,25 @@
 class Tile {
     constructor({x, y}) {
-        this.terrain = this.generateTerrain()
+        this.terrain = this.generateRandomTerrain()
         this.unit = ""
         this.coordinates = {x: x, y: y}
     }
 
-    generateTerrain() {
-        let terrainTypes = Object.keys(Tile.TERRAIN_TYPES)
-        return terrainTypes[Math.floor(Math.random() * terrainTypes.length)]
-    }
+    undiscoveredTerrain() { return TERRAIN_TYPES.undiscovered }
 
-    addUnit(unit) {
-        this.unit = unit
-        this.unit.coordinates.x = this.coordinates.x
-        this.unit.coordinates.y = this.coordinates.y
-    }
-
-    removeUnit() {
-        this.unit = ""
+    generateRandomTerrain() {
+        let terrainTypeKeysArray = Object.keys(Tile.TERRAIN_TYPES)
+        return Tile.TERRAIN_TYPES[terrainTypeKeysArray[Math.floor(Math.random() * terrainTypeKeysArray.length)]]
     }
 
     static TERRAIN_TYPES = {
-        "grassland": { color: "lightgreen" },
-        "plains": { color: "orange" },
-        "forest": { color: "darkgreen" },
-        "desert": { color: "beige" },
-        "hill": { color: "lightgrey" },
-        "mountain": { color: "grey" },
-        "ocean": { color: "blue" }
+        "grassland": {type: "grassland", color: "lightgreen" },
+        "plains": {type: "plains", color: "orange" },
+        "forest": {type: "forest", color: "darkgreen" },
+        "desert": {type: "desert", color: "beige" },
+        "hill": {type: "hill", color: "lightgrey" },
+        "mountain": {type: "mountain", color: "grey" },
+        "ocean": {type: "ocean", color: "blue" },
+        "undiscovered": {type: "undiscovered", color: "black" }
     }
 }

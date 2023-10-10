@@ -10,10 +10,12 @@ class Canvas {
         this.selectedTile = ""
     }
 
-    selectUnit(tile) {
-        this.selectedUnit = tile.unit
+    selectUnit({tile, username}) {
+        if (this.clientOwnsUnit({unit: tile.unit, username: username})) { this.selectedUnit = tile.unit }
         console.log(this.selectedUnit)
     }
+
+    clientOwnsUnit({unit, username}) { return unit.player.username === username }
 
     selectTile(tile) {
         this.selectedTile = tile
@@ -58,7 +60,7 @@ class Canvas {
     #renderTerrain(tile) {
         let x = tile.coordinates.x
         let y = tile.coordinates.y
-        this.#ctx.fillStyle = Tile.TERRAIN_TYPES[tile.terrain].color
+        this.#ctx.fillStyle = tile.terrain.color
         let width = this.tileSize
         let height = this.tileSize
         this.#ctx.fillRect(x*this.tileSize, y*this.tileSize, width, height)

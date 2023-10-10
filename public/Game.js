@@ -12,8 +12,8 @@ class Game {
         let currentTile = this.board.tiles[x][y]
         let destinationTile = this.board.tiles[x+dx][y+dy]
         
-        currentTile.removeUnit()
-        destinationTile.addUnit(unit)
+        this.removeUnit({tile: currentTile})
+        this.addUnit({unit: unit, tile: destinationTile})
     }
 
     moveUnitToTile({unit, tile}) {
@@ -22,8 +22,8 @@ class Game {
         let currentTile = this.board.tiles[x][y]
         let destinationTile = tile
         
-        currentTile.removeUnit()
-        destinationTile.addUnit(unit)
+        this.removeUnit({tile: currentTile})
+        this.addUnit({unit: unit, tile: destinationTile})
     }
 
     setPlayersInitialLocations(player) {
@@ -31,5 +31,15 @@ class Game {
         let y = Math.floor(Math.random() * this.board.size.y)
         let tile = this.board.tiles[x][y]
         tile.unit = new Unit({player: player, coordinates: {x, y}})
+    }
+
+    addUnit({unit, tile}) {
+        tile.unit = unit
+        tile.unit.coordinates.x = tile.coordinates.x
+        tile.unit.coordinates.y = tile.coordinates.y
+    }
+
+    removeUnit({tile}) {
+        tile.unit = ""
     }
 }
