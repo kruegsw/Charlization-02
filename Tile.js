@@ -1,5 +1,5 @@
 class Tile {
-    constructor(x, y) {
+    constructor({x, y}) {
         this.terrain = this.generateTerrain()
         this.unit = ""
         this.coordinates = {x: x, y: y}
@@ -12,9 +12,11 @@ class Tile {
 
     addUnit(unit) {
         this.unit = unit
+        this.unit.coordinates.x = this.coordinates.x
+        this.unit.coordinates.y = this.coordinates.y
     }
 
-    removeUnit(unit) {
+    removeUnit() {
         this.unit = ""
     }
 

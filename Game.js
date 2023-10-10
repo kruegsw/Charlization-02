@@ -1,37 +1,31 @@
 const Unit = require('./Unit')
 
 class Game {
-    constructor(players = {}, board ) {
+    constructor({players, board}) {
         this.players = players
         this.board = board
     }
 
-    moveUnitInDirection(player, direction) {
-        let currentTile = player.selectedTile
-        let x = currentTile.coordinates.x
-        let y = currentTile.coordinates.y
+    moveUnitInDirection({unit, direction}) {
+        let x = unit.coordinates.x
+        let y = unit.coordinates.y
         let dx = direction.x
         let dy = direction.y
+        let currentTile = this.board.tiles[x][y]
         let destinationTile = this.board.tiles[x+dx][y+dy]
         
-        currentTile.removeUnit(player.selectedUnit)
-        destinationTile.addUnit(player.selectedUnit)
-
-        player.selectedUnit.coordinates = destinationTile.coordinates
-        player.selectTile(destinationTile)
+        currentTile.removeUnit()
+        destinationTile.addUnit(unit)
     }
 
-    moveUnitToTile(player, tile) {
-        let currentTile = player.selectedTile
-        let x = currentTile.coordinates.x
-        let y = currentTile.coordinates.y
+    moveUnitToTile({unit, tile}) {
+        let x = unit.coordinates.x
+        let y = unit.coordinates.y
+        let currentTile = this.board.tiles[x][y]
         let destinationTile = tile
         
-        currentTile.removeUnit(player.selectedUnit)
-        destinationTile.addUnit(player.selectedUnit)
-
-        player.selectedUnit.coordinates = destinationTile.coordinates
-        player.selectTile(destinationTile)
+        currentTile.removeUnit()
+        destinationTile.addUnit(unit)
     }
 
     setPlayersInitialLocations(player) {

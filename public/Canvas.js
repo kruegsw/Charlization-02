@@ -1,28 +1,48 @@
 class Canvas {
     #ctx
-    constructor(canvasID, board) {
+    constructor({canvasID, board}) {
         this.canvas = document.getElementById(canvasID)
         this.#ctx = this.canvas.getContext("2d")
         this.#adjustCanvasSizeToMatchBrowser()
         this.#adjustCanvasSizeWhenBrowserResizing()
         this.#determineTileSize(board)
+        this.selectedUnit = ""
+        this.selectedTile = ""
     }
 
-    animate(board, localPlayer) {
+    selectUnit(tile) {
+        this.selectedUnit = tile.unit
+        console.log(this.selectedUnit)
+    }
+
+    selectTile(tile) {
+        this.selectedTile = tile
+        console.log(this.selectedTile)
+    }
+
+    deselectUnit() {
+        this.selectedUnit = ""
+    }
+
+    deselectTile() {
+        this.selectedTile = ""
+    }
+
+    animate(board) {
         this.#ctx.clearRect(0, 0, this.canvas.width, this.canvas.height) // clear canvas
         this.#renderMap(board) // redraw canvas
-        if (localPlayer.selectedUnit) { this.#animateBlinkSelectedUnit(localPlayer) } 
-        window.requestAnimationFrame(() => {this.animate(board, localPlayer)})
+        if (this.selectedUnit) { this.#animateBlinkSelectedUnit() } 
+        window.requestAnimationFrame(() => {this.animate(board)})
     }
 
-    #animateBlinkSelectedUnit(localPlayer) {
-        let selectedTile = localPlayer.selectedTile
-        if ( (Math.floor(Date.now() / 400)) % 3 === 0 ) { this.#renderTerrain(selectedTile) } else { this.#renderUnit(selectedTile) }
+    #animateBlinkSelectedUnit() {
+        if ( (Math.floor(Date.now() / 400)) % 3 === 0 ) { this.#renderTerrain(this.selectedTile) } else { this.#renderUnit(this.selectedTile) }
     }
 
     #adjustCanvasSizeToMatchBrowser() {
-        this.canvas.width = window.innerWidth
-        this.canvas.height = window.innerHeight
+        //const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution), test this later
+        this.canvas.width = window.innerWidth * devicePixelRatio
+        this.canvas.height = window.innerHeight * devicePixelRatio
     }
 
     #adjustCanvasSizeWhenBrowserResizing() {
