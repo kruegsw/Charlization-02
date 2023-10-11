@@ -53,7 +53,7 @@ io.on("connection", socket => {
 setInterval(() => {
     io.emit('update-game', game)
     //io.emit('message-from-server-to-client', "tick")
-}, 15)
+}, 1000)
 
 httpServer.listen(process.env.PORT, () => {
     console.log(`listening on port ${process.env.PORT}`)
