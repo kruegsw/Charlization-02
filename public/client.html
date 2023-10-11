@@ -129,6 +129,7 @@
 		//	mouse.y = event.y
 		//})
 
+		window.addEventListener("resize", () => canvas.adjustCanvasSizeWhenBrowserResizing(clientGame.board) )
 		
 		function animate() {
 			window.requestAnimationFrame(() => {

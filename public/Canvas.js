@@ -3,7 +3,6 @@ class Canvas {
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")
         this.#adjustCanvasSizeToMatchBrowser()
-        this.#adjustCanvasSizeWhenBrowserResizing()
         this.#determineTileSize(board)
         this.selectedUnit = ""
         this.selectedTile = ""
@@ -41,16 +40,15 @@ class Canvas {
     }
 
     #adjustCanvasSizeToMatchBrowser() {
-        //const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution), test this later
+        const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution), test this later
         this.canvas.width = window.innerWidth * devicePixelRatio
         this.canvas.height = window.innerHeight * devicePixelRatio
     }
 
-    #adjustCanvasSizeWhenBrowserResizing() {
-        window.addEventListener("resize", () => {
-            this.#determineTileSize()
-            this.#adjustCanvasSizeToMatchBrowser()
-    })}
+    adjustCanvasSizeWhenBrowserResizing(board) {
+        this.#determineTileSize(board)
+        this.#adjustCanvasSizeToMatchBrowser()
+    }
 
     #determineTileSize(board) {
         this.tileSize = Math.min( Math.floor(this.canvas.offsetWidth / board.size.x), Math.floor(this.canvas.offsetHeight / board.size.y) )
