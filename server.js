@@ -33,12 +33,13 @@ io.on("connection", socket => {
 
     io.emit('init-client-game', game )
 
-    //io.emit('gameState-from-server', game.board)
-
     socket.on('message-from-client-to-server', message => {
         console.log(`message from client ${socket.id}: ${message}`)
         io.emit('message-from-server', `message from client ${socket.id}: ${message}`)
     })
+
+    socket.on('moveUnitInDirection', ({unit, direction}) => game.moveUnitInDirection({unit, direction}) )
+    socket.on('moveUnitToTile', ({unit, tile}) => game.moveUnitToTile({unit: unit, tile: tile}) )
 
     socket.on('disconnect', (reason) => {
         console.log(`reason for ${socket.id} disconnect: ${reason}`)
@@ -46,6 +47,11 @@ io.on("connection", socket => {
         console.log(game.players)
     })
 })
+
+setInterval(() => {
+    io.emit('update-gameState', game.board)
+    //io.emit('message-from-server-to-client', "tick")
+}, 15)
 
 httpServer.listen(process.env.PORT, () => {
     console.log(`listening on port ${process.env.PORT}`)

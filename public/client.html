@@ -42,7 +42,9 @@
 		console.log(`You are socket.id ${socket.id}`)
 	})
 
-	socket.on('update-players', serverPlayers => console.log(serverPlayers) )
+	socket.on('update-players', serverPlayers => clientGame.players = serverPlayers)
+
+	socket.on('update-gameState', serverBoard => clientGame.board = serverBoard)
 
 	socket.on('init-client-game', serverGame => {
 		clientGame = new Game({players: serverGame.players, board: serverGame.board})
@@ -61,7 +63,8 @@
 					e.preventDefault() // prevent screen scrolling when moving selected unit
 					let command = keydownCommand(e.key)
 					if (command.type === "move") {
-						clientGame.moveUnitInDirection({unit: canvas.selectedUnit, direction: command.direction})
+						socket.emit('moveUnitInDirection', {unit: canvas.selectedUnit, direction: command.direction})
+						//clientGame.moveUnitInDirection({unit: canvas.selectedUnit, direction: command.direction})
 						canvas.deselectTile()
 						canvas.deselectUnit()
 					}
@@ -83,8 +86,9 @@
 
 			if (canvas.selectedUnit) {
 				let targetTile = clientGame.board.tiles[mouse.x][mouse.y]
-				clientGame.moveUnitToTile({unit: canvas.selectedUnit, tile: targetTile})
-				canvas.selectTile({tile: targetTile, username: socket.id})
+				socket.emit('moveUnitToTile', {unit: canvas.selectedUnit, tile: targetTile})
+				//clientGame.moveUnitToTile({unit: canvas.selectedUnit, tile: targetTile})
+				canvas.selectTile(targetTile)
 				canvas.deselectUnit()
 			} else {
 				const rect = canvas.canvas.getBoundingClientRect()
@@ -125,8 +129,24 @@
 		//	mouse.y = event.y
 		//})
 
+		
+		function animate() {
+			window.requestAnimationFrame(() => {
+				canvas.ctx.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height) // clear canvas
+				canvas.renderMap(clientGame.board) // redraw canvas
+				if (canvas.selectedUnit) { canvas.animateBlinkSelectedUnit() }
+				window.requestAnimationFrame(() => {animate()})
+			})
+		}
+		animate()
 
-		window.requestAnimationFrame(() => {canvas.animate(clientGame.board, localPlayer)})
+		/*
+		setInterval(() => {
+			canvas.ctx.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height) // clear canvas
+			canvas.renderMap(clientGame.board) // redraw canvas
+			if (canvas.selectedUnit) { canvas.animateBlinkSelectedUnit() }
+		}, 15)
+		*/
 
 	})
 
@@ -134,20 +154,7 @@
 		console.log(`connect_error due to ${err.message}`);
 	});
 
-	socket.on("message-from-server", message => console.log(message))
-
-	socket.on('gameState-from-server', serverGame => {
-		/*let randomColor = Math.floor(Math.random()*16777215).toString(16);
-		game = new Game(
-			canvasID = "canvas1",
-			localPlayer = new Player(username = socket.id, color = "red"),
-			board = gameState
-		)
-		*/
-
-		console.log(serverGame)
-		console.log(`IN gameState-from-server`)
-	})
+	socket.on("message-from-server-to-client", message => console.log(message))
 
 	socket.on("disconnect", () => { console.log(`Client ${socket.id} disconnected from WebSocket`) })
 

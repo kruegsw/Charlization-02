@@ -22,7 +22,7 @@ class Game {
         let x = unit.coordinates.x
         let y = unit.coordinates.y
         let currentTile = this.board.tiles[x][y]
-        let destinationTile = tile
+        let destinationTile = this.board.tiles[tile.coordinates.x][tile.coordinates.y]
         
         this.removeUnit({tile: currentTile})
         this.addUnit({unit: unit, tile: destinationTile})
