@@ -12,7 +12,7 @@ const httpServer = require("https").createServer({
   key: fs.readFileSync(process.env.PATH_TO_SSL_PRIVATE_KEY),
   cert: fs.readFileSync(process.env.PATH_TO_SSL_CERTIFICATE)
 }, app);
-const options = { pingInterval: 2000, pingTimeout: 5000 };
+const options = { pingInterval: 2000, pingTimeout: 5000 } //{ pingInterval: 2000, pingTimeout: 5000 };
 const io = require("socket.io")(httpServer, options);
 
 const Board = require('./Board')
