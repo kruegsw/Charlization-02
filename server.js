@@ -25,8 +25,12 @@ io.on("connection", socket => {
     //console.log(Object.keys(io.engine.clients))
 
     //if (!gameState) { gameState =  }
-    game.players[socket.id] = new Player({username: socket.id, color: `hsl(${Math.random()*360}, 100%, 50%)` /* hue, saturation, lightness */})
-    game.setPlayersInitialLocations(game.players[socket.id])
+    if (!game.players[socket.id]) {
+        game.players[socket.id] = new Player({username: socket.id, color: `hsl(${Math.random()*360}, 100%, 50%)` /* hue, saturation, lightness */})
+        game.setPlayersInitialLocations(game.players[socket.id])
+    }
+
+    //game.setPlayersInitialLocations(game.players[socket.id])
     console.log(game.players)
 
     io.emit('update-players', game.players)
