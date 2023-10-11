@@ -9,11 +9,11 @@
     <!--<link rel="stylesheet" type="text/css" href="styles.css" />-->
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
     <!--<script src="./socketio.js"></script>-->
-	<script src="./Game.js"></script>
-	<script src="./Board.js"></script>
-	<script src="./Tile.js"></script>
-	<script src="./Unit.js"></script>
-	<script src="./Player.js"></script>
+	<!--<script src="./Game.js"></script>-->
+	<!--<script src="./Board.js"></script>-->
+	<!--<script src="./Tile.js"></script>-->
+	<!--<script src="./Unit.js"></script>-->
+	<!--<script src="./Player.js"></script>-->
 	<script src="./Canvas.js"></script>
 </head>
 <body>
@@ -27,8 +27,8 @@
 
 	//SOCKET_IO_URL = "https://charlization.com:4000" || "https://localhost:4000"
 
-	//const socket = io("https://localhost:4000",
-	const socket = io("https://charlization.com:4000",
+	const socket = io("https://localhost:4000",
+	//const socket = io("https://charlization.com:4000",
 		{
 			transports: ['websocket', 'polling'],
 			//extraHeaders: {
@@ -54,7 +54,8 @@
 	})
 
 	socket.on('init-client-game', serverGame => {
-		clientGame = new Game({players: serverGame.players, board: serverGame.board})
+		//clientGame = new Game({players: serverGame.players, board: serverGame.board})
+		clientGame = serverGame
 		canvas = new Canvas({canvasID: "canvas1", board: clientGame.board})
 		localPlayer = serverGame.players[socket.id]
 
@@ -141,7 +142,7 @@
 		function animate() {
 			window.requestAnimationFrame(() => {
 				canvas.ctx.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height) // clear canvas
-				canvas.renderMap(clientGame.board) // redraw canvas
+				canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
 				if (canvas.selectedUnit) { canvas.animateBlinkSelectedUnit() }
 				window.requestAnimationFrame(() => {animate()})
 			})

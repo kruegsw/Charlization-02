@@ -63,7 +63,7 @@ class Canvas {
         this.ctx.fillRect(x*this.tileSize, y*this.tileSize, width, height)
     }
 
-    #renderUnit(tile) {
+    #renderUnit(tile, username) {
         if (tile.unit) {
             let x = tile.coordinates.x
             let y = tile.coordinates.y
@@ -74,18 +74,21 @@ class Canvas {
             this.ctx.arc(x*this.tileSize+this.tileSize/2, y*this.tileSize+this.tileSize/2, this.tileSize*0.4, 0, Math.PI * 2)
             this.ctx.stroke()
             this.ctx.fill()
+            this.ctx.font = `${this.tileSize/4}px serif`
+            this.ctx.fillStyle = "black"
+            this.ctx.fillText(username, x*this.tileSize, (y+0.5)*this.tileSize, this.tileSize)  // text, x, y, maxWidth
         }
     }
 
-    #renderTile(tile) {
+    #renderTile({tile, username}) {
         this.#renderTerrain(tile)
-        this.#renderUnit(tile)
+        this.#renderUnit(tile, username)
     }
 
-    renderMap(board) {
+    renderMap({board, username}) {
         board.tiles.forEach( (columnOfTiles, i) => {
             columnOfTiles.forEach( (tile, j) => {
-              this.#renderTile(tile)
+              this.#renderTile({tile: tile, username: username})
             })
         })
     }
