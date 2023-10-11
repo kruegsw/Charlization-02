@@ -43,13 +43,15 @@ io.on("connection", socket => {
 
     socket.on('disconnect', (reason) => {
         console.log(`reason for ${socket.id} disconnect: ${reason}`)
+        //io.emit('player-left-game', socket.id)
+        game.removePlayerFromBoard({username: socket.id})
         delete game.players[socket.id]
         console.log(game.players)
     })
 })
 
 setInterval(() => {
-    io.emit('update-gameState', game.board)
+    io.emit('update-game', game)
     //io.emit('message-from-server-to-client', "tick")
 }, 15)
 

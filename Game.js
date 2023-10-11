@@ -28,6 +28,14 @@ class Game {
         this.addUnit({unit: unit, tile: destinationTile})
     }
 
+    removePlayerFromBoard({username}) {
+        this.board.tiles.forEach( (columnOfTiles, i) => {
+            columnOfTiles.forEach( (tile, j) => {
+                if (tile.unit.player && tile.unit.player.username === username) {tile.unit = ""}
+            })
+        })
+    }
+
     setPlayersInitialLocations(player) {
         let x = Math.floor(Math.random() * this.board.size.x)
         let y = Math.floor(Math.random() * this.board.size.y)

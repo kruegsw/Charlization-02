@@ -44,7 +44,14 @@
 
 	socket.on('update-players', serverPlayers => clientGame.players = serverPlayers)
 
+	//socket.on('player-left-game', socketID => canvas.removePlayerFromBoard({username: socketID, board: clientGame.board}))
+
 	socket.on('update-gameState', serverBoard => clientGame.board = serverBoard)
+
+	socket.on('update-game', serverGame => {
+		clientGame.board = serverGame.board
+		clientGame.players = serverGame.players
+	})
 
 	socket.on('init-client-game', serverGame => {
 		clientGame = new Game({players: serverGame.players, board: serverGame.board})
