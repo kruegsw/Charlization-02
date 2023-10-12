@@ -3,9 +3,7 @@ require('dotenv').config()
 const express = require('express')
 const app = express()
 app.use(express.static('public'))
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/client.html')
-})
+app.get('/', (req, res) => {res.sendFile(__dirname + '/public/client.html')})
 
 const fs = require("fs");
 const httpServer = require("https").createServer({
@@ -22,19 +20,11 @@ const game = new Game({players: {}, board: new Board({x: 10, y: 10})})
 console.log(game.players)
 
 io.on("connection", socket => {
-    //console.log(Object.keys(io.engine.clients))
-
-    //if (!gameState) { gameState =  }
     if (!game.players[socket.id]) {
         game.players[socket.id] = new Player({username: socket.id, color: `hsl(${Math.random()*360}, 100%, 50%)` /* hue, saturation, lightness */})
         game.setPlayersInitialLocations(game.players[socket.id])
     }
-
-    //game.setPlayersInitialLocations(game.players[socket.id])
-    console.log(game.players)
-
     io.emit('update-players', game.players)
-
     io.emit('init-client-game', game )
 
     socket.on('message-from-client-to-server', message => {
