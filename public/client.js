@@ -67,7 +67,7 @@ function registerEventListener() {
         }
     })
 
-    window.addEventListener("touchstart", (event) => {
+    window.addEventListener("pointerdown", (event) => {
         console.log(clientGame)
         const rect = canvas.canvas.getBoundingClientRect()
         mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize)
