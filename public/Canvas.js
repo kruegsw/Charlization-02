@@ -93,8 +93,8 @@ class Canvas {
             */
             this.ctx.drawImage(
                 this.sprites.units,
-                this.sprites.units.warrior.x, this.sprites.units.warrior.y, 65, 50, // source coordinates      (x,y,w,h) 
-                x*this.tileSize, y*this.tileSize, 130, 100, // destination coordinates (x,y,w,h) 
+                this.sprites.units.warrior.x, this.sprites.units.warrior.y, this.sprites.units.warrior.w, this.sprites.units.warrior.h, // source coordinates      (x,y,w,h) 
+                x*this.tileSize, y*this.tileSize, this.tileSize, this.tileSize*this.sprites.units.warrior.h/this.sprites.units.warrior.w, // destination coordinates (x,y,w,h) 
             )
             this.ctx.font = `${this.tileSize/4}px serif`
             this.ctx.fillStyle = "black"
