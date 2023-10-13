@@ -67,6 +67,26 @@ function registerEventListener() {
         }
     })
 
+    window.addEventListener("touchstart", (event) => {
+        console.log(clientGame)
+        const rect = canvas.canvas.getBoundingClientRect()
+        mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize)
+        mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize)
+
+        if (canvas.selectedUnit) {
+            let targetTile = clientGame.board.tiles[mouse.x][mouse.y]
+            if (clientGame.board.tiles[mouse.x][mouse.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
+            socket.emit('moveUnitToTile', {unit: canvas.selectedUnit, tile: targetTile})
+            canvas.selectTile(targetTile)
+            canvas.deselectUnit()
+        } else {
+            const rect = canvas.canvas.getBoundingClientRect()
+            let targetTile = clientGame.board.tiles[mouse.x][mouse.y]
+            canvas.selectTile(targetTile)
+            canvas.selectUnit({tile: targetTile, username: socket.id})
+        }
+    })
+
     function keydownCommand(key) {
         if (key === "ArrowUp") { return { type: "move", direction: { x: 0, y: -1 } } }
         if (key === "ArrowDown") { return { type: "move", direction: { x: 0, y: 1 } } }
