@@ -56,8 +56,8 @@ class Canvas {
 
     #adjustCanvasSizeToMatchBrowser() {
         const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution), test this later
-        this.canvas.width = window.innerWidth * devicePixelRatio
-        this.canvas.height = window.innerHeight * devicePixelRatio
+        this.canvas.width = window.innerWidth //* devicePixelRatio
+        this.canvas.height = window.innerHeight //* devicePixelRatio
     }
 
     adjustCanvasSizeWhenBrowserResizing(board) {
