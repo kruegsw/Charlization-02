@@ -3,8 +3,8 @@ let canvas = ""
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
-//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
-const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
+const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
+//const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
 socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame
@@ -31,6 +31,7 @@ function registerEventListener() {
                 e.preventDefault() // prevent screen scrolling when moving selected unit
                 let command = keydownCommand(e.key)
                 if (command.type === "move") {
+                    if (clientGame.board.tiles[canvas.selectedUnit.coordinates.x+command.direction.x][canvas.selectedUnit.coordinates.y+command.direction.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
                     socket.emit('moveUnitInDirection', {unit: canvas.selectedUnit, direction: command.direction})
                     //clientGame.moveUnitInDirection({unit: canvas.selectedUnit, direction: command.direction})
                     canvas.deselectTile()
@@ -54,6 +55,7 @@ function registerEventListener() {
 
         if (canvas.selectedUnit) {
             let targetTile = clientGame.board.tiles[mouse.x][mouse.y]
+            if (clientGame.board.tiles[mouse.x][mouse.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
             socket.emit('moveUnitToTile', {unit: canvas.selectedUnit, tile: targetTile})
             canvas.selectTile(targetTile)
             canvas.deselectUnit()
@@ -80,6 +82,7 @@ function animate() {
     window.requestAnimationFrame(() => {
         canvas.ctx.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height) // clear canvas
         canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
+
         if (canvas.selectedUnit) { canvas.animateBlinkSelectedUnit() }
         window.requestAnimationFrame(() => {animate()})
     })

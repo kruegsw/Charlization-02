@@ -6,6 +6,21 @@ class Canvas {
         this.#determineTileSize(board)
         this.selectedUnit = ""
         this.selectedTile = ""
+        this.sounds = {}
+        this.initializeSounds()
+        this.sprites = {}
+        this.initializeSprites()
+    }
+
+    initializeSounds() {
+        this.sounds.movePiece = new Audio('MOVPIECE.WAV');
+        this.sounds.swordFight = new Audio('SWORDFGT.WAV');
+    }
+
+    initializeSprites() {
+        this.sprites.units = new Image()
+        this.sprites.units.src = "units.png"
+        this.sprites.units.warrior = {x: 130, y: 0, w: 65, h: 50}
     }
 
     selectUnit({tile, username}) {
@@ -67,6 +82,7 @@ class Canvas {
         if (tile.unit) {
             let x = tile.coordinates.x
             let y = tile.coordinates.y
+            /*
             this.ctx.fillStyle = tile.unit.color
             this.ctx.strokeStyle = "black"
             this.ctx.lineWidth = 0
@@ -74,6 +90,12 @@ class Canvas {
             this.ctx.arc(x*this.tileSize+this.tileSize/2, y*this.tileSize+this.tileSize/2, this.tileSize*0.4, 0, Math.PI * 2)
             this.ctx.stroke()
             this.ctx.fill()
+            */
+            this.ctx.drawImage(
+                this.sprites.units,
+                this.sprites.units.warrior.x, this.sprites.units.warrior.y, 65, 50, // source coordinates      (x,y,w,h) 
+                x*this.tileSize, y*this.tileSize, 130, 100, // destination coordinates (x,y,w,h) 
+            )
             this.ctx.font = `${this.tileSize/4}px serif`
             this.ctx.fillStyle = "black"
             this.ctx.fillText(username, x*this.tileSize, (y+0.5)*this.tileSize, this.tileSize)  // text, x, y, maxWidth
