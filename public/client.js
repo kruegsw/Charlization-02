@@ -47,6 +47,7 @@ function registerEventListener() {
         }
     });
 
+    /*  "click" and "pointerdown" are both valid for computer browser, but only "pointerdown" is valid for mobile, so using only pointerdown for now
     window.addEventListener("click", (event) => {
         console.log(clientGame)
         const rect = canvas.canvas.getBoundingClientRect()
@@ -66,6 +67,7 @@ function registerEventListener() {
             canvas.selectUnit({tile: targetTile, username: socket.id})
         }
     })
+    */
 
     window.addEventListener("pointerdown", (event) => {
         console.log(clientGame)
