@@ -3,8 +3,8 @@ let canvas = ""
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
-//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
-const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
+const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
+//const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
 socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame
@@ -72,8 +72,9 @@ function registerEventListener() {
     window.addEventListener("pointerdown", (event) => {
         console.log(clientGame)
         const rect = canvas.canvas.getBoundingClientRect()
-        mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize)
-        mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize)
+        mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
+        mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize.y)
+        console.log(mouse)
 
         if (canvas.selectedUnit) {
             let targetTile = clientGame.board.tiles[mouse.x][mouse.y]
@@ -97,7 +98,7 @@ function registerEventListener() {
         if (key === "Escape") { return { type: "escape" } }
     }
 
-    window.addEventListener("resize", () => canvas.adjustCanvasSizeWhenBrowserResizing(clientGame.board) )
+    window.addEventListener("resize", () => canvas.adjustCanvasSizeToBrowser(clientGame.board) )
 }
 
 function animate() {
