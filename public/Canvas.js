@@ -3,7 +3,7 @@ class Canvas {
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")
         this.tileSize = {}
-        this.orientation = "diamond"
+        this.orientation = "short diamond"
         this.selectedUnit = ""
         this.selectedTile = ""
         this.sounds = {}
@@ -20,6 +20,12 @@ class Canvas {
             let radians = Math.PI*angle/180
             this.ctx.translate(this.tileSize.x*board.size.x*Math.sin(radians), 0) // x, y
             this.ctx.rotate(radians)
+        } else if (this.orientation === "short diamond") {
+            let angle = 45
+            let radians = Math.PI*angle/180
+            this.ctx.translate(this.tileSize.x*board.size.x*Math.sin(radians), 0) // x, y
+            this.ctx.rotate(radians)
+            //this.tileSize.y *= 0.5 // addressed this by addressing the tileSize.y value below ... not sure which is a better solution yet
         } else {
             return
         }
@@ -90,8 +96,11 @@ class Canvas {
             row.forEach( (terrain, i) => {
                 this.sprites.terrain1[terrain] = {x: 2+i*65, y: 2+j*33, w: 62, h: 30}
             })
-        })
-        
+        })   
+    }
+
+    #imageLocationAndDimensionsOnSpriteSheet(terrainSpritesSheet, terrain) {
+        return [terrainSpritesSheet[terrain].x, terrainSpritesSheet[terrain].y, terrainSpritesSheet[terrain].w, terrainSpritesSheet[terrain].h]
     }
 
     selectUnit({tile, username}) {
@@ -101,25 +110,22 @@ class Canvas {
 
     clientOwnsUnit({unit, username}) { return unit.player.username === username }
 
-    selectTile(tile) {
-        this.selectedTile = tile
-        console.log(this.selectedTile)
+    selectNextUnit({board, username}) {
+        board.tiles.forEach( (column) => {
+            column.forEach( (tile) => {
+                if (tile.unit && tile.unit.player.username === username) {
+                    this.selectUnit({tile: tile, username: username})
+                    this.selectTile(tile)
+                }
+            })
+        })
     }
 
-    deselectUnit() {
-        this.selectedUnit = ""
-    }
+    selectTile(tile) { this.selectedTile = tile }
 
-    deselectTile() {
-        this.selectedTile = ""
-    }
+    deselectUnit() { this.selectedUnit = "" }
 
-    //animate(board) {
-    //    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height) // clear canvas
-    //    this.renderMap(board) // redraw canvas
-    //    if (this.selectedUnit) { this.animateBlinkSelectedUnit() } 
-    //    window.requestAnimationFrame(() => {this.animate(board)})
-    //}
+    deselectTile() { this.selectedTile = "" }
 
     animateBlinkSelectedUnit() {
         if ( (Math.floor(Date.now() / 400)) % 3 === 0 ) { this.#renderTerrain(this.selectedTile) } else { this.#renderUnit(this.selectedTile) }
@@ -127,8 +133,18 @@ class Canvas {
 
     #adjustCanvasSizeToMatchBrowser() {
         const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution), test this later
-        this.canvas.width = window.innerWidth //* devicePixelRatio
-        this.canvas.height = window.innerHeight //* devicePixelRatio
+        if (this.orientation === "diamond") {
+            this.canvas.width = window.innerWidth/Math.cos(45/180*Math.PI) //* devicePixelRatio
+            this.canvas.height = window.innerHeight/Math.sin(45/180*Math.PI) //* devicePixelRatio
+        } else if (this.orientation === "short diamond") {
+            //this.canvas.height = window.innerHeight/Math.sin(45/180*Math.PI)
+            //this.canvas.width = this.canvas.height / 2 //* devicePixelRatio
+            this.canvas.width = window.innerWidth/Math.cos(45/180*Math.PI) //* devicePixelRatio
+            this.canvas.height = window.innerHeight/Math.sin(45/180*Math.PI) *2 //* devicePixelRatio  *** THIS IS THE KEY DIFFERENCE ***
+        } else {
+            this.canvas.width = window.innerWidth //* devicePixelRatio
+            this.canvas.height = window.innerHeight //* devicePixelRatio
+        }
     }
 
     adjustCanvasSizeToBrowser(board) {
@@ -138,61 +154,35 @@ class Canvas {
     }
 
     #determineTileSize(board) {
-        const minXorYDimension = Math.min(
-            Math.floor(this.canvas.offsetWidth / board.size.x),
-            Math.floor(this.canvas.offsetHeight / board.size.y)
-        )
-        this.tileSize = {x: minXorYDimension, y: minXorYDimension}
+        if (this.orientation === "short diamond") {
+            const minXorYDimension = Math.min(
+                Math.floor(this.canvas.offsetWidth / board.size.x),
+                Math.floor(this.canvas.offsetHeight / (board.size.y /*/ 2*/)) // tiles are short by half
+            )
+            this.tileSize = {x: minXorYDimension, y: minXorYDimension /*/ 2*/} // tiles are short by half
+        } else {
+            const minXorYDimension = Math.min(
+                Math.floor(this.canvas.offsetWidth / board.size.x),
+                Math.floor(this.canvas.offsetHeight / board.size.y)
+            )
+            this.tileSize = {x: minXorYDimension, y: minXorYDimension}
+        }
     }
 
-    #renderTerrain(tile) {
-        let x = tile.coordinates.x
-        let y = tile.coordinates.y
+    #renderTerrain(tile) {       
+        const terrainSpritesSheet = this.sprites.terrain1
+        const terrain = tile.terrain
 
-        /*
-        this.ctx.fillStyle = tile.terrain.color
-        let width = this.tileSize
-        let height = this.tileSize
-        */
-
-        let terrain = tile.terrain
-        
-        /*
-        let terrainSprites = this.sprites.terrain1
+        this.ctx.save()
+        const tileCenterPixel = this.#findTileCenterPixel(tile)
+        this.ctx.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
+        this.ctx.rotate(-this.#radiansForImageAngleAdjustment())
         this.ctx.drawImage(
-            terrainSprites,
-            terrainSprites[terrain].x, terrainSprites[terrain].y, terrainSprites[terrain].w, terrainSprites[terrain].h, // source coordinates      (x,y,w,h) 
-            x*this.tileSize, y*this.tileSize + (this.tileSize-terrainSprites[terrain].h)/4, this.tileSize, this.tileSize*terrainSprites[terrain].h/terrainSprites[terrain].w, // destination coordinates (x,y,w,h) 
+            terrainSpritesSheet,
+            ...this.#imageLocationAndDimensionsOnSpriteSheet(terrainSpritesSheet, terrain), // x, y, w, h
+            ...this.#imagePositionRelativeToCenterOfTileAndDimensions() // x, y, w, h
         )
-        */
-
-        let terrainSprites = this.sprites.terrain1
-        let source = [terrainSprites[terrain].x, terrainSprites[terrain].y, terrainSprites[terrain].w, terrainSprites[terrain].h]
-        let destination = [x*this.tileSize.x, y*this.tileSize.y, this.tileSize.x, this.tileSize.y] 
-
-        if (this.orientation === "diamond") {
-            let angle = 45
-            let radians = Math.PI*angle/180
-            this.ctx.translate((0.5+x)*this.tileSize.x, (0.5+y)*this.tileSize.y) // center of tile
-            this.ctx.rotate(-radians)
-            this.ctx.drawImage(
-                terrainSprites,
-                ...source,      // x, y, w, h
-                -this.tileSize.x * Math.cos(radians), -this.tileSize.x * Math.sin(radians), this.tileSize.x / Math.cos(radians), this.tileSize.y / Math.sin(radians)
-            )
-            this.ctx.rotate(radians)
-            this.ctx.translate(-(0.5+x)*this.tileSize.x, -(0.5+y)*this.tileSize.y) // back to original 0,0 origin
-        } else {
-            this.ctx.drawImage(
-                terrainSprites,
-                ...source,      // x, y, w, h
-                ...destination, // x, y, w, h
-            )
-        }
-
-        /*
-        this.ctx.fillRect(x*this.tileSize, y*this.tileSize, width, height)
-        */
+        this.ctx.restore()
     }
 
     #renderFlateTerrain(tile) {
@@ -201,50 +191,32 @@ class Canvas {
 
     #renderUnit(tile, username) {
         if (tile.unit) {
-            let x = tile.coordinates.x
-            let y = tile.coordinates.y
             let unit = "warrior"
-            let unitSprites = this.sprites.units
-            let source = [unitSprites[unit].x, unitSprites[unit].y, unitSprites[unit].w, unitSprites[unit].h]
-            let destination = [x*this.tileSize.x, y*this.tileSize.y + (this.tileSize.y-unitSprites[unit].h)/4, this.tileSize.x, this.tileSize.y*this.sprites.units[unit].h/this.sprites.units[unit].w]
-            if (this.orientation === "diamond") {
-                let angle = 45
-                let radians = Math.PI*angle/180
-                this.ctx.translate((0.5+x)*this.tileSize.x, (0.5+y)*this.tileSize.y) // center of tile
-                this.ctx.rotate(-radians)
-                this.ctx.drawImage(
-                    unitSprites,
-                    ...source,      // x, y, w, h
-                    -this.tileSize.x * Math.cos(radians), -this.tileSize.y * Math.sin(radians), this.tileSize.x / Math.cos(radians), this.tileSize.y / Math.sin(radians)
-                )
-                this.ctx.rotate(radians)
-                this.ctx.translate(-(0.5+x)*this.tileSize.x, -(0.5+y)*this.tileSize.y) // back to original 0,0 origin
-            } else {
-                this.ctx.drawImage(
-                    unitSprites,
-                    ...source,      // x, y, w, h
-                    ...destination, // x, y, w, h
-                )
-            }
-            /*
-            this.ctx.font = `${this.tileSize/4}px serif`
-            this.ctx.fillStyle = "black"
-            this.ctx.fillText(username, x*this.tileSize, (y+0.5)*this.tileSize, this.tileSize)  // text, x, y, maxWidth
-            */
+            let unitSpritesSheet = this.sprites.units
+            this.ctx.save()
+            const tileCenterPixel = this.#findTileCenterPixel(tile)
+            this.ctx.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
+            this.ctx.rotate(-this.#radiansForImageAngleAdjustment())
+            this.ctx.drawImage(
+                unitSpritesSheet,
+                ...this.#imageLocationAndDimensionsOnSpriteSheet(unitSpritesSheet, unit), // x, y, w, h
+                ...this.#imagePositionRelativeToCenterOfTileAndDimensions(), // x, y, w, h
+            )
+            this.ctx.restore()
         }
     }
 
     #renderTile({tile, username}) {
         this.#renderTerrain(tile)
         this.#renderUnit(tile, username)
-        //this.#renderTileOutline(tile)
+        this.#renderTileOutline(tile)
     }
 
     #renderTileOutline(tile) {
         let x = tile.coordinates.x
         let y = tile.coordinates.y
         this.ctx.strokeStyle="black"
-        this.ctx.strokeRect(x*this.tileSize.x,y*this.tileSize.y,this.tileSize.x,this.tileSize.y+1)
+        this.ctx.strokeRect(x*this.tileSize.x,y*this.tileSize.y,this.tileSize.x,this.tileSize.y)
     }
 
     renderMap({board, username}) {
@@ -253,5 +225,55 @@ class Canvas {
               this.#renderTile({tile: tile, username: username})
             })
         })
+    }
+
+    #findTileCenterPixel(tile) {
+        this.ctx.fillRect(0, 0, 5, 5) // draw dot at center of tile for troubleshooting
+        const canvasTopLeftCorner = {x: 0, y: 0}
+        return {
+            x: canvasTopLeftCorner.x + (tile.coordinates.x+0.5)*this.tileSize.x,
+            y: canvasTopLeftCorner.y + (tile.coordinates.y+0.5)*this.tileSize.y
+        } // standard square
+    }
+
+    #imagePositionRelativeToCenterOfTileAndDimensions() {
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            const radians = this.#radiansForImageAngleAdjustment()
+            return [
+                -this.tileSize.x * Math.cos(radians), // x
+                -this.tileSize.y * Math.sin(radians), // y
+                this.tileSize.x / Math.cos(radians), // w
+                this.tileSize.y / Math.sin(radians) // h
+            ]
+        }
+        return [
+            0.5 * -this.tileSize.x, // x
+            0.5 * -this.tileSize.y, // y
+            this.tileSize.x, // w
+            this.tileSize.y // h
+        ]
+
+        /*
+        return [
+            x*this.tileSize.x,
+            y*this.tileSize.y + (this.tileSize.y-unitSpritesSheet[unit].h)/4,
+            this.tileSize.x,
+            this.tileSize.y*this.sprites.units[unit].h/this.sprites.units[unit].w
+        ]
+        */
+            
+    }
+
+    #radiansForImageAngleAdjustment() {
+        let angle = 0
+        switch (this.orientation) {
+            case "diamond":
+                angle = 45
+                break
+            case "short diamond":
+                angle = 45
+                break
+        }
+        return Math.PI*angle/180
     }
 }

@@ -28,7 +28,7 @@ function registerEventListener() {
         socket.emit('message-from-client-to-server', message = e.key)
         if (!e.repeat) {
             if (canvas.selectedUnit) {
-                e.preventDefault() // prevent screen scrolling when moving selected unit
+                e.preventDefault() // prevent screen scrolling when moving selected unit, and tabbing
                 let command = keydownCommand(e.key)
                 if (command.type === "move") {
                     if (clientGame.board.tiles[canvas.selectedUnit.coordinates.x+command.direction.x][canvas.selectedUnit.coordinates.y+command.direction.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
@@ -41,6 +41,10 @@ function registerEventListener() {
                     canvas.deselectTile()
                     canvas.deselectUnit()
                 }
+            }
+            if (e.key === "Tab") {
+                e.preventDefault() // prevent screen scrolling when moving selected unit, and tabbing
+                canvas.selectNextUnit({board: clientGame.board, username: socket.id})
             }
         } else {
             //console.log(`Key "${e.key}" repeating [event: keydown]`);
@@ -110,3 +114,9 @@ function animate() {
         window.requestAnimationFrame(() => {animate()})
     })
 }
+
+setInterval(() => {
+    // need to emit client sides ticks to avoid overloading the server
+    //io.emit('update-game', game)
+    //io.emit('message-from-server-to-client', "tick")
+}, 250)
