@@ -1,5 +1,5 @@
 let clientGame = ""
-let canvas = ""
+let canvas = document.getElementById("canvas1")
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
@@ -9,6 +9,7 @@ socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame
     canvas = new Canvas({canvasID: "canvas1", board: clientGame.board})
+    //canvas.initializeCanvasEventListeners()
     localPlayer = serverGame.players[socket.id]
     animate()
 })
@@ -25,12 +26,12 @@ function registerEventListener() {
 
     document.addEventListener("keydown", (e) => {
         console.log(e)
-        socket.emit('message-from-client-to-server', message = e.key)
+        //socket.emit('message-from-client-to-server', message = e.key)
         if (!e.repeat) {
             if (canvas.selectedUnit) {
-                e.preventDefault() // prevent screen scrolling when moving selected unit, and tabbing
                 let command = keydownCommand(e.key)
                 if (command.type === "move") {
+                    //e.preventDefault() // prevent screen scrolling when moving selected unit, and tabbing
                     if (clientGame.board.tiles[canvas.selectedUnit.coordinates.x+command.direction.x][canvas.selectedUnit.coordinates.y+command.direction.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
                     socket.emit('moveUnitInDirection', {unit: canvas.selectedUnit, direction: command.direction})
                     //clientGame.moveUnitInDirection({unit: canvas.selectedUnit, direction: command.direction})
@@ -74,21 +75,30 @@ function registerEventListener() {
     */
 
     window.addEventListener("pointerdown", (event) => {
-        console.log(clientGame)
+        //console.log(clientGame)
         const rect = canvas.canvas.getBoundingClientRect()
         mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
         mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize.y)
+        console.log(`origin: (${canvas.view.origin.x}, ${canvas.view.origin.y})`)
         console.log(mouse)
 
+        const clickedTile = canvas.clickedTile(event.offsetX, event.offsetY)
+        //console.log(clickedTile)
+        //console.log(event)
+        //console.log(`screenX, screenY: ${event.screenX}, ${event.screenY}`)
+        //console.log(`offsetX, offsetY: ${event.offsetX}, ${event.offsetY}`)
+        //console.log(`layerX, layerY: ${event.layerX}, ${event.layerY}`)
+        //console.log(`clientX, clientY: ${event.clientX}, ${event.clientY}`)
+
         if (canvas.selectedUnit) {
-            let targetTile = clientGame.board.tiles[mouse.x][mouse.y]
-            if (clientGame.board.tiles[mouse.x][mouse.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
+            let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
+            if (clientGame.board.tiles[clickedTile.x][clickedTile.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
             socket.emit('moveUnitToTile', {unit: canvas.selectedUnit, tile: targetTile})
             canvas.selectTile(targetTile)
             canvas.deselectUnit()
         } else {
             const rect = canvas.canvas.getBoundingClientRect()
-            let targetTile = clientGame.board.tiles[mouse.x][mouse.y]
+            let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
             canvas.selectTile(targetTile)
             canvas.selectUnit({tile: targetTile, username: socket.id})
         }
@@ -103,11 +113,15 @@ function registerEventListener() {
     }
 
     window.addEventListener("resize", () => canvas.adjustCanvasSizeToBrowser(clientGame.board) )
+    window.addEventListener("wheel", (event) => {
+        //event.preventDefault() 
+        canvas.scrollZoom(event)
+    })
 }
 
 function animate() {
     window.requestAnimationFrame(() => {
-        canvas.ctx.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height) // clear canvas
+        canvas.ctx.clearRect(canvas.view.origin.x -50000, canvas.view.origin.y -50000, canvas.canvas.width +100000, canvas.canvas.height +100000) // clear canvas
         canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
 
         if (canvas.selectedUnit) { canvas.animateBlinkSelectedUnit() }

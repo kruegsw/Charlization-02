@@ -3,7 +3,7 @@ class Canvas {
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")
         this.tileSize = {}
-        this.orientation = "short diamond"
+        this.orientation = ""
         this.selectedUnit = ""
         this.selectedTile = ""
         this.sounds = {}
@@ -12,6 +12,40 @@ class Canvas {
         this.initializeSounds()
         this.initializeSprites()
         this.initializeTerrain()
+        this.view = {
+            origin: {x: 0, y: 0},
+            scale: 1 // canvas fits into browser window
+        }
+    }
+
+    #adjustCanvasSizeToMatchBrowser() {
+        const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution), test this later
+        if (this.orientation === "diamond") {
+            this.canvas.width = window.innerWidth/Math.cos(45/180*Math.PI) //* devicePixelRatio
+            this.canvas.height = window.innerHeight/Math.sin(45/180*Math.PI) //* devicePixelRatio
+        } else if (this.orientation === "short diamond") {
+            //this.canvas.height = window.innerHeight/Math.sin(45/180*Math.PI)
+            //this.canvas.width = this.canvas.height / 2 //* devicePixelRatio
+            this.canvas.width = window.innerWidth/Math.cos(45/180*Math.PI) //* devicePixelRatio
+            this.canvas.height = window.innerHeight/Math.sin(45/180*Math.PI) *2 //* devicePixelRatio  *** THIS IS THE KEY DIFFERENCE ***
+        } else {
+            this.canvas.width = window.innerWidth //* devicePixelRatio
+            this.canvas.height = window.innerHeight //* devicePixelRatio
+        }
+    }
+
+    adjustCanvasSizeToBrowser(board) {
+        this.#adjustCanvasSizeToMatchBrowser()
+        this.#determineTileSize(board)
+        this.#setCanvasOrientation(board)
+    }
+
+    #determineTileSize(board) {
+        const minXorYDimension = Math.min(
+            Math.floor(this.canvas.offsetWidth / board.size.x),
+            Math.floor(this.canvas.offsetHeight / (board.size.y))
+        )
+        this.tileSize = {x: minXorYDimension, y: minXorYDimension}
     }
 
     #setCanvasOrientation(board) {
@@ -25,10 +59,39 @@ class Canvas {
             let radians = Math.PI*angle/180
             this.ctx.translate(this.tileSize.x*board.size.x*Math.sin(radians), 0) // x, y
             this.ctx.rotate(radians)
-            //this.tileSize.y *= 0.5 // addressed this by addressing the tileSize.y value below ... not sure which is a better solution yet
+            //this.tileSize.x *= Math.cos(radians)
+            //this.tileSize.y *= Math.sin(radians)// addressed this by addressing the tileSize.y value below ... not sure which is a better solution yet
         } else {
             return
         }
+    }
+
+    scrollZoom(event) {  // https://roblouie.com/article/617/transforming-mouse-coordinates-to-canvas-coordinates/
+
+        console.log(event)
+
+        const currentTransformedCursor = this.getTransformedPoint(event.x, event.y);
+        
+        const zoom = event.deltaY < 0 ? 1.1 : 0.9;
+        
+        this.ctx.translate(currentTransformedCursor.x, currentTransformedCursor.y);
+        this.ctx.scale(zoom, zoom);
+        this.ctx.translate(-currentTransformedCursor.x, -currentTransformedCursor.y);
+        console.log(currentTransformedCursor)
+
+        this.view.origin.x = currentTransformedCursor.x
+        this.view.origin.y = currentTransformedCursor.y
+        
+        // Redraws the image after the scaling    
+        //drawImageToCanvas();
+        
+        // Stops the whole page from scrolling
+        //event.preventDefault();
+    }
+
+    getTransformedPoint(x, y) { // https://roblouie.com/article/617/transforming-mouse-coordinates-to-canvas-coordinates/
+        const originalPoint = new DOMPoint(x, y);
+        return this.ctx.getTransform().invertSelf().transformPoint(originalPoint);
     }
 
     initializeSounds() {
@@ -80,17 +143,17 @@ class Canvas {
         this.sprites.terrain1 = new Image()
         this.sprites.terrain1.src = "terrain1.png"
         let terrain1Sprites = [
-            ['desert'],//-1', 'desert-2'],
-            ['prairie'],
-            ['grassland'],//-1', 'grassland-2'],
-            [],
-            [],
-            [],
-            ['tundra'],
-            ['arctic'],
-            ['swamp'],
-            ['jungle'],
-            ['ocean']
+            ['desert', 'desert-2', 'oasis', 'oil'],//-1', 'desert-2'],
+            ['prairie', '', 'bison', 'wheat'],
+            ['grassland', 'grassland-2', 'grassland-silk', 'grassland-silkworm'],
+            ['forest-base-1', 'forest-base-2', 'pheasant', 'silk', '', '', '', 'irrigation'],
+            ['hill-base-1', 'hill-base-2', 'coal', 'grapes', '', '', '', 'farmland'],
+            ['mountain-base-1', 'mountain-base-2', 'gold', 'iron', '', '', '', 'mine'],
+            ['tundra', 'walrus', 'walrus', 'goat', 'fur', 'iron', '', '', '', 'pollution'],
+            ['arctic', 'moose', 'walrus', 'oil', 'iron', '', '', '', 'grassland-resource'],
+            ['swamp', 'moose', 'peat', 'spice', '', '', '', 'village'],
+            ['jungle', 'jungle-2', 'gems', 'bananas'],
+            ['ocean', '', 'fish', 'whale']
         ]
         terrain1Sprites.forEach( (row, j) => {
             row.forEach( (terrain, i) => {
@@ -101,6 +164,14 @@ class Canvas {
 
     #imageLocationAndDimensionsOnSpriteSheet(terrainSpritesSheet, terrain) {
         return [terrainSpritesSheet[terrain].x, terrainSpritesSheet[terrain].y, terrainSpritesSheet[terrain].w, terrainSpritesSheet[terrain].h]
+    }
+
+    clickedTile(x, y) {
+        const currentTransformedCursor = this.getTransformedPoint(x, y)
+        console.log(currentTransformedCursor)
+        const tileX = Math.floor(currentTransformedCursor.x / this.tileSize.x)
+        const tileY = Math.floor(currentTransformedCursor.y / this.tileSize.y)
+        return {x: tileX, y: tileY}
     }
 
     selectUnit({tile, username}) {
@@ -129,44 +200,6 @@ class Canvas {
 
     animateBlinkSelectedUnit() {
         if ( (Math.floor(Date.now() / 400)) % 3 === 0 ) { this.#renderTerrain(this.selectedTile) } else { this.#renderUnit(this.selectedTile) }
-    }
-
-    #adjustCanvasSizeToMatchBrowser() {
-        const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution), test this later
-        if (this.orientation === "diamond") {
-            this.canvas.width = window.innerWidth/Math.cos(45/180*Math.PI) //* devicePixelRatio
-            this.canvas.height = window.innerHeight/Math.sin(45/180*Math.PI) //* devicePixelRatio
-        } else if (this.orientation === "short diamond") {
-            //this.canvas.height = window.innerHeight/Math.sin(45/180*Math.PI)
-            //this.canvas.width = this.canvas.height / 2 //* devicePixelRatio
-            this.canvas.width = window.innerWidth/Math.cos(45/180*Math.PI) //* devicePixelRatio
-            this.canvas.height = window.innerHeight/Math.sin(45/180*Math.PI) *2 //* devicePixelRatio  *** THIS IS THE KEY DIFFERENCE ***
-        } else {
-            this.canvas.width = window.innerWidth //* devicePixelRatio
-            this.canvas.height = window.innerHeight //* devicePixelRatio
-        }
-    }
-
-    adjustCanvasSizeToBrowser(board) {
-        this.#adjustCanvasSizeToMatchBrowser()
-        this.#determineTileSize(board)
-        this.#setCanvasOrientation(board)
-    }
-
-    #determineTileSize(board) {
-        if (this.orientation === "short diamond") {
-            const minXorYDimension = Math.min(
-                Math.floor(this.canvas.offsetWidth / board.size.x),
-                Math.floor(this.canvas.offsetHeight / (board.size.y /*/ 2*/)) // tiles are short by half
-            )
-            this.tileSize = {x: minXorYDimension, y: minXorYDimension /*/ 2*/} // tiles are short by half
-        } else {
-            const minXorYDimension = Math.min(
-                Math.floor(this.canvas.offsetWidth / board.size.x),
-                Math.floor(this.canvas.offsetHeight / board.size.y)
-            )
-            this.tileSize = {x: minXorYDimension, y: minXorYDimension}
-        }
     }
 
     #renderTerrain(tile) {       
@@ -228,12 +261,11 @@ class Canvas {
     }
 
     #findTileCenterPixel(tile) {
-        this.ctx.fillRect(0, 0, 5, 5) // draw dot at center of tile for troubleshooting
-        const canvasTopLeftCorner = {x: 0, y: 0}
+        //this.ctx.fillRect(0, 0, 5, 5) // draw dot at center of tile for troubleshooting
         return {
-            x: canvasTopLeftCorner.x + (tile.coordinates.x+0.5)*this.tileSize.x,
-            y: canvasTopLeftCorner.y + (tile.coordinates.y+0.5)*this.tileSize.y
-        } // standard square
+            x: 0 + (tile.coordinates.x+0.5)*this.tileSize.x,
+            y: 0 + (tile.coordinates.y+0.5)*this.tileSize.y
+        }
     }
 
     #imagePositionRelativeToCenterOfTileAndDimensions() {
