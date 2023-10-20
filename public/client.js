@@ -79,8 +79,6 @@ function registerEventListener() {
         const rect = canvas.canvas.getBoundingClientRect()
         mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
         mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize.y)
-        console.log(`origin: (${canvas.view.origin.x}, ${canvas.view.origin.y})`)
-        console.log(mouse)
 
         const clickedTile = canvas.clickedTile(event.offsetX, event.offsetY)
         //console.log(clickedTile)
@@ -121,7 +119,7 @@ function registerEventListener() {
 
 function animate() {
     window.requestAnimationFrame(() => {
-        canvas.ctx.clearRect(canvas.view.origin.x -50000, canvas.view.origin.y -50000, canvas.canvas.width +100000, canvas.canvas.height +100000) // clear canvas
+        canvas.ctx.clearRect(0 -50000, 0 -50000, canvas.canvas.width +100000, canvas.canvas.height +100000) // clear canvas
         canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
 
         if (canvas.selectedUnit) { canvas.animateBlinkSelectedUnit() }

@@ -3,7 +3,7 @@ class Canvas {
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")
         this.tileSize = {}
-        this.orientation = ""
+        this.orientation = "short diamond"
         this.selectedUnit = ""
         this.selectedTile = ""
         this.sounds = {}
@@ -13,25 +13,15 @@ class Canvas {
         this.initializeSprites()
         this.initializeTerrain()
         this.view = {
-            origin: {x: 0, y: 0},
-            scale: 1 // canvas fits into browser window
+            //origin: {x: 0, y: 0},  // referenced in client.js but x and y are not changed right now
+            //scale: 1 // canvas fits into browser window
         }
     }
 
     #adjustCanvasSizeToMatchBrowser() {
         const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution), test this later
-        if (this.orientation === "diamond") {
-            this.canvas.width = window.innerWidth/Math.cos(45/180*Math.PI) //* devicePixelRatio
-            this.canvas.height = window.innerHeight/Math.sin(45/180*Math.PI) //* devicePixelRatio
-        } else if (this.orientation === "short diamond") {
-            //this.canvas.height = window.innerHeight/Math.sin(45/180*Math.PI)
-            //this.canvas.width = this.canvas.height / 2 //* devicePixelRatio
-            this.canvas.width = window.innerWidth/Math.cos(45/180*Math.PI) //* devicePixelRatio
-            this.canvas.height = window.innerHeight/Math.sin(45/180*Math.PI) *2 //* devicePixelRatio  *** THIS IS THE KEY DIFFERENCE ***
-        } else {
-            this.canvas.width = window.innerWidth //* devicePixelRatio
-            this.canvas.height = window.innerHeight //* devicePixelRatio
-        }
+        this.canvas.width = window.innerWidth //* devicePixelRatio
+        this.canvas.height = window.innerHeight //* devicePixelRatio
     }
 
     adjustCanvasSizeToBrowser(board) {
@@ -43,27 +33,14 @@ class Canvas {
     #determineTileSize(board) {
         const minXorYDimension = Math.min(
             Math.floor(this.canvas.offsetWidth / board.size.x),
-            Math.floor(this.canvas.offsetHeight / (board.size.y))
+            Math.floor(this.canvas.offsetHeight / board.size.y)
         )
         this.tileSize = {x: minXorYDimension, y: minXorYDimension}
     }
 
     #setCanvasOrientation(board) {
-        if (this.orientation === "diamond") {
-            let angle = 45
-            let radians = Math.PI*angle/180
-            this.ctx.translate(this.tileSize.x*board.size.x*Math.sin(radians), 0) // x, y
-            this.ctx.rotate(radians)
-        } else if (this.orientation === "short diamond") {
-            let angle = 45
-            let radians = Math.PI*angle/180
-            this.ctx.translate(this.tileSize.x*board.size.x*Math.sin(radians), 0) // x, y
-            this.ctx.rotate(radians)
-            //this.tileSize.x *= Math.cos(radians)
-            //this.tileSize.y *= Math.sin(radians)// addressed this by addressing the tileSize.y value below ... not sure which is a better solution yet
-        } else {
-            return
-        }
+        if (this.orientation === "diamond" ) { this.ctx.rotate(Math.PI*45/180) }
+        if (this.orientation === "short diamond") { this.ctx.transform(1, 0.5, -1, 0.5, 0, 0) }
     }
 
     scrollZoom(event) {  // https://roblouie.com/article/617/transforming-mouse-coordinates-to-canvas-coordinates/
@@ -78,9 +55,6 @@ class Canvas {
         this.ctx.scale(zoom, zoom);
         this.ctx.translate(-currentTransformedCursor.x, -currentTransformedCursor.y);
         console.log(currentTransformedCursor)
-
-        this.view.origin.x = currentTransformedCursor.x
-        this.view.origin.y = currentTransformedCursor.y
         
         // Redraws the image after the scaling    
         //drawImageToCanvas();
