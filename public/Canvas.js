@@ -14,8 +14,21 @@ class Canvas {
         this.initializeTerrain()
         this.view = {
             //origin: {x: 0, y: 0},  // referenced in client.js but x and y are not changed right now
-            //scale: 1 // canvas fits into browser window
+            scale: 1 // update in scroolZoom
         }
+        //this.#setOffScreenCanvasForTerrain()
+    }
+
+    #setOffScreenCanvasForTerrain() {
+        this.offScreenCanvas = document.getElementById("offScreenCanvas")
+        //this.offscreenCanvas = document.createElement("canvas");
+        this.offScreenCanvas.width = this.canvas.width;
+        this.offScreenCanvas.height = this.canvas.height;
+        this.ctx.drawImage(this.offscreenCanvas, 0, 0);
+        this.offScreenContext = this.offScreenCanvas.getContext("2d")
+
+        const terrainSpritesSheet = this.sprites.terrain1
+
     }
 
     #adjustCanvasSizeToMatchBrowser() {
@@ -25,20 +38,27 @@ class Canvas {
     }
 
     adjustCanvasSizeToBrowser(board) {
-        this.#adjustCanvasSizeToMatchBrowser()
-        this.#determineTileSize(board)
-        this.#setCanvasOrientation(board)
+        this.#adjustCanvasSizeToMatchBrowser() // scrollZoom does not work unless canvas height and width are set to the window innerHeight & innerWeidth
+        this.#setTileSize(board)
+        this.#setCanvasOrientation()
     }
 
-    #determineTileSize(board) {
+    #setTileSize(board) {
+        this.#setTileSizeToMatchBrowserViewport(board)
+        //this.tileSize = { x: 62, y: 62 }
+    }
+
+    #setTileSizeToMatchBrowserViewport(board) {
         const minXorYDimension = Math.min(
             Math.floor(this.canvas.offsetWidth / board.size.x),
             Math.floor(this.canvas.offsetHeight / board.size.y)
+            //Math.floor(this.canvas.width / board.size.x),
+            //Math.floor(this.canvas.height / board.size.y)
         )
         this.tileSize = {x: minXorYDimension, y: minXorYDimension}
     }
 
-    #setCanvasOrientation(board) {
+    #setCanvasOrientation() {
         if (this.orientation === "diamond" ) { this.ctx.rotate(Math.PI*45/180) }
         if (this.orientation === "short diamond") { this.ctx.transform(1, 0.5, -1, 0.5, 0, 0) }
     }
@@ -55,12 +75,54 @@ class Canvas {
         this.ctx.scale(zoom, zoom);
         this.ctx.translate(-currentTransformedCursor.x, -currentTransformedCursor.y);
         console.log(currentTransformedCursor)
+
+        this.view.scale *= zoom
         
         // Redraws the image after the scaling    
         //drawImageToCanvas();
         
         // Stops the whole page from scrolling
         //event.preventDefault();
+    }
+
+    scrollUp() {
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            this.ctx.translate(this.tileSize.x*this.view.scale, this.tileSize.y*this.view.scale)
+        } else {
+            this.ctx.translate(0, this.tileSize.y*this.view.scale)
+        }
+    }
+        //const currentTransformedOrigin = this.getTransformedPoint(0, 0)
+        //const currentTransformedTileSizeY = this.getTransformedPoint(0, this.tileSize.y)
+        //const currentTransformedTileSizeY = this.getTransformedPoint(0, this.tileSize.y*this.view.scale)
+        //this.ctx.translate(currentTransformedOrigin.x, currentTransformedOrigin.y + currentTransformedTileSizeY.y)
+        //this.ctx.translate(currentTransformedTileSizeY.x, currentTransformedTileSizeY.y)
+        //this.ctx.translate(currentTransformedOrigin.x, currentTransformedOrigin.y)
+
+    scrollDown() {
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            this.ctx.translate(-this.tileSize.x*this.view.scale, -this.tileSize.y*this.view.scale)
+        } else {
+            this.ctx.translate(0, -this.tileSize.y*this.view.scale)
+        }
+    }
+        //const currentTransformedOrigin = this.getTransformedPoint(0, 0)
+        //const currentTransformedTileSizeY = this.getTransformedPoint(0, this.tileSize.y*this.view.scale)
+        //this.ctx.translate(currentTransformedOrigin.x, currentTransformedOrigin.y)// - currentTransformedTileSizeY.y)
+        //this.ctx.translate(-this.tileSize.x*this.view.scale, -this.tileSize.y*this.view.scale)
+    scrollLeft() {
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            this.ctx.translate(this.tileSize.x*this.view.scale, -this.tileSize.y*this.view.scale)
+        } else {
+            this.ctx.translate(-this.tileSize.x*this.view.scale, 0)
+        }
+    }
+    scrollRight() {
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            this.ctx.translate(-this.tileSize.x*this.view.scale, this.tileSize.y*this.view.scale)
+        } else {
+            this.ctx.translate(this.tileSize.x*this.view.scale, 0)
+        }
     }
 
     getTransformedPoint(x, y) { // https://roblouie.com/article/617/transforming-mouse-coordinates-to-canvas-coordinates/
@@ -133,14 +195,14 @@ class Canvas {
             row.forEach( (terrain, i) => {
                 this.sprites.terrain1[terrain] = {x: 2+i*65, y: 2+j*33, w: 62, h: 30}
             })
-        })   
+        })
     }
 
     #imageLocationAndDimensionsOnSpriteSheet(terrainSpritesSheet, terrain) {
         return [terrainSpritesSheet[terrain].x, terrainSpritesSheet[terrain].y, terrainSpritesSheet[terrain].w, terrainSpritesSheet[terrain].h]
     }
 
-    clickedTile(x, y) {
+    determineTileFromPixelCoordinates(x, y) {
         const currentTransformedCursor = this.getTransformedPoint(x, y)
         console.log(currentTransformedCursor)
         const tileX = Math.floor(currentTransformedCursor.x / this.tileSize.x)
@@ -198,8 +260,8 @@ class Canvas {
 
     #renderUnit(tile, username) {
         if (tile.unit) {
-            let unit = "warrior"
-            let unitSpritesSheet = this.sprites.units
+            const unit = "legion"
+            const unitSpritesSheet = this.sprites.units
             this.ctx.save()
             const tileCenterPixel = this.#findTileCenterPixel(tile)
             this.ctx.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
@@ -282,4 +344,25 @@ class Canvas {
         }
         return Math.PI*angle/180
     }
+
+    setFocusOnTile() {
+        this.selectedTile
+    }
+
+    centerScreenOnTileCoordinates({x, y}) { // does not work
+        //const centerOfScreenTransformedCursor = this.getTransformedPoint(this.canvas.offsetLeft, this.canvas.offsetTop)
+        const currentTransformedTileCoordinates = this.getTransformedPoint(x*this.tileSize.x, y*this.tileSize.y)
+        const currentTransformedOrigin = this.getTransformedPoint(0, 0)
+        const currentTransformedCanvasBottomRightLeft = this.getTransformedPoint(this.canvas.width, this.canvas.height)
+        console.log(Math.floor(currentTransformedTileCoordinates.x / this.tileSize.x), Math.floor(currentTransformedTileCoordinates.y / this.tileSize.y))
+        console.log(currentTransformedOrigin)
+        console.log({x, y})
+        console.log(currentTransformedCanvasBottomRightLeft)
+        //this.ctx.translate(currentTransformedTileCoordinates.x, currentTransformedTileCoordinates.y);
+        //if (this.canvas.width/2-x*this.tileSize.x > )
+        //this.ctx.translate(this.canvas.width/2-x*this.tileSize.x, this.canvas.height/2-y*this.tileSize.y);
+        //this.ctx.translate(+ window.innerWidth/2, + window.innerHeight/2) 
+        //this.ctx.translate(-x*this.tileSize.x+this.canvas.width/2, -y*this.tileSize.y+this.canvas.height/2)
+    }
+
 }
