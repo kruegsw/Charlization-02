@@ -26,37 +26,78 @@ function registerEventListener() {
 
     document.addEventListener("keydown", (e) => {
         console.log(e)
+        //add key pad movement
+        // add detect collission and appropriate sounds
         //socket.emit('message-from-client-to-server', message = e.key)
         if (canvas.selectedUnit) {
-            let command = keydownCommand(e.key)
-            if (command.type === "move") {
-                //e.preventDefault() // prevent screen scrolling when moving selected unit, and tabbing
-                if (clientGame.board.tiles[canvas.selectedUnit.coordinates.x+command.direction.x][canvas.selectedUnit.coordinates.y+command.direction.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
-                socket.emit('moveUnitInDirection', {unit: canvas.selectedUnit, direction: command.direction})
-                //clientGame.moveUnitInDirection({unit: canvas.selectedUnit, direction: command.direction})
+            if (e.code === "ArrowUp") {
+                if (canvas.orientation === "diamond" || canvas.orientation === "short diamond") {
+                    socket.emit('moveUnitInDirection', {unit: canvas.selectedUnit, direction: {x: -1, y: -1}})
+                } else {
+                    socket.emit('moveUnitInDirection', {unit: canvas.selectedUnit, direction: {x: 0, y: -1}})
+                }
                 canvas.deselectTile()
                 canvas.deselectUnit()
                 return
             }
-            if (command.type === "escape") {
+            if (e.code === "ArrowDown") {
+                if (canvas.orientation === "diamond" || canvas.orientation === "short diamond") {
+                    socket.emit('moveUnitInDirection', {unit: canvas.selectedUnit, direction: {x: 1, y: 1}})
+                } else {
+                    socket.emit('moveUnitInDirection', {unit: canvas.selectedUnit, direction: {x: 0, y: 1}})
+                }
                 canvas.deselectTile()
                 canvas.deselectUnit()
                 return
             }
-            if (e.key === "Tab") { return }
+            if (e.code === "ArrowLeft") {
+                if (canvas.orientation === "diamond" || canvas.orientation === "short diamond") {
+                    socket.emit('moveUnitInDirection', {unit: canvas.selectedUnit, direction: {x: -1, y: 1}})
+                } else {
+                    socket.emit('moveUnitInDirection', {unit: canvas.selectedUnit, direction: {x: -1, y: 0}})
+                }
+                canvas.deselectTile()
+                canvas.deselectUnit()
+                return
+            }
+            if (e.code === "ArrowRight") {
+                if (canvas.orientation === "diamond" || canvas.orientation === "short diamond") {
+                    socket.emit('moveUnitInDirection', {unit: canvas.selectedUnit, direction: {x: 1, y: -1}})
+                } else {
+                    socket.emit('moveUnitInDirection', {unit: canvas.selectedUnit, direction: {x: 1, y: 0}})
+                }
+                canvas.deselectTile()
+                canvas.deselectUnit()
+                return
+            }
+
+            /*
+            if (clientGame.board.tiles[canvas.selectedUnit.coordinates.x+command.direction.x][canvas.selectedUnit.coordinates.y+command.direction.y].unit) {
+                canvas.sounds.swordFight.play()
+            } else {
+                canvas.sounds.movePiece.play()
+            }
+            */
+
+            if (e.code === "Escape") {
+                canvas.deselectTile()
+                canvas.deselectUnit()
+                return
+            }
+            if (e.code === "Tab") { return }
         }
-        if (e.key === "Tab") {
+        if (e.code === "Tab") {
             e.preventDefault() // prevent screen scrolling when moving selected unit, and tabbing
             canvas.selectNextUnit({board: clientGame.board, username: socket.id})
             canvas.centerScreenOnTileCoordinates(canvas.selectedUnit.coordinates)
             console.log(canvas.selectedUnit)
             return
         }
-        if (e.key === "ArrowUp") { canvas.scrollUp(); return }
-        if (e.key === "ArrowDown") { canvas.scrollDown(); return }
-        if (e.key === "ArrowLeft") { canvas.scrollLeft(); return }
-        if (e.key === "ArrowRight") { canvas.scrollRight(); return }
-        if (e.key === "Escape") { return }
+        if (e.code === "ArrowUp") { canvas.scrollUp(); return }
+        if (e.code === "ArrowDown") { canvas.scrollDown(); return }
+        if (e.code === "ArrowLeft") { canvas.scrollLeft(); return }
+        if (e.code === "ArrowRight") { canvas.scrollRight(); return }
+        if (e.code === "Escape") { return }
     });
 
     /*  "click" and "pointerdown" are both valid for computer browser, but only "pointerdown" is valid for mobile, so using only pointerdown for now

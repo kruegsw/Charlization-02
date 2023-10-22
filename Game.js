@@ -7,12 +7,16 @@ class Game {
     }
 
     moveUnitInDirection({unit, direction}) {
+        console.log(unit, direction)
         let x = unit.coordinates.x
         let y = unit.coordinates.y
         let dx = direction.x
         let dy = direction.y
+        console.log(dy)
         let currentTile = this.board.tiles[x][y]
+        console.log(currentTile)
         let destinationTile = this.board.tiles[x+dx][y+dy]
+        console.log(destinationTile)
         
         this.removeUnit({tile: currentTile})
         this.addUnit({unit: unit, tile: destinationTile})

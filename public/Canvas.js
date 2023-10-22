@@ -76,7 +76,7 @@ class Canvas {
         this.ctx.translate(-currentTransformedCursor.x, -currentTransformedCursor.y);
         console.log(currentTransformedCursor)
 
-        this.view.scale *= zoom
+        this.view.scale = Math.pow(this.view.scale, zoom)
         
         // Redraws the image after the scaling    
         //drawImageToCanvas();
@@ -87,7 +87,11 @@ class Canvas {
 
     scrollUp() {
         if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            //const currentTransformedTileSize = this.getTransformedPoint(this.tileSize.x*this.view.scale, this.tileSize.y*this.view.scale)
+            //const currentTransformedTileSizeY = this.getTransformedPoint(0, this.tileSize.y*this.view.scale)
+            //this.ctx.translate(currentTransformedTileSize.x, currentTransformedTileSize.y)
             this.ctx.translate(this.tileSize.x*this.view.scale, this.tileSize.y*this.view.scale)
+            console.log(this.view.scale)
         } else {
             this.ctx.translate(0, this.tileSize.y*this.view.scale)
         }
@@ -103,7 +107,7 @@ class Canvas {
         if (this.orientation === "diamond" || this.orientation === "short diamond") {
             this.ctx.translate(-this.tileSize.x*this.view.scale, -this.tileSize.y*this.view.scale)
         } else {
-            this.ctx.translate(0, -this.tileSize.y*this.view.scale)
+            this.ctx.translate(0,-this.tileSize.y*this.view.scale)
         }
     }
         //const currentTransformedOrigin = this.getTransformedPoint(0, 0)
@@ -114,14 +118,14 @@ class Canvas {
         if (this.orientation === "diamond" || this.orientation === "short diamond") {
             this.ctx.translate(this.tileSize.x*this.view.scale, -this.tileSize.y*this.view.scale)
         } else {
-            this.ctx.translate(-this.tileSize.x*this.view.scale, 0)
+            this.ctx.translate(+this.tileSize.x*this.view.scale, 0)
         }
     }
     scrollRight() {
         if (this.orientation === "diamond" || this.orientation === "short diamond") {
             this.ctx.translate(-this.tileSize.x*this.view.scale, this.tileSize.y*this.view.scale)
         } else {
-            this.ctx.translate(this.tileSize.x*this.view.scale, 0)
+            this.ctx.translate(-this.tileSize.x*this.view.scale, 0)
         }
     }
 
