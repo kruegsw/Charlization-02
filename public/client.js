@@ -1,16 +1,45 @@
 let clientGame = ""
-let canvas = document.getElementById("canvas1")
+//let canvas = document.getElementById("canvas1")
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
-//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
-const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
+const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
+//const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
 socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame
     canvas = new Canvas({canvasID: "canvas1", board: clientGame.board})
-    //canvas.initializeCanvasEventListeners()
     localPlayer = serverGame.players[socket.id]
+
+    /*
+    window.requestAnimationFrame(() => {
+        canvas.ctx.clearRect(0 -50000, 0 -50000, canvas.canvas.width +100000, canvas.canvas.height +100000) // clear canvas
+        canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
+        window.requestAnimationFrame(() => {animate()})
+    })
+    */
+
+    //window.requestAnimationFrame(() => {
+    //    canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username}) // redraw offscreenCanvas
+    //})   
+
+
+    let counter = 0  // this is necessary for the diamond patterns only, not sure why
+    function initializeOffScreenCanvas() {
+        window.requestAnimationFrame(() => {
+            canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username}) // redraw offscreenCanvas
+            counter++
+            if (counter > 2) {return}
+            initializeOffScreenCanvas()
+        })   
+    }
+    initializeOffScreenCanvas()
+    
+
+    //window.requestAnimationFrame(() => {
+    //    canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username}) // redraw offscreenCanvas
+    //})
+
     animate()
 })
 socket.on("connect_error", err => console.log(`connect_error due to ${err.message}`) )
@@ -20,6 +49,7 @@ socket.on('update-game', serverGame => clientGame = serverGame )
 socket.on("message-from-server-to-client", message => console.log(message))
 socket.on("disconnect", () => { console.log(`Client ${socket.id} disconnected from WebSocket`) })
 
+
 registerEventListener()
 
 function registerEventListener() {
@@ -28,6 +58,7 @@ function registerEventListener() {
         console.log(e)
         //add key pad movement
         // add detect collission and appropriate sounds
+        // need to fix bug when unit walks off screen
         //socket.emit('message-from-client-to-server', message = e.key)
         if (canvas.selectedUnit) {
             if (e.code === "ArrowUp") {
@@ -148,15 +179,8 @@ function registerEventListener() {
             canvas.selectTile(targetTile)
             canvas.selectUnit({tile: targetTile, username: socket.id})
         }
+        
     })
-
-    function keydownCommand(key) {
-        if (key === "ArrowUp") { return { type: "move", direction: { x: 0, y: -1 } } }
-        if (key === "ArrowDown") { return { type: "move", direction: { x: 0, y: 1 } } }
-        if (key === "ArrowLeft") { return { type: "move", direction: { x: -1, y: 0 } } }
-        if (key === "ArrowRight") { return { type: "move", direction: { x: 1, y: 0 } } }
-        if (key === "Escape") { return { type: "escape" } }
-    }
 
     window.addEventListener("resize", () => canvas.adjustCanvasSizeToBrowser(clientGame.board) )
     window.addEventListener("wheel", (event) => {
@@ -168,7 +192,8 @@ function registerEventListener() {
 function animate() {
     window.requestAnimationFrame(() => {
         canvas.ctx.clearRect(0 -50000, 0 -50000, canvas.canvas.width +100000, canvas.canvas.height +100000) // clear canvas
-        canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
+        //canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
+        canvas.renderMapFromOffscreenCanvas()
 
         if (canvas.selectedUnit) { canvas.animateBlinkSelectedUnit() }
         window.requestAnimationFrame(() => {animate()})
@@ -180,3 +205,4 @@ setInterval(() => {
     //io.emit('update-game', game)
     //io.emit('message-from-server-to-client', "tick")
 }, 250)
+

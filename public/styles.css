@@ -1,3 +1,15 @@
+#stage {
+    /*width: 480px;
+    height: 320px;*/
+    top: 0;
+    left: 0;
+    position: absolute;
+    /*border: 2px solid black;*/
+}
+
+canvas {
+    position: absolute;
+}
 #canvas1 {
     position: absolute;
     /*background: black;*/
@@ -5,4 +17,15 @@
     height: 100%;*/
     top: 0;
     left: 0;
+    z-index: 4;
+}
+
+#ui-layer {
+    z-index: 3;
+}
+#game-layer {
+    z-index: 2;
+}
+#background-layer {
+    z-index: 1;
 }

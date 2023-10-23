@@ -1,9 +1,9 @@
 class Canvas {
     constructor({canvasID, board}) {
         this.canvas = document.getElementById(canvasID)
-        this.ctx = this.canvas.getContext("2d")
+        this.ctx = this.canvas.getContext("2d")//, { alpha: false }) // turning off transprency can speed up rendering
         this.tileSize = {}
-        this.orientation = "short diamond"
+        this.orientation = "diamond"
         this.selectedUnit = ""
         this.selectedTile = ""
         this.sounds = {}
@@ -16,19 +16,8 @@ class Canvas {
             //origin: {x: 0, y: 0},  // referenced in client.js but x and y are not changed right now
             scale: 1 // update in scroolZoom
         }
-        //this.#setOffScreenCanvasForTerrain()
-    }
-
-    #setOffScreenCanvasForTerrain() {
-        this.offScreenCanvas = document.getElementById("offScreenCanvas")
-        //this.offscreenCanvas = document.createElement("canvas");
-        this.offScreenCanvas.width = this.canvas.width;
-        this.offScreenCanvas.height = this.canvas.height;
-        this.ctx.drawImage(this.offscreenCanvas, 0, 0);
-        this.offScreenContext = this.offScreenCanvas.getContext("2d")
-
-        const terrainSpritesSheet = this.sprites.terrain1
-
+        this.#setOffScreenCanvas()
+        //canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username})
     }
 
     #adjustCanvasSizeToMatchBrowser() {
@@ -369,4 +358,87 @@ class Canvas {
         //this.ctx.translate(-x*this.tileSize.x+this.canvas.width/2, -y*this.tileSize.y+this.canvas.height/2)
     }
 
+
+
+
+
+
+
+
+
+    /////////////////////////////
+    ////////// TERRAIN //////////
+    /////////////////////////////
+
+    #setOffScreenCanvas() {
+        this.offscreenCanvas = new OffscreenCanvas(this.canvas.width, this.canvas.height);
+        this.offscreenContext = this.offscreenCanvas.getContext('2d');
+        this.offscreenContext.drawImage(this.canvas, 0, 0);
+    }
+
+    #renderTerrainOffScreenCanvas(tile) {       
+        const terrainSpritesSheet = this.sprites.terrain1
+        const terrain = tile.terrain
+
+        this.offscreenContext.save()
+        const tileCenterPixel = this.#findTileCenterPixel(tile)
+        this.offscreenContext.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
+        this.offscreenContext.rotate(-this.#radiansForImageAngleAdjustment())
+        this.offscreenContext.drawImage(
+            terrainSpritesSheet,
+            ...this.#imageLocationAndDimensionsOnSpriteSheet(terrainSpritesSheet, terrain), // x, y, w, h
+            ...this.#imagePositionRelativeToCenterOfTileAndDimensions() // x, y, w, h
+        )
+        this.offscreenContext.restore()
+    }
+
+    #renderUnitOffScreenCanvas(tile, username) {
+        if (tile.unit) {
+            const unit = "legion"
+            const unitSpritesSheet = this.sprites.units
+            this.offscreenContext.save()
+            const tileCenterPixel = this.#findTileCenterPixel(tile)
+            this.offscreenContext.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
+            this.offscreenContext.rotate(-this.#radiansForImageAngleAdjustment())
+            this.offscreenContext.drawImage(
+                unitSpritesSheet,
+                ...this.#imageLocationAndDimensionsOnSpriteSheet(unitSpritesSheet, unit), // x, y, w, h
+                ...this.#imagePositionRelativeToCenterOfTileAndDimensions(), // x, y, w, h
+            )
+            this.offscreenContext.restore()
+        }
+    }
+
+    #renderTileOffScreenCanvas({tile, username}) {
+        this.#renderTerrainOffScreenCanvas(tile)
+        //this.#renderUnitOffScreenCanvas(tile, username)
+        //this.#renderTileOutlineOffScreenCanvas(tile)
+    }
+
+    #renderTileOutlineOffScreenCanvas(tile) {
+        let x = tile.coordinates.x
+        let y = tile.coordinates.y
+        this.offscreenContext.strokeStyle="black"
+        this.offscreenContext.strokeRect(x*this.tileSize.x,y*this.tileSize.y,this.tileSize.x,this.tileSize.y)
+    }
+
+    renderMapOffScreenCanvas({board, username}) {
+        console.log(this.offscreenCanvas)
+        console.log(this.canvas)
+        board.tiles.forEach( (columnOfTiles, i) => {
+            columnOfTiles.forEach( (tile, j) => {
+            this.#renderTileOffScreenCanvas({tile: tile, username: username})
+            })
+        })
+    }
+
+    renderMapFromOffscreenCanvas() {
+        const currentTransformedOrigin = this.getTransformedPoint(0, 0)
+        const currentTransformedBottomRight = this.getTransformedPoint(this.canvas.width, this.canvas.width)
+        this.ctx.drawImage(
+            this.offscreenCanvas,
+            0, 0, this.canvas.width, this.canvas.width,
+            0, 0, this.canvas.width, this.canvas.width
+        );
+    }
 }
