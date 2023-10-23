@@ -3,7 +3,7 @@ class Canvas {
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")//, { alpha: false }) // turning off transprency can speed up rendering
         this.tileSize = {}
-        this.orientation = "diamond"
+        this.orientation = "short diamond"
         this.selectedUnit = ""
         this.selectedTile = ""
         this.sounds = {}
@@ -20,10 +20,56 @@ class Canvas {
         //canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username})
     }
 
-    #adjustCanvasSizeToMatchBrowser() {
-        const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution), test this later
+    #adjustCanvasSizeToMatchBrowserOld() {
+        const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution) test this later
         this.canvas.width = window.innerWidth //* devicePixelRatio
         this.canvas.height = window.innerHeight //* devicePixelRatio
+    }
+
+
+    #adjustCanvasSizeToMatchBrowser() {  // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
+        
+        this.canvas.width = window.innerWidth // * devicePixelRatio
+        this.canvas.height = window.innerHeight // * devicePixelRatio
+
+        const devicePixelRatio = window.devicePixelRatio
+        if (devicePixelRatio > 1) {
+
+            this.canvas.width = window.innerWidth // * devicePixelRatio
+            this.canvas.height = window.innerHeight // * devicePixelRatio
+
+            // 2. Force it to display at the original (logical) size with CSS or style attributes
+            this.canvas.style.width = window.innerWidth + 'px'
+            this.canvas.style.height = window.innerHeight + 'px'
+
+            // 3. Scale the context so you can draw on it without considering the ratio.
+            this.ctx.scale(devicePixelRatio, devicePixelRatio)
+
+            // update scale parameter for
+            this.view.scale = Math.pow(this.view.scale, devicePixelRatio)
+        }
+
+        //this.ctx.scale(devicePixelRatio, devicePixelRatio)
+
+        // Get the DPR and size of the canvas
+        //const dpr = window.devicePixelRatio;
+        //const rect = this.canvas.getBoundingClientRect();
+
+        // Set the "actual" size of the canvas
+        //this.canvas.width = rect.width * dpr;
+        //this.canvas.height = rect.height * dpr;
+
+        // Scale the context to ensure correct drawing operations
+        //this.ctx.scale(dpr, dpr);
+
+
+        // 2. Force it to display at the original (logical) size with CSS or style attributes
+        //this.canvas.style.width = window.innerWidth + 'px'
+        //this.canvas.style.height = window.innerHeight + 'px'
+
+        // 3. Scale the context so you can draw on it without considering the ratio.
+        //this.ctx.scale(devicePixelRatio, devicePixelRatio)
+        //this.view.scale = Math.pow(this.view.scale, devicePixelRatio)
     }
 
     adjustCanvasSizeToBrowser(board) {
