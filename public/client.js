@@ -3,8 +3,8 @@ let clientGame = ""
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
-const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
-//const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
+//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
+const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
 socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame
