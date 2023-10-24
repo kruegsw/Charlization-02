@@ -17,7 +17,7 @@ class Canvas {
             //origin: {x: 0, y: 0},  // referenced in client.js but x and y are not changed right now
             scale: 1 // update in scroolZoom
         }
-        this.#setOffScreenCanvas()
+        //this.#setOffScreenCanvas()
         //canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username})
     }
 

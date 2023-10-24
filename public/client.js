@@ -23,7 +23,7 @@ socket.on('init-client-game', serverGame => {
     //    canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username}) // redraw offscreenCanvas
     //})   
 
-
+    /*
     let counter = 0  // this is necessary for the diamond patterns only, not sure why
     function initializeOffScreenCanvas() {
         window.requestAnimationFrame(() => {
@@ -34,6 +34,7 @@ socket.on('init-client-game', serverGame => {
         })   
     }
     initializeOffScreenCanvas()
+    */
     
 
     //window.requestAnimationFrame(() => {
@@ -192,8 +193,8 @@ function registerEventListener() {
 function animate() {
     window.requestAnimationFrame(() => {
         canvas.ctx.clearRect(0 -50000, 0 -50000, canvas.canvas.width +100000, canvas.canvas.height +100000) // clear canvas
-        //canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
-        canvas.renderMapFromOffscreenCanvas()
+        canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
+        //canvas.renderMapFromOffscreenCanvas()
 
         if (canvas.selectedUnit) { canvas.animateBlinkSelectedUnit() }
         window.requestAnimationFrame(() => {animate()})
