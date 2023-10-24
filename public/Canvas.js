@@ -1,7 +1,7 @@
 class Canvas {
     constructor({canvasID, board}) {
         this.canvas = document.getElementById(canvasID)
-        this.ctx = this.canvas.getContext("2d", { /*desynchronized: true, alpha: false*/ }) // turning off transprency can speed up rendering
+        this.ctx = this.canvas.getContext("2d")//, { alpha: false }) // turning off transprency can speed up rendering
         this.ctx.imageSmoothingEnabled = false;
         this.tileSize = {}
         this.orientation = "short diamond"
@@ -9,6 +9,7 @@ class Canvas {
         this.selectedTile = ""
         this.sounds = {}
         this.sprites = {}
+        this.adjustCanvasSizeToBrowser(board)
         this.initializeSounds()
         this.initializeSprites()
         this.initializeTerrain()
@@ -16,7 +17,6 @@ class Canvas {
             //origin: {x: 0, y: 0},  // referenced in client.js but x and y are not changed right now
             scale: 1 // update in scroolZoom
         }
-        this.adjustCanvasSizeToBrowser(board)
         this.#setOffScreenCanvas()
         //canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username})
     }
@@ -318,7 +318,7 @@ class Canvas {
     #renderTile({tile, username}) {
         this.#renderTerrain(tile)
         this.#renderUnit(tile, username)
-        //this.#renderTileOutline(tile)
+        this.#renderTileOutline(tile)
     }
 
     #renderTileOutline(tile) {
@@ -418,13 +418,9 @@ class Canvas {
     /////////////////////////////
 
     #setOffScreenCanvas() {
-        //this.offscreenCanvas = new OffscreenCanvas(this.canvas.width, this.canvas.height);
-        this.offscreenCanvas = document.createElement("canvas")
-        this.offscreenCanvas.width = this.canvas.width
-        this.offscreenCanvas.height = this.canvas.height
-        this.offscreenContext = this.offscreenCanvas.getContext('2d')
-        //this.offscreenCanvas.imageSmoothingQuality = "high"
-        this.offscreenContext.imageSmoothingEnabled = false  // note this did not help make the image not blurry
+        this.offscreenCanvas = new OffscreenCanvas(window.innerWidth, window.innerHeight);
+        this.offscreenContext = this.offscreenCanvas.getContext('2d');
+        this.offscreenContext.imageSmoothingEnabled = false;  // note this did not help make the image not
         this.offscreenContext.drawImage(this.canvas, 0, 0)
     }
 
@@ -485,8 +481,12 @@ class Canvas {
     }
 
     renderMapFromOffscreenCanvas() {
-        //const currentTransformedOrigin = this.getTransformedPoint(0, 0)
-        //const currentTransformedBottomRight = this.getTransformedPoint(this.canvas.width, this.canvas.width)
-        this.ctx.drawImage(this.offscreenCanvas, 0, 0)
+        const currentTransformedOrigin = this.getTransformedPoint(0, 0)
+        const currentTransformedBottomRight = this.getTransformedPoint(this.canvas.width, this.canvas.width)
+        this.ctx.drawImage(
+            this.offscreenCanvas,
+            0, 0, this.canvas.width, this.canvas.height,
+            0, 0, this.canvas.width, this.canvas.height
+        );
     }
 }

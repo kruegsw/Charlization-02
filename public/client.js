@@ -194,7 +194,6 @@ function animate() {
         canvas.ctx.clearRect(0 -50000, 0 -50000, canvas.canvas.width +100000, canvas.canvas.height +100000) // clear canvas
         //canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
         canvas.renderMapFromOffscreenCanvas()
-        //canvas.ctx.drawImage(canvas.offscreenCanvas, 0, 0)
 
         if (canvas.selectedUnit) { canvas.animateBlinkSelectedUnit() }
         window.requestAnimationFrame(() => {animate()})

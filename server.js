@@ -16,7 +16,7 @@ const io = require("socket.io")(httpServer, options);
 const Board = require('./Board')
 const Player = require('./Player')
 const Game = require('./Game')
-const game = new Game({players: {}, board: new Board({x: 50, y: 50})})
+const game = new Game({players: {}, board: new Board({x: 10, y: 10})})
 console.log(game.players)
 
 io.on("connection", socket => {
