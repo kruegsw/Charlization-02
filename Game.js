@@ -4,6 +4,7 @@ class Game {
     constructor({players, board}) {
         this.players = players
         this.board = board
+        this.worldMap = true
     }
 
     moveUnitInDirection({unit, direction}) {

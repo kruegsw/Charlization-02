@@ -1,8 +1,9 @@
 class Canvas {
     constructor({canvasID, board}) {
         this.canvas = document.getElementById(canvasID)
-        this.ctx = this.canvas.getContext("2d")//, { alpha: false }) // turning off transprency can speed up rendering
+        this.ctx = this.canvas.getContext("2d")//, { alpha: false }) // turning off transprency of canvas and makes background black
         this.ctx.imageSmoothingEnabled = false;
+        this.boardSize = {x: board.size.x, y: board.size.y}
         this.tileSize = {}
         this.orientation = "short diamond"
         this.selectedUnit = ""
@@ -268,6 +269,26 @@ class Canvas {
         })
     }
 
+    isInvalidMove(destinationTile) {
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            return (
+                this.#croppedTileforDiamondView({x: destinationTile.x, y: destinationTile.y}) ||
+                this.#isInTheNorthPoleOfDiamondView({x: destinationTile.x, y: destinationTile.y}) ||
+                this.#isInTheSouthPoleOfDiamondView({x: destinationTile.x, y: destinationTile.y})
+            )
+        } else {
+            return true
+        }
+    }
+
+    #isInTheNorthPoleOfDiamondView({x, y}) {
+        return y < ( this.boardSize.y - this.boardSize.x - x - 1 )
+    }
+
+    #isInTheSouthPoleOfDiamondView({x, y}) {
+        return y > ( this.boardSize.y - x - 1 )
+    }
+
     selectTile(tile) { this.selectedTile = tile }
 
     deselectUnit() { this.selectedUnit = "" }
@@ -278,23 +299,53 @@ class Canvas {
         if ( (Math.floor(Date.now() / 400)) % 3 === 0 ) { this.#renderTerrain(this.selectedTile) } else { this.#renderUnit(this.selectedTile) }
     }
 
-    #renderTerrain(tile) {       
+    #renderTerrain(tile) {
+
+        if (
+            ( this.orientation === "diamond" || this.orientation === "short diamond" ) &&
+            this.#croppedTileforDiamondView({x: tile.coordinates.x, y: tile.coordinates.y})
+        ) { return } 
+
         const terrainSpritesSheet = this.sprites.terrain1
         const terrain = tile.terrain
-
         this.ctx.save()
-        const tileCenterPixel = this.#findTileCenterPixel(tile)
-        this.ctx.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
-        this.ctx.rotate(-this.#radiansForImageAngleAdjustment())
-        this.ctx.drawImage(
-            terrainSpritesSheet,
-            ...this.#imageLocationAndDimensionsOnSpriteSheet(terrainSpritesSheet, terrain), // x, y, w, h
-            ...this.#imagePositionRelativeToCenterOfTileAndDimensions() // x, y, w, h
-        )
+        this.#positionCanvasToTileCenterPixelAndRotateForImage(tile)
+        this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
         this.ctx.restore()
+
+        if (( this.orientation === "diamond" || this.orientation === "short diamond" )) {
+            if (this.#rightEdge(tile)) {
+                this.ctx.save()
+                this.#positionCanvasToTileRightReflectionPixelAndRotateForImage(tile)
+                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
+                this.ctx.restore()
+            }
+            if (this.#leftEdge(tile)) {
+                this.ctx.save()
+                this.#positionCanvasToTileLeftReflectionPixelAndRotateForImage(tile)
+                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
+                this.ctx.restore()
+            }
+        } 
     }
 
     #renderFlateTerrain(tile) {
+
+    }
+
+    #croppedTileforDiamondView({x, y}) {
+        return this.#croppedTileFromTopOfDiamondView({x, y}) || this.#croppedTileFromBottomOfDiamondView({x, y})
+    }
+
+    #croppedTileFromTopOfDiamondView({x, y}) {
+        return y < ( this.boardSize.x - x - 1 )
+    }
+
+    #croppedTileFromBottomOfDiamondView({x, y}) {
+        return y > ( this.boardSize.y - x - 1 )
+    }
+
+    #pastedTileforDiamondView() {
 
     }
 
@@ -303,16 +354,71 @@ class Canvas {
             const unit = "legion"
             const unitSpritesSheet = this.sprites.units
             this.ctx.save()
-            const tileCenterPixel = this.#findTileCenterPixel(tile)
-            this.ctx.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
-            this.ctx.rotate(-this.#radiansForImageAngleAdjustment())
-            this.ctx.drawImage(
-                unitSpritesSheet,
-                ...this.#imageLocationAndDimensionsOnSpriteSheet(unitSpritesSheet, unit), // x, y, w, h
-                ...this.#imagePositionRelativeToCenterOfTileAndDimensions(), // x, y, w, h
-            )
+            this.#positionCanvasToTileCenterPixelAndRotateForImage(tile)
+            this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
             this.ctx.restore()
+
+
+        if (( this.orientation === "diamond" || this.orientation === "short diamond" )) {
+            if (this.#rightEdge(tile)) {
+                this.ctx.save()
+                this.#positionCanvasToTileRightReflectionPixelAndRotateForImage(tile)
+                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
+                this.ctx.restore()
+            }
+            if (this.#leftEdge(tile)) {
+                this.ctx.save()
+                this.#positionCanvasToTileLeftReflectionPixelAndRotateForImage(tile)
+                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
+                this.ctx.restore()
+            }
+        } 
+            
+           /*
+            this.ctx.save()
+            this.#positionCanvasToTileReflectionPixelAndRotateForImage(tile)
+            this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
+            this.ctx.restore()
+            */
         }
+    }
+
+    #positionCanvasToTileCenterPixelAndRotateForImage(tile) {
+        const tileCenterPixel = this.#findTileCenterPixel(tile)
+        this.ctx.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
+        this.ctx.rotate(-this.#radiansForImageAngleAdjustment())
+    }
+
+    #positionCanvasToTileRightReflectionPixelAndRotateForImage(tile) {
+        const tileCenterPixel = this.#findTileCenterPixel(tile)
+        this.ctx.translate(tileCenterPixel.x+this.tileSize.x*(this.boardSize.x), tileCenterPixel.y-this.tileSize.x*(this.boardSize.x))
+        this.ctx.rotate(-this.#radiansForImageAngleAdjustment())
+    }
+
+    #positionCanvasToTileLeftReflectionPixelAndRotateForImage(tile) {
+        const tileCenterPixel = this.#findTileCenterPixel(tile)
+        this.ctx.translate(tileCenterPixel.x-this.tileSize.x*(this.boardSize.x), tileCenterPixel.y+this.tileSize.x*(this.boardSize.x))
+        this.ctx.rotate(-this.#radiansForImageAngleAdjustment())
+    }
+
+    #rightEdge(tile) {
+        const x = tile.coordinates.x
+        const y = tile.coordinates.y
+        return ( x < y - this.boardSize.x )   //x < this.boardSize.x + y  //  Math.floor(this.boardSize.x / 2) + 1
+    }
+
+    #leftEdge(tile) {
+        const x = tile.coordinates.x
+        const y = tile.coordinates.y
+        return ( x > y - this.boardSize.x - 1)   //x < this.boardSize.x + y  //  Math.floor(this.boardSize.x / 2) + 1
+    }
+
+    #drawSpriteCenteredOnCanvasOrigin({spriteSheet, sprite}) {
+        this.ctx.drawImage(
+            spriteSheet,
+            ...this.#imageLocationAndDimensionsOnSpriteSheet(spriteSheet, sprite), // x, y, w, h
+            ...this.#imagePositionRelativeToCenterOfTileAndDimensions(), // x, y, w, h
+        )
     }
 
     #renderTile({tile, username}) {
@@ -338,6 +444,14 @@ class Canvas {
 
     #findTileCenterPixel(tile) {
         //this.ctx.fillRect(0, 0, 5, 5) // draw dot at center of tile for troubleshooting
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            const radians = this.#radiansForImageAngleAdjustment()
+            return {
+                x: 0 + (tile.coordinates.x+0.5)*this.tileSize.x,
+                y: 0 + (tile.coordinates.y+0.5)*this.tileSize.y
+                //y: 0 + (tile.coordinates.y+0.5-tile.coordinates.x)*this.tileSize.y // align cells into latitudes
+            }
+        }
         return {
             x: 0 + (tile.coordinates.x+0.5)*this.tileSize.x,
             y: 0 + (tile.coordinates.y+0.5)*this.tileSize.y
@@ -403,90 +517,5 @@ class Canvas {
         //this.ctx.translate(this.canvas.width/2-x*this.tileSize.x, this.canvas.height/2-y*this.tileSize.y);
         //this.ctx.translate(+ window.innerWidth/2, + window.innerHeight/2) 
         //this.ctx.translate(-x*this.tileSize.x+this.canvas.width/2, -y*this.tileSize.y+this.canvas.height/2)
-    }
-
-
-
-
-
-
-
-
-
-    /////////////////////////////
-    ////////// TERRAIN //////////
-    /////////////////////////////
-
-    #setOffScreenCanvas() {
-        this.offscreenCanvas = new OffscreenCanvas(window.innerWidth, window.innerHeight);
-        this.offscreenContext = this.offscreenCanvas.getContext('2d');
-        this.offscreenContext.imageSmoothingEnabled = false;  // note this did not help make the image not
-        this.offscreenContext.drawImage(this.canvas, 0, 0)
-    }
-
-    #renderTerrainOffScreenCanvas(tile) {       
-        const terrainSpritesSheet = this.sprites.terrain1
-        const terrain = tile.terrain
-
-        this.offscreenContext.save()
-        const tileCenterPixel = this.#findTileCenterPixel(tile)
-        this.offscreenContext.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
-        this.offscreenContext.rotate(-this.#radiansForImageAngleAdjustment())
-        this.offscreenContext.drawImage(
-            terrainSpritesSheet,
-            ...this.#imageLocationAndDimensionsOnSpriteSheet(terrainSpritesSheet, terrain), // x, y, w, h
-            ...this.#imagePositionRelativeToCenterOfTileAndDimensions() // x, y, w, h
-        )
-        this.offscreenContext.restore()
-    }
-
-    #renderUnitOffScreenCanvas(tile, username) {
-        if (tile.unit) {
-            const unit = "legion"
-            const unitSpritesSheet = this.sprites.units
-            this.offscreenContext.save()
-            const tileCenterPixel = this.#findTileCenterPixel(tile)
-            this.offscreenContext.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
-            this.offscreenContext.rotate(-this.#radiansForImageAngleAdjustment())
-            this.offscreenContext.drawImage(
-                unitSpritesSheet,
-                ...this.#imageLocationAndDimensionsOnSpriteSheet(unitSpritesSheet, unit), // x, y, w, h
-                ...this.#imagePositionRelativeToCenterOfTileAndDimensions(), // x, y, w, h
-            )
-            this.offscreenContext.restore()
-        }
-    }
-
-    #renderTileOffScreenCanvas({tile, username}) {
-        this.#renderTerrainOffScreenCanvas(tile)
-        //this.#renderUnitOffScreenCanvas(tile, username)
-        this.#renderTileOutlineOffScreenCanvas(tile)
-    }
-
-    #renderTileOutlineOffScreenCanvas(tile) {
-        let x = tile.coordinates.x
-        let y = tile.coordinates.y
-        this.offscreenContext.strokeStyle="black"
-        this.offscreenContext.strokeRect(x*this.tileSize.x,y*this.tileSize.y,this.tileSize.x,this.tileSize.y)
-    }
-
-    renderMapOffScreenCanvas({board, username}) {
-        console.log(this.offscreenCanvas)
-        console.log(this.canvas)
-        board.tiles.forEach( (columnOfTiles, i) => {
-            columnOfTiles.forEach( (tile, j) => {
-            this.#renderTileOffScreenCanvas({tile: tile, username: username})
-            })
-        })
-    }
-
-    renderMapFromOffscreenCanvas() {
-        const currentTransformedOrigin = this.getTransformedPoint(0, 0)
-        const currentTransformedBottomRight = this.getTransformedPoint(this.canvas.width, this.canvas.width)
-        this.ctx.drawImage(
-            this.offscreenCanvas,
-            0, 0, this.canvas.width, this.canvas.height,
-            0, 0, this.canvas.width, this.canvas.height
-        );
     }
 }

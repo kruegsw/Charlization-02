@@ -145,4 +145,162 @@ class TerrainOffScreenCanvas {
             0, 0, this.canvas.width, this.canvas.width
         );
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///// above = code which was never implemented to create offscreencanvas object
+///// below is the coe which was in Canvas.js which did work kind of with poor resolution and annoying workarounds
+
+
+
+
+
+
+
+
+
+    /////////////////////////////
+    ////////// TERRAIN //////////
+    /////////////////////////////
+
+    #setOffScreenCanvas() {
+        this.offscreenCanvas = new OffscreenCanvas(window.innerWidth, window.innerHeight);
+        this.offscreenContext = this.offscreenCanvas.getContext('2d');
+        this.offscreenContext.imageSmoothingEnabled = false;  // note this did not help make the image not
+        this.offscreenContext.drawImage(this.canvas, 0, 0)
+    }
+
+    #renderTerrainOffScreenCanvas(tile) {       
+        const terrainSpritesSheet = this.sprites.terrain1
+        const terrain = tile.terrain
+
+        this.offscreenContext.save()
+        const tileCenterPixel = this.#findTileCenterPixel(tile)
+        this.offscreenContext.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
+        this.offscreenContext.rotate(-this.#radiansForImageAngleAdjustment())
+        this.offscreenContext.drawImage(
+            terrainSpritesSheet,
+            ...this.#imageLocationAndDimensionsOnSpriteSheet(terrainSpritesSheet, terrain), // x, y, w, h
+            ...this.#imagePositionRelativeToCenterOfTileAndDimensions() // x, y, w, h
+        )
+        this.offscreenContext.restore()
+    }
+
+    #renderUnitOffScreenCanvas(tile, username) {
+        if (tile.unit) {
+            const unit = "legion"
+            const unitSpritesSheet = this.sprites.units
+            this.offscreenContext.save()
+            const tileCenterPixel = this.#findTileCenterPixel(tile)
+            this.offscreenContext.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
+            this.offscreenContext.rotate(-this.#radiansForImageAngleAdjustment())
+            this.offscreenContext.drawImage(
+                unitSpritesSheet,
+                ...this.#imageLocationAndDimensionsOnSpriteSheet(unitSpritesSheet, unit), // x, y, w, h
+                ...this.#imagePositionRelativeToCenterOfTileAndDimensions(), // x, y, w, h
+            )
+            this.offscreenContext.restore()
+        }
+    }
+
+    #renderTileOffScreenCanvas({tile, username}) {
+        this.#renderTerrainOffScreenCanvas(tile)
+        //this.#renderUnitOffScreenCanvas(tile, username)
+        this.#renderTileOutlineOffScreenCanvas(tile)
+    }
+
+    #renderTileOutlineOffScreenCanvas(tile) {
+        let x = tile.coordinates.x
+        let y = tile.coordinates.y
+        this.offscreenContext.strokeStyle="black"
+        this.offscreenContext.strokeRect(x*this.tileSize.x,y*this.tileSize.y,this.tileSize.x,this.tileSize.y)
+    }
+
+    renderMapOffScreenCanvas({board, username}) {
+        console.log(this.offscreenCanvas)
+        console.log(this.canvas)
+        board.tiles.forEach( (columnOfTiles, i) => {
+            columnOfTiles.forEach( (tile, j) => {
+            this.#renderTileOffScreenCanvas({tile: tile, username: username})
+            })
+        })
+    }
+
+    renderMapFromOffscreenCanvas() {
+        const currentTransformedOrigin = this.getTransformedPoint(0, 0)
+        const currentTransformedBottomRight = this.getTransformedPoint(this.canvas.width, this.canvas.width)
+        this.ctx.drawImage(
+            this.offscreenCanvas,
+            0, 0, this.canvas.width, this.canvas.height,
+            0, 0, this.canvas.width, this.canvas.height
+        );
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// and this code was in client.js within the init-client-game action
+
+
+    /*
+    window.requestAnimationFrame(() => {
+        canvas.ctx.clearRect(0 -50000, 0 -50000, canvas.canvas.width +100000, canvas.canvas.height +100000) // clear canvas
+        canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
+        window.requestAnimationFrame(() => {animate()})
+    })
+    */
+
+    //window.requestAnimationFrame(() => {
+    //    canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username}) // redraw offscreenCanvas
+    //})   
+
+    /*
+    let counter = 0  // this is necessary for the diamond patterns only, not sure why
+    function initializeOffScreenCanvas() {
+        window.requestAnimationFrame(() => {
+            canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username}) // redraw offscreenCanvas
+            counter++
+            if (counter > 2) {return}
+            initializeOffScreenCanvas()
+        })   
+    }
+    initializeOffScreenCanvas()
+    */
+    
+
+    //window.requestAnimationFrame(() => {
+    //    canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username}) // redraw offscreenCanvas
+    //})
