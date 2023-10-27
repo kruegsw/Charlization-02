@@ -277,7 +277,7 @@ class Canvas {
                 this.#isInTheSouthPoleOfDiamondView({x: destinationTile.x, y: destinationTile.y})
             )
         } else {
-            return true
+            return false
         }
     }
 
@@ -329,10 +329,6 @@ class Canvas {
         } 
     }
 
-    #renderFlateTerrain(tile) {
-
-    }
-
     #croppedTileforDiamondView({x, y}) {
         return this.#croppedTileFromTopOfDiamondView({x, y}) || this.#croppedTileFromBottomOfDiamondView({x, y})
     }
@@ -343,10 +339,6 @@ class Canvas {
 
     #croppedTileFromBottomOfDiamondView({x, y}) {
         return y > ( this.boardSize.y - x - 1 )
-    }
-
-    #pastedTileforDiamondView() {
-
     }
 
     #renderUnit(tile, username) {
@@ -499,23 +491,23 @@ class Canvas {
         return Math.PI*angle/180
     }
 
-    setFocusOnTile() {
-        this.selectedTile
+    centerScreenOnTile(tile) {
+        const currentTransformedCenterScreenPixel = this.getTransformedPoint(window.innerWidth/2, window.innerHeight/2);
+        this.ctx.translate(
+            currentTransformedCenterScreenPixel.x - tile.coordinates.x * this.tileSize.x,
+            currentTransformedCenterScreenPixel.y - tile.coordinates.y * this.tileSize.y
+        )
     }
 
-    centerScreenOnTileCoordinates({x, y}) { // does not work
-        //const centerOfScreenTransformedCursor = this.getTransformedPoint(this.canvas.offsetLeft, this.canvas.offsetTop)
-        const currentTransformedTileCoordinates = this.getTransformedPoint(x*this.tileSize.x, y*this.tileSize.y)
-        const currentTransformedOrigin = this.getTransformedPoint(0, 0)
-        const currentTransformedCanvasBottomRightLeft = this.getTransformedPoint(this.canvas.width, this.canvas.height)
-        console.log(Math.floor(currentTransformedTileCoordinates.x / this.tileSize.x), Math.floor(currentTransformedTileCoordinates.y / this.tileSize.y))
-        console.log(currentTransformedOrigin)
-        console.log({x, y})
-        console.log(currentTransformedCanvasBottomRightLeft)
-        //this.ctx.translate(currentTransformedTileCoordinates.x, currentTransformedTileCoordinates.y);
-        //if (this.canvas.width/2-x*this.tileSize.x > )
-        //this.ctx.translate(this.canvas.width/2-x*this.tileSize.x, this.canvas.height/2-y*this.tileSize.y);
-        //this.ctx.translate(+ window.innerWidth/2, + window.innerHeight/2) 
-        //this.ctx.translate(-x*this.tileSize.x+this.canvas.width/2, -y*this.tileSize.y+this.canvas.height/2)
+    tileIsVisibleOnScreen(tile) {
+        const currentTransformedTopLeft = this.getTransformedPoint(0, 0)
+        const currentTransformedTopRight = this.getTransformedPoint(window.innerWidth, 0)
+        const currentTransformedBottomLeft = this.getTransformedPoint(0, window.innerHeight)
+        return (
+            tile.coordinates.x > this.boardSize.y - currentTransformedTopLeft.y &&
+            tile.coordinates.y < this.boardSize.y - currentTransformedTopLeft.x &&
+            tile.coordinates.x < this.boardSize.y - currentTransformedTopRight.y &&
+            tile.coordinates.y > this.boardSize.y - currentTransformedBottomLeft.x
+        )
     }
 }

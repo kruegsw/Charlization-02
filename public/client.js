@@ -78,7 +78,7 @@ function registerEventListener() {
         if (event.code === "Tab") {
             event.preventDefault() // prevent screen scrolling when moving selected unit, and tabbing
             canvas.selectNextUnit({board: clientGame.board, username: socket.id})
-            canvas.centerScreenOnTileCoordinates(canvas.selectedUnit.coordinates)
+            if ( !(canvas.tileIsVisibleOnScreen(canvas.selectedTile)) ) { canvas.centerScreenOnTile(canvas.selectedTile) }
             console.log(canvas.selectedUnit)
             return
         }
