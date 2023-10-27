@@ -35,20 +35,50 @@ function registerEventListener() {
             let unit = canvas.selectedUnit
             if (event.code === "ArrowUp") {
                 if (canvas.orientation === "diamond" || canvas.orientation === "short diamond") {
+                    if (canvas.onTopEdgeOfDiamondMap({x: unit.coordinates.x, y: unit.coordinates.y})) {return}
+                    if (canvas.onLeftEdgeOfSquareMap({x: unit.coordinates.x})) {
+                        let targetTile = clientGame.board.tiles[unit.coordinates.x+(clientGame.board.size.x-1)][unit.coordinates.y-(clientGame.board.size.x+1)]
+                        socket.emit('moveUnitToTile', {unit: unit, tile: targetTile})
+                        canvas.selectTile(targetTile)
+                        canvas.deselectUnit()
+                        return
+                    }
                     direction = {x: -1, y: -1} } else { direction = {x: 0, y: -1} }
                 moveUnitIfValidMove(unit, direction)
             }
             if (event.code === "ArrowDown") {
                 if (canvas.orientation === "diamond" || canvas.orientation === "short diamond") {
+                    if (canvas.onBottomEdgeOfDiamondMap({x: unit.coordinates.x, y: unit.coordinates.y})) {return}
+                    if (canvas.onRightEdgeOfSquareMap({x: unit.coordinates.x})) {
+                        let targetTile = clientGame.board.tiles[unit.coordinates.x-(clientGame.board.size.x-1)][unit.coordinates.y+(clientGame.board.size.x+1)]
+                        socket.emit('moveUnitToTile', {unit: unit, tile: targetTile})
+                        canvas.selectTile(targetTile)
+                        canvas.deselectUnit()
+                        return
+                    }
                     direction = {x: 1, y: 1} } else { direction = {x: 0, y: 1} }
                 moveUnitIfValidMove(unit, direction)
             }
             if (event.code === "ArrowLeft") {
+                if (canvas.onLeftEdgeOfSquareMap({x: unit.coordinates.x})) {
+                    let targetTile = clientGame.board.tiles[unit.coordinates.x+(clientGame.board.size.x-1)][unit.coordinates.y-(clientGame.board.size.x-1)]
+                    socket.emit('moveUnitToTile', {unit: unit, tile: targetTile})
+                    canvas.selectTile(targetTile)
+                    canvas.deselectUnit()
+                    return
+                }
                 if (canvas.orientation === "diamond" || canvas.orientation === "short diamond") {
                     direction = {x: -1, y: 1} } else { direction = {x: -1, y: 0} }
                 moveUnitIfValidMove(unit, direction)
             }
             if (event.code === "ArrowRight") {
+                if (canvas.onRightEdgeOfSquareMap({x: unit.coordinates.x})) {
+                    let targetTile = clientGame.board.tiles[unit.coordinates.x-(clientGame.board.size.x-1)][unit.coordinates.y+(clientGame.board.size.x-1)]
+                    socket.emit('moveUnitToTile', {unit: unit, tile: targetTile})
+                    canvas.selectTile(targetTile)
+                    canvas.deselectUnit()
+                    return
+                }
                 if (canvas.orientation === "diamond" || canvas.orientation === "short diamond") {
                     direction = {x: 1, y: -1} } else { direction = {x: 1, y: 0} }
                 moveUnitIfValidMove(unit, direction)
@@ -67,7 +97,10 @@ function registerEventListener() {
                 canvas.deselectUnit()
                 return
             }
-            if (event.code === "Tab") { return }
+            if (event.code === "Tab") {
+                event.preventDefault()
+                return
+            }
         } else {
             if (event.code === "ArrowUp") { canvas.scrollUp(); return }
             if (event.code === "ArrowDown") { canvas.scrollDown(); return }

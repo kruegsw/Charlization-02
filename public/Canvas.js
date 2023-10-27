@@ -1,7 +1,7 @@
 class Canvas {
     constructor({canvasID, board}) {
         this.canvas = document.getElementById(canvasID)
-        this.ctx = this.canvas.getContext("2d")//, { alpha: false }) // turning off transprency of canvas and makes background black
+        this.ctx = this.canvas.getContext("2d", { alpha: false }) // turning off transprency of canvas and makes background black
         this.ctx.imageSmoothingEnabled = false;
         this.boardSize = {x: board.size.x, y: board.size.y}
         this.tileSize = {}
@@ -314,13 +314,13 @@ class Canvas {
         this.ctx.restore()
 
         if (( this.orientation === "diamond" || this.orientation === "short diamond" )) {
-            if (this.#rightEdge(tile)) {
+            if (this.#rightEdgeOfDiamondMap(tile)) {
                 this.ctx.save()
                 this.#positionCanvasToTileRightReflectionPixelAndRotateForImage(tile)
                 this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
                 this.ctx.restore()
             }
-            if (this.#leftEdge(tile)) {
+            if (this.#leftEdgeOfDiamondMap(tile)) {
                 this.ctx.save()
                 this.#positionCanvasToTileLeftReflectionPixelAndRotateForImage(tile)
                 this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
@@ -352,13 +352,13 @@ class Canvas {
 
 
         if (( this.orientation === "diamond" || this.orientation === "short diamond" )) {
-            if (this.#rightEdge(tile)) {
+            if (this.#rightEdgeOfDiamondMap(tile)) {
                 this.ctx.save()
                 this.#positionCanvasToTileRightReflectionPixelAndRotateForImage(tile)
                 this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
                 this.ctx.restore()
             }
-            if (this.#leftEdge(tile)) {
+            if (this.#leftEdgeOfDiamondMap(tile)) {
                 this.ctx.save()
                 this.#positionCanvasToTileLeftReflectionPixelAndRotateForImage(tile)
                 this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
@@ -393,13 +393,13 @@ class Canvas {
         this.ctx.rotate(-this.#radiansForImageAngleAdjustment())
     }
 
-    #rightEdge(tile) {
+    #rightEdgeOfDiamondMap(tile) {
         const x = tile.coordinates.x
         const y = tile.coordinates.y
         return ( x < y - this.boardSize.x )   //x < this.boardSize.x + y  //  Math.floor(this.boardSize.x / 2) + 1
     }
 
-    #leftEdge(tile) {
+    #leftEdgeOfDiamondMap(tile) {
         const x = tile.coordinates.x
         const y = tile.coordinates.y
         return ( x > y - this.boardSize.x - 1)   //x < this.boardSize.x + y  //  Math.floor(this.boardSize.x / 2) + 1
@@ -508,6 +508,31 @@ class Canvas {
             tile.coordinates.y < this.boardSize.y - currentTransformedTopLeft.x &&
             tile.coordinates.x < this.boardSize.y - currentTransformedTopRight.y &&
             tile.coordinates.y > this.boardSize.y - currentTransformedBottomLeft.x
+        )
+    }
+
+    onLeftEdgeOfSquareMap({x, y}) { // same for diamond, but smaller when cropped
+        return x === 0
+    }
+
+    onRightEdgeOfSquareMap({x, y}) { // same for diamond, but smaller when cropped
+        return x === this.boardSize.x - 1
+    }
+
+    onTopEdgeOfDiamondMap({x, y}) {
+        return x === y - this.boardSize.x - 1
+    }
+
+    onBottomEdgeOfDiamondMap({x, y}) {
+        return x === y + this.boardSize.x - 1
+    }
+
+    validLocationOnDiamondMap({x, y}) {
+        (
+            x <= this.onLeftEdgeOfSquareMap({x, y}) &&
+            x >= this.onRightEdgeOfSquareMap({x, y}) &&
+            x > this.onTopEdgeOfDiamondMap({x, y}) &&
+            x < this.onBottomEdgeOfDiamondMap({x, y})
         )
     }
 }
