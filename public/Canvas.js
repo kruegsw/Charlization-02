@@ -5,7 +5,7 @@ class Canvas {
         this.ctx.imageSmoothingEnabled = false;
         this.boardSize = {x: board.size.x, y: board.size.y}
         this.tileSize = {}
-        this.orientation = "short diamond"
+        this.orientation = "short diamond"  // short diamond, diamond, or [nothing = standard]
         this.selectedUnit = ""
         this.selectedTile = ""
         this.sounds = {}
@@ -21,6 +21,15 @@ class Canvas {
         //this.#setOffScreenCanvas()
         //canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username})
     }
+
+
+
+    // █████    █████   █   █   ███   ███    █████        █    ████    ████    ███    █   █    ████   █████   ████
+    // █    █   █       █   █    █   █   █   █           █     █   █   █   █  █   █   █   █   █       █       █   █
+    // █    █   █████    █ █     █   █       █████      █      ████    █████  █   █   █ █ █    ███    █████   █████
+    // █    █   █        █ █     █   █   █   █         █       █   █   █  █   █   █   █ █ █       █   █       █  █
+    // █████    █████     █     ███   ███    █████    █        ████    █   █   ███     ███    ████    █████   █   █
+
 
     #adjustCanvasSizeToMatchBrowserOld() {
         const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution) test this later
@@ -100,6 +109,326 @@ class Canvas {
         if (this.orientation === "short diamond") { this.ctx.transform(1, 0.5, -1, 0.5, 0, 0) }
     }
 
+
+    // █████    █████   ██    █   ████    █████   █████    ███   ██    █    █████
+    // █    █   █       █ █   █   █   █   █       █    █    █    █ █   █   █    
+    // ██████   █████   █  █  █   █   █   █████   ██████    █    █  █  █   █   ███ 
+    // █   █    █       █   █ █   █   █   █       █   █     █    █   █ █   █    █
+    // █    █   █████   █    ██   ████    █████   █    █   ███   █    ██    ████
+    //
+    // The standard map and diamond map are rendered differently.  [NOTE THAT NOT ALL FEATURES LISTED BELOW ARE IMPLEMENTED YET]
+    //
+    // Standard maps are flat and 2D, like a checkers board.
+    //
+    //     __________________                                    ______________________________________
+    //    |                  |                                  |         `  X               ` X       |
+    //    |                  |                                  |         `                  `         |
+    //    |                  |                                  |         `                  `         |
+    //    |                  |                                  |         `                  `         |
+    //    |                  |                                  |         `                  `         |
+    //    |                  |                                  |         `                  `         |
+    //    |__________________|                                  |_________`__________________`_________|
+    //
+    //
+    // The diamond pattern is created by rotating the square board by 45 degrees in clocwise direction
+    // then creating a parallelogram by hiding the top and bottom triangles from view.
+    //
+    //
+    //             ___                                                               `
+    //            /   ___                                                           `   `
+    //           /       ___                                                       `       `
+    //          /           ___                                                   `           `
+    //         / _ _ _ _ _ _ _ ___        __________________      _______________`_______________`_
+    //        /                  /      /                  /      \             `                  `\
+    //       /                  /      /                  /       /            `                  ` /
+    //      /                  /      /                  /        \           `                  `  \
+    //     /                  /      /                  /         /         X`                 X`   /
+    //    /___ _ _ _ _ _ _ _ /      /__________________/          \_________`__________________`____\
+    //        ___           /                                                 `               `
+    //           ___       /                                                     `           `
+    //              ___   /                                                         `       `
+    //                 __/                                                             `   `
+    //                                                                                    `
+    // 
+    // The board tile images are copied to the left and right to create the illusion of a world map when scrolling.
+    // Each tile appears twice, on the board itself and the copied image.
+    // the "camera" can scroll in one direction then jump to the other side upon hitting the edge.
+    //
+    // When moving the piece "off the board" (e.g. left from the left edge of the board),
+    // the unit will both appear on the right edge of the board, and continue left to the copied image of the right edge tile.
+    // For this reason, the scale of the canvas should be adjusted and constrained so the "camera" cannot see the same tile twice.
+
+    // render each tile one at a time, starting with left column from top to bottom, through last column at right
+    renderMap({board, username}) {
+        board.tiles.forEach( (columnOfTiles, i) => {
+            columnOfTiles.forEach( (tile, j) => {
+              this.#renderTile({tile: tile, username: username})
+            })
+        })
+    }
+
+    // each tile will render the state of tile and determine by the game board
+    #renderTile({tile, username}) {
+        this.#renderTerrain(tile)
+        this.#renderUnit(tile, username)
+        this.#renderTileOutline(tile)
+    }
+
+    animateBlinkSelectedUnit() {
+        if ( (Math.floor(Date.now() / 400)) % 3 === 0 ) { this.#renderTerrain(this.selectedTile) } else { this.#renderUnit(this.selectedTile) }
+    }
+
+    // the outline is primarily used to show the original board locations for troubleshooting purposes right now (but will have other purposes later)
+    #renderTileOutline(tile) {
+        let x = tile.coordinates.x
+        let y = tile.coordinates.y
+        this.ctx.strokeStyle="black"
+        this.ctx.strokeRect(x*this.tileSize.x,y*this.tileSize.y,this.tileSize.x,this.tileSize.y)
+    }
+
+    // copy image from source file then paste so it is centered (and rotated if diamond pattern) on board tile
+    #renderTerrain(tile) {
+
+        // skip tiles which are cropped out of the diamond view
+        if (
+            ( this.orientation === "diamond" || this.orientation === "short diamond" ) &&
+            this.#isCroppedTileforDiamondView({x: tile.coordinates.x, y: tile.coordinates.y})
+        ) { return } 
+
+        // render tiles on the board
+        const terrainSpritesSheet = this.sprites.terrain1
+        const terrain = tile.terrain
+        this.ctx.save() // remember canvas location and orientation
+        this.#prepareCanvasToRenderImage(tile)  // find pixel at top left of tile before painting image
+        this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})  // paint image from source file
+        this.ctx.restore() // restore canvas so its ready to render next tile in same manner
+
+        // render the copied images of the tiles on either side of the board
+        if (( this.orientation === "diamond" || this.orientation === "short diamond" )) {
+            if (this.#isCopiedTileForRightSideOfDiamondMap(tile)) {
+                this.ctx.save()
+                this.#prepareCanvasToRenderImageForRightReflection(tile)
+                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
+                this.ctx.restore()
+            }
+            if (this.#isCopiedTileForleftSideOfDiamondMap(tile)) {
+                this.ctx.save()
+                this.#prepareCanvasToRenderImageForLeftReflection(tile)
+                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
+                this.ctx.restore()
+            }
+        } else { // render image at left of board for standard
+            this.ctx.save()
+            this.#prepareCanvasToRenderImageForLeftReflection(tile)
+            this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
+            this.ctx.restore()
+        }
+    }
+
+    // similar comments to #renderTerrain
+    #renderUnit(tile, username) {
+        
+        if (tile.unit) { // unit exists on tile
+
+            // render tiles on the board
+            const unit = "legion"
+            const unitSpritesSheet = this.sprites.units
+            this.ctx.save()
+            this.#prepareCanvasToRenderImage(tile)
+            this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
+            this.ctx.restore()
+
+            // render the copied images of the tiles on either side of the board for diamond pattern
+            if (( this.orientation === "diamond" || this.orientation === "short diamond" )) {
+                if (this.#isCopiedTileForRightSideOfDiamondMap(tile)) {
+                    this.ctx.save()
+                    this.#prepareCanvasToRenderImageForRightReflection(tile)
+                    this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
+                    this.ctx.restore()
+                }
+                if (this.#isCopiedTileForleftSideOfDiamondMap(tile)) {
+                    this.ctx.save()
+                    this.#prepareCanvasToRenderImageForLeftReflection(tile)
+                    this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
+                    this.ctx.restore()
+                }
+            } else { // render image at left of board for standard
+                this.ctx.save()
+                this.#prepareCanvasToRenderImageForLeftReflection(tile)
+                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
+                this.ctx.restore()
+            }
+            
+           /*
+            this.ctx.save()
+            this.#positionCanvasToTileReflectionPixelAndRotateForImage(tile)
+            this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
+            this.ctx.restore()
+            */
+        }
+    }
+
+    // true if board tile is cropped
+    #isCroppedTileforDiamondView({x, y}) {
+        let isCroppedTileFromTopOfDiamondView = y < ( this.boardSize.x - x - 1 )
+        let isCroppedTileFromBottomOfDiamondView = y > ( this.boardSize.y - x - 1 )
+        return isCroppedTileFromTopOfDiamondView || isCroppedTileFromBottomOfDiamondView
+    }
+
+    // true if this tile should be copied to the right of the board
+    #isCopiedTileForRightSideOfDiamondMap(tile) {
+        const x = tile.coordinates.x
+        const y = tile.coordinates.y
+        return ( x < y - this.boardSize.x )   //x < this.boardSize.x + y  //  Math.floor(this.boardSize.x / 2) + 1
+    }
+
+    // true if this tile should be copied to the left of the board
+    #isCopiedTileForleftSideOfDiamondMap(tile) {
+        const x = tile.coordinates.x
+        const y = tile.coordinates.y
+        return ( x > y - this.boardSize.x - 1)   //x < this.boardSize.x + y  //  Math.floor(this.boardSize.x / 2) + 1
+    }
+
+    // translate canvas (and rotated if diamond pattern) so image will be centered on board tile
+    #prepareCanvasToRenderImage(tile) {
+        const tileCenterPixel = this.#findTileCenterPixel(tile)
+        this.ctx.translate(tileCenterPixel.x, tileCenterPixel.y) // move canvas top left corner to center of tile
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            this.ctx.rotate(-this.#radiansForImageAngleAdjustment())  // rotate canvas 45 degrees to match orientation of diamond tiles
+        }
+    }
+
+    #prepareCanvasToRenderImageForRightReflection(tile) {
+        const tileCenterPixel = this.#findTileCenterPixel(tile)
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            this.ctx.translate(tileCenterPixel.x+this.tileSize.x*(this.boardSize.x), tileCenterPixel.y-this.tileSize.x*(this.boardSize.x))
+            this.ctx.rotate(-this.#radiansForImageAngleAdjustment())  // rotate canvas 45 degrees to match orientation of diamond tiles
+        } else {
+            this.ctx.translate(tileCenterPixel.x+this.tileSize.x*(this.boardSize.x), tileCenterPixel.y)
+        }
+    }
+
+    #prepareCanvasToRenderImageForLeftReflection(tile) {
+        const tileCenterPixel = this.#findTileCenterPixel(tile)
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            this.ctx.translate(tileCenterPixel.x-this.tileSize.x*(this.boardSize.x), tileCenterPixel.y+this.tileSize.x*(this.boardSize.x))
+            this.ctx.rotate(-this.#radiansForImageAngleAdjustment())  // rotate canvas 45 degrees to match orientation of diamond tiles
+        } else {
+            this.ctx.translate(tileCenterPixel.x-this.tileSize.x*(this.boardSize.x), tileCenterPixel.y)
+        }
+    }
+
+    #drawSpriteCenteredOnCanvasOrigin({spriteSheet, sprite}) {
+        this.ctx.drawImage(
+            spriteSheet,
+            ...this.#imageLocationAndDimensionsOnSpriteSheet(spriteSheet, sprite), // source (sprite sheet) image x, y, w, h
+            ...this.#imagePositionRelativeToCenterOfTileAndDimensions(), // destination (board) x, y, w, h
+        )
+    }
+
+    #findTileCenterPixel(tile) {
+        //this.ctx.fillRect(0, 0, 5, 5) // draw dot at center of tile for troubleshooting
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            const radians = this.#radiansForImageAngleAdjustment()
+            return {
+                x: 0 + (tile.coordinates.x+0.5)*this.tileSize.x,
+                y: 0 + (tile.coordinates.y+0.5)*this.tileSize.y
+                //y: 0 + (tile.coordinates.y+0.5-tile.coordinates.x)*this.tileSize.y // align cells into latitudes
+            }
+        }
+        return {
+            x: 0 + (tile.coordinates.x+0.5)*this.tileSize.x,
+            y: 0 + (tile.coordinates.y+0.5)*this.tileSize.y
+        }
+    }
+
+    #imagePositionRelativeToCenterOfTileAndDimensions() {  // 
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            const radians = this.#radiansForImageAngleAdjustment()
+            return [
+                -this.tileSize.x * Math.cos(radians), // x
+                -this.tileSize.y * Math.sin(radians), // y
+                this.tileSize.x / Math.cos(radians), // w
+                this.tileSize.y / Math.sin(radians) // h
+            ]
+        }
+        return [
+            0.5 * -this.tileSize.x, // x
+            0.5 * -this.tileSize.y, // y
+            this.tileSize.x, // w
+            this.tileSize.y // h
+        ]
+
+        /*
+        return [
+            x*this.tileSize.x,
+            y*this.tileSize.y + (this.tileSize.y-unitSpritesSheet[unit].h)/4,
+            this.tileSize.x,
+            this.tileSize.y*this.sprites.units[unit].h/this.sprites.units[unit].w
+        ]
+        */
+            
+    }
+
+    #radiansForImageAngleAdjustment() {
+        let angle = 0
+        switch (this.orientation) {
+            case "diamond":
+                angle = 45
+                break
+            case "short diamond":
+                angle = 45
+                break
+        }
+        return Math.PI*angle/180
+    }
+
+    // █    █    ████   █████   █████       ███   ██    █   █████   █████   █████    █████    ███     ███    █████
+    // █    █   █       █       █    █       █    █ █   █     █     █       █    █   █       █   █   █   █   █
+    // █    █    ███    █████   ██████       █    █  █  █     █     █████   ██████   █████   █████   █       █████
+    // █    █       █   █       █   █        █    █   █ █     █     █       █   █    █       █   █   █   █   █
+    //  ████    ████    █████   █    █      ███   █    ██     █     █████   █    █   █       █   █    ███    █████
+
+
+
+    // pair the screen pixel to the location on the board, used whenever user clicks on screen
+    getTransformedPoint(x, y) { // https://roblouie.com/article/617/transforming-mouse-coordinates-to-canvas-coordinates/
+        const originalPoint = new DOMPoint(x, y);
+        return this.ctx.getTransform().invertSelf().transformPoint(originalPoint);
+    }
+
+    determineTileFromPixelCoordinates(x, y) {
+        const currentTransformedCursor = this.getTransformedPoint(x, y)
+        console.log(currentTransformedCursor)
+        const tileX = Math.floor(currentTransformedCursor.x / this.tileSize.x)
+        const tileY = Math.floor(currentTransformedCursor.y / this.tileSize.y)
+        return {x: tileX, y: tileY}
+    }
+
+    clientOwnsUnit({unit, username}) { return unit.player.username === username }
+
+    selectNextUnit({board, username}) {
+        board.tiles.forEach( (column) => {
+            column.forEach( (tile) => {
+                if (tile.unit && tile.unit.player.username === username) {
+                    this.selectUnit({tile: tile, username: username})
+                    this.selectTile(tile)
+                }
+            })
+        })
+    }
+
+    selectUnit({tile, username}) {
+        if (tile.unit && this.clientOwnsUnit({unit: tile.unit, username: username})) { this.selectedUnit = tile.unit }
+        console.log(this.selectedUnit)
+    }
+
+    selectTile(tile) { this.selectedTile = tile }
+
+    deselectUnit() { this.selectedUnit = "" }
+
+    deselectTile() { this.selectedTile = "" }
+
     scrollZoom(event) {  // https://roblouie.com/article/617/transforming-mouse-coordinates-to-canvas-coordinates/
 
         console.log(event)
@@ -166,10 +495,207 @@ class Canvas {
         }
     }
 
-    getTransformedPoint(x, y) { // https://roblouie.com/article/617/transforming-mouse-coordinates-to-canvas-coordinates/
-        const originalPoint = new DOMPoint(x, y);
-        return this.ctx.getTransform().invertSelf().transformPoint(originalPoint);
+    // currently used to find selected unit on the map when the 'tab' key is pressed (see client.js event listeners)
+    centerScreenOnTile(tile) {
+        const currentTransformedCenterScreenPixel = this.getTransformedPoint(window.innerWidth/2, window.innerHeight/2);
+        this.ctx.translate(
+            currentTransformedCenterScreenPixel.x - tile.coordinates.x * this.tileSize.x,
+            currentTransformedCenterScreenPixel.y - tile.coordinates.y * this.tileSize.y
+        )
     }
+
+    // currently used to determine if selected tile is visible, or if it is necessary to centerScreenOnTile
+    tileIsVisibleOnScreen(tile) {
+        const currentTransformedTopLeft = this.getTransformedPoint(0, 0)
+        const currentTransformedTopRight = this.getTransformedPoint(window.innerWidth, 0)
+        const currentTransformedBottomLeft = this.getTransformedPoint(0, window.innerHeight)
+        return (
+            tile.coordinates.x > this.boardSize.y - currentTransformedTopLeft.y &&
+            tile.coordinates.y < this.boardSize.y - currentTransformedTopLeft.x &&
+            tile.coordinates.x < this.boardSize.y - currentTransformedTopRight.y &&
+            tile.coordinates.y > this.boardSize.y - currentTransformedBottomLeft.x
+        )
+    }
+
+
+    // ████    █   █   █       █████    ████        █    ██ ██    ███    █   █   █████   ██ ██   █████   ██    █   █████
+    // █   █   █   █   █       █       █           █     █ █ █   █   █   █   █   █       █ █ █   █       █ █   █     █
+    // █████   █   █   █       █████    ███       █      █ █ █   █   █    █ █    ████    █ █ █   █████   █  █  █     █
+    // █  █    █   █   █       █           █     █       █   █   █   █    █ █    █       █   █   █       █   █ █     █
+    // █   █    ███    █████   █████   ████     █        █   █    ███      █     █████   █   █   █████   █    ██     █
+
+
+    // most of these are just being started and probably will be re-factored
+
+    onLeftEdge({x, y}) { // same for diamond, but smaller when cropped
+        return x === 0
+    }
+
+    onRightEdge({x, y}) { // same for diamond, but smaller when cropped
+        return x === this.boardSize.x - 1
+    }
+
+    onTopEdgeOfDiamondMap({x, y}) {
+        return x === y - this.boardSize.x - 1
+    }
+
+    onBottomEdgeOfDiamondMap({x, y}) {
+        return x === y + this.boardSize.x - 1
+    }
+
+    targetCoordinatesIfMovingLeftEdgeToRightEdge({x, y}) {
+        let targetX
+        let targetY
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            targetX = x+(clientGame.board.size.x-1)
+            targetY = y-(clientGame.board.size.x-1)
+        } else {
+            targetX = x+(clientGame.board.size.x-1)
+            targetY = y
+        }
+        return [targetX, targetY]
+    }
+
+    targetCoordinatesIfMovingLeft({x, y}) {
+        let targetX
+        let targetY
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            targetX = x-1
+            targetY = y+1
+        } else {
+            targetX = x-1
+            targetY = y
+        }
+        return [targetX, targetY]
+    }
+
+    targetCoordinatesIfMovingRightEdgeToLeftEdge({x, y}) {
+        let targetX
+        let targetY
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            targetX = x-(clientGame.board.size.x-1)
+            targetY = y+(clientGame.board.size.x-1)
+        } else {
+            targetX = x-(clientGame.board.size.x-1)
+            targetY = y
+        }
+        return [targetX, targetY]
+    }
+
+    targetCoordinatesIfMovingRight({x, y}) {
+        let targetX
+        let targetY
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            targetX = x+1
+            targetY = y-1
+        } else {
+            targetX = x+1
+            targetY = y
+        }
+        return [targetX, targetY]
+    }
+
+    targetCoordinatesIfMovingUp({x, y}) {
+        let targetX
+        let targetY
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            targetX = x-1
+            targetY = y-1
+        } else {
+            targetX = x
+            targetY = y-1
+        }
+        return [targetX, targetY]
+    }
+
+    targetCoordinatesIfMovingUpThroughLeftEdge({x, y}) {
+        let targetX
+        let targetY
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            targetX = x+(clientGame.board.size.x-1)
+            targetY = y-(clientGame.board.size.x+1)
+        } else {
+            return
+        }
+        return [targetX, targetY]
+    }
+
+    targetCoordinatesIfMovingDown({x, y}) {
+        let targetX
+        let targetY
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            targetX = x+1
+            targetY = y+1
+        } else {
+            targetX = x
+            targetY = y+1
+        }
+        return [targetX, targetY]
+    }
+
+    targetCoordinatesIfMovingDownThroughRightEdge({x, y}) {
+        let targetX
+        let targetY                        
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            targetX = x-(clientGame.board.size.x-1)
+            targetY = y+(clientGame.board.size.x+1)
+        } else {
+            return
+        }
+        return [targetX, targetY]
+    }
+
+    validLocationOnDiamondMap({x, y}) {
+        (
+            x <= this.onLeftEdgeOfSquareMap({x, y}) &&
+            x >= this.onRightEdgeOfSquareMap({x, y}) &&
+            x > this.onTopEdgeOfDiamondMap({x, y}) &&
+            x < this.onBottomEdgeOfDiamondMap({x, y})
+        )
+    }
+
+    // this is still used but I am going to phase this out
+    isInvalidMove({x, y}) {
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            return (
+                this.#isCroppedTileforDiamondView({x, y}) ||
+                this.#isInTheNorthPoleOfDiamondView({x, y}) ||
+                this.#isInTheSouthPoleOfDiamondView({x, y})
+            )
+        } else {
+            return false
+        }
+    }
+
+    // phasing this in
+    isValidMove({unit, x, y}) {
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            return (
+                //tile.coordinates &&
+                !(this.#isCroppedTileforDiamondView({x, y})) &&
+                !(this.#isInTheNorthPoleOfDiamondView({x, y})) &&
+                !(this.#isInTheSouthPoleOfDiamondView({x, y}))
+            )
+        } else {
+            return true
+        }
+    }
+
+    #isInTheNorthPoleOfDiamondView({x, y}) {
+        return y < ( this.boardSize.y - this.boardSize.x - x - 1 )
+    }
+
+    #isInTheSouthPoleOfDiamondView({x, y}) {
+        return y > ( this.boardSize.y - x - 1 )
+    }
+
+
+    //  ████   █████   █████    ███   █████   █████    ████         █     ████    ███    █   █   ██    █   ████     ████
+    // █       █   █   █    █    █      █     █       █            █     █       █   █   █   █   █ █   █   █   █   █
+    //  ███    █████   ██████    █      █     █████    ███        █       ███    █   █   █   █   █  █  █   █   █    ███
+    //     █   █       █   █     █      █     █           █      █           █   █   █   █   █   █   █ █   █   █       █
+    // ████    █       █    █   ███     █     █████   ████      █        ████     ███     ███    █    ██   ████    ████
+
 
     initializeSounds() {
         this.sounds.movePiece = new Audio('MOVPIECE.WAV');
@@ -241,298 +767,5 @@ class Canvas {
 
     #imageLocationAndDimensionsOnSpriteSheet(terrainSpritesSheet, terrain) {
         return [terrainSpritesSheet[terrain].x, terrainSpritesSheet[terrain].y, terrainSpritesSheet[terrain].w, terrainSpritesSheet[terrain].h]
-    }
-
-    determineTileFromPixelCoordinates(x, y) {
-        const currentTransformedCursor = this.getTransformedPoint(x, y)
-        console.log(currentTransformedCursor)
-        const tileX = Math.floor(currentTransformedCursor.x / this.tileSize.x)
-        const tileY = Math.floor(currentTransformedCursor.y / this.tileSize.y)
-        return {x: tileX, y: tileY}
-    }
-
-    selectUnit({tile, username}) {
-        if (tile.unit && this.clientOwnsUnit({unit: tile.unit, username: username})) { this.selectedUnit = tile.unit }
-        console.log(this.selectedUnit)
-    }
-
-    clientOwnsUnit({unit, username}) { return unit.player.username === username }
-
-    selectNextUnit({board, username}) {
-        board.tiles.forEach( (column) => {
-            column.forEach( (tile) => {
-                if (tile.unit && tile.unit.player.username === username) {
-                    this.selectUnit({tile: tile, username: username})
-                    this.selectTile(tile)
-                }
-            })
-        })
-    }
-
-    isInvalidMove(destinationTile) {
-        if (this.orientation === "diamond" || this.orientation === "short diamond") {
-            return (
-                this.#croppedTileforDiamondView({x: destinationTile.x, y: destinationTile.y}) ||
-                this.#isInTheNorthPoleOfDiamondView({x: destinationTile.x, y: destinationTile.y}) ||
-                this.#isInTheSouthPoleOfDiamondView({x: destinationTile.x, y: destinationTile.y})
-            )
-        } else {
-            return false
-        }
-    }
-
-    #isInTheNorthPoleOfDiamondView({x, y}) {
-        return y < ( this.boardSize.y - this.boardSize.x - x - 1 )
-    }
-
-    #isInTheSouthPoleOfDiamondView({x, y}) {
-        return y > ( this.boardSize.y - x - 1 )
-    }
-
-    selectTile(tile) { this.selectedTile = tile }
-
-    deselectUnit() { this.selectedUnit = "" }
-
-    deselectTile() { this.selectedTile = "" }
-
-    animateBlinkSelectedUnit() {
-        if ( (Math.floor(Date.now() / 400)) % 3 === 0 ) { this.#renderTerrain(this.selectedTile) } else { this.#renderUnit(this.selectedTile) }
-    }
-
-    #renderTerrain(tile) {
-
-        if (
-            ( this.orientation === "diamond" || this.orientation === "short diamond" ) &&
-            this.#croppedTileforDiamondView({x: tile.coordinates.x, y: tile.coordinates.y})
-        ) { return } 
-
-        const terrainSpritesSheet = this.sprites.terrain1
-        const terrain = tile.terrain
-        this.ctx.save()
-        this.#positionCanvasToTileCenterPixelAndRotateForImage(tile)
-        this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
-        this.ctx.restore()
-
-        if (( this.orientation === "diamond" || this.orientation === "short diamond" )) {
-            if (this.#rightEdgeOfDiamondMap(tile)) {
-                this.ctx.save()
-                this.#positionCanvasToTileRightReflectionPixelAndRotateForImage(tile)
-                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
-                this.ctx.restore()
-            }
-            if (this.#leftEdgeOfDiamondMap(tile)) {
-                this.ctx.save()
-                this.#positionCanvasToTileLeftReflectionPixelAndRotateForImage(tile)
-                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
-                this.ctx.restore()
-            }
-        } 
-    }
-
-    #croppedTileforDiamondView({x, y}) {
-        return this.#croppedTileFromTopOfDiamondView({x, y}) || this.#croppedTileFromBottomOfDiamondView({x, y})
-    }
-
-    #croppedTileFromTopOfDiamondView({x, y}) {
-        return y < ( this.boardSize.x - x - 1 )
-    }
-
-    #croppedTileFromBottomOfDiamondView({x, y}) {
-        return y > ( this.boardSize.y - x - 1 )
-    }
-
-    #renderUnit(tile, username) {
-        if (tile.unit) {
-            const unit = "legion"
-            const unitSpritesSheet = this.sprites.units
-            this.ctx.save()
-            this.#positionCanvasToTileCenterPixelAndRotateForImage(tile)
-            this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
-            this.ctx.restore()
-
-
-        if (( this.orientation === "diamond" || this.orientation === "short diamond" )) {
-            if (this.#rightEdgeOfDiamondMap(tile)) {
-                this.ctx.save()
-                this.#positionCanvasToTileRightReflectionPixelAndRotateForImage(tile)
-                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
-                this.ctx.restore()
-            }
-            if (this.#leftEdgeOfDiamondMap(tile)) {
-                this.ctx.save()
-                this.#positionCanvasToTileLeftReflectionPixelAndRotateForImage(tile)
-                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
-                this.ctx.restore()
-            }
-        } 
-            
-           /*
-            this.ctx.save()
-            this.#positionCanvasToTileReflectionPixelAndRotateForImage(tile)
-            this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
-            this.ctx.restore()
-            */
-        }
-    }
-
-    #positionCanvasToTileCenterPixelAndRotateForImage(tile) {
-        const tileCenterPixel = this.#findTileCenterPixel(tile)
-        this.ctx.translate(tileCenterPixel.x, tileCenterPixel.y) // center of tile
-        this.ctx.rotate(-this.#radiansForImageAngleAdjustment())
-    }
-
-    #positionCanvasToTileRightReflectionPixelAndRotateForImage(tile) {
-        const tileCenterPixel = this.#findTileCenterPixel(tile)
-        this.ctx.translate(tileCenterPixel.x+this.tileSize.x*(this.boardSize.x), tileCenterPixel.y-this.tileSize.x*(this.boardSize.x))
-        this.ctx.rotate(-this.#radiansForImageAngleAdjustment())
-    }
-
-    #positionCanvasToTileLeftReflectionPixelAndRotateForImage(tile) {
-        const tileCenterPixel = this.#findTileCenterPixel(tile)
-        this.ctx.translate(tileCenterPixel.x-this.tileSize.x*(this.boardSize.x), tileCenterPixel.y+this.tileSize.x*(this.boardSize.x))
-        this.ctx.rotate(-this.#radiansForImageAngleAdjustment())
-    }
-
-    #rightEdgeOfDiamondMap(tile) {
-        const x = tile.coordinates.x
-        const y = tile.coordinates.y
-        return ( x < y - this.boardSize.x )   //x < this.boardSize.x + y  //  Math.floor(this.boardSize.x / 2) + 1
-    }
-
-    #leftEdgeOfDiamondMap(tile) {
-        const x = tile.coordinates.x
-        const y = tile.coordinates.y
-        return ( x > y - this.boardSize.x - 1)   //x < this.boardSize.x + y  //  Math.floor(this.boardSize.x / 2) + 1
-    }
-
-    #drawSpriteCenteredOnCanvasOrigin({spriteSheet, sprite}) {
-        this.ctx.drawImage(
-            spriteSheet,
-            ...this.#imageLocationAndDimensionsOnSpriteSheet(spriteSheet, sprite), // x, y, w, h
-            ...this.#imagePositionRelativeToCenterOfTileAndDimensions(), // x, y, w, h
-        )
-    }
-
-    #renderTile({tile, username}) {
-        this.#renderTerrain(tile)
-        this.#renderUnit(tile, username)
-        this.#renderTileOutline(tile)
-    }
-
-    #renderTileOutline(tile) {
-        let x = tile.coordinates.x
-        let y = tile.coordinates.y
-        this.ctx.strokeStyle="black"
-        this.ctx.strokeRect(x*this.tileSize.x,y*this.tileSize.y,this.tileSize.x,this.tileSize.y)
-    }
-
-    renderMap({board, username}) {
-        board.tiles.forEach( (columnOfTiles, i) => {
-            columnOfTiles.forEach( (tile, j) => {
-              this.#renderTile({tile: tile, username: username})
-            })
-        })
-    }
-
-    #findTileCenterPixel(tile) {
-        //this.ctx.fillRect(0, 0, 5, 5) // draw dot at center of tile for troubleshooting
-        if (this.orientation === "diamond" || this.orientation === "short diamond") {
-            const radians = this.#radiansForImageAngleAdjustment()
-            return {
-                x: 0 + (tile.coordinates.x+0.5)*this.tileSize.x,
-                y: 0 + (tile.coordinates.y+0.5)*this.tileSize.y
-                //y: 0 + (tile.coordinates.y+0.5-tile.coordinates.x)*this.tileSize.y // align cells into latitudes
-            }
-        }
-        return {
-            x: 0 + (tile.coordinates.x+0.5)*this.tileSize.x,
-            y: 0 + (tile.coordinates.y+0.5)*this.tileSize.y
-        }
-    }
-
-    #imagePositionRelativeToCenterOfTileAndDimensions() {
-        if (this.orientation === "diamond" || this.orientation === "short diamond") {
-            const radians = this.#radiansForImageAngleAdjustment()
-            return [
-                -this.tileSize.x * Math.cos(radians), // x
-                -this.tileSize.y * Math.sin(radians), // y
-                this.tileSize.x / Math.cos(radians), // w
-                this.tileSize.y / Math.sin(radians) // h
-            ]
-        }
-        return [
-            0.5 * -this.tileSize.x, // x
-            0.5 * -this.tileSize.y, // y
-            this.tileSize.x, // w
-            this.tileSize.y // h
-        ]
-
-        /*
-        return [
-            x*this.tileSize.x,
-            y*this.tileSize.y + (this.tileSize.y-unitSpritesSheet[unit].h)/4,
-            this.tileSize.x,
-            this.tileSize.y*this.sprites.units[unit].h/this.sprites.units[unit].w
-        ]
-        */
-            
-    }
-
-    #radiansForImageAngleAdjustment() {
-        let angle = 0
-        switch (this.orientation) {
-            case "diamond":
-                angle = 45
-                break
-            case "short diamond":
-                angle = 45
-                break
-        }
-        return Math.PI*angle/180
-    }
-
-    centerScreenOnTile(tile) {
-        const currentTransformedCenterScreenPixel = this.getTransformedPoint(window.innerWidth/2, window.innerHeight/2);
-        this.ctx.translate(
-            currentTransformedCenterScreenPixel.x - tile.coordinates.x * this.tileSize.x,
-            currentTransformedCenterScreenPixel.y - tile.coordinates.y * this.tileSize.y
-        )
-    }
-
-    tileIsVisibleOnScreen(tile) {
-        const currentTransformedTopLeft = this.getTransformedPoint(0, 0)
-        const currentTransformedTopRight = this.getTransformedPoint(window.innerWidth, 0)
-        const currentTransformedBottomLeft = this.getTransformedPoint(0, window.innerHeight)
-        return (
-            tile.coordinates.x > this.boardSize.y - currentTransformedTopLeft.y &&
-            tile.coordinates.y < this.boardSize.y - currentTransformedTopLeft.x &&
-            tile.coordinates.x < this.boardSize.y - currentTransformedTopRight.y &&
-            tile.coordinates.y > this.boardSize.y - currentTransformedBottomLeft.x
-        )
-    }
-
-    onLeftEdgeOfSquareMap({x, y}) { // same for diamond, but smaller when cropped
-        return x === 0
-    }
-
-    onRightEdgeOfSquareMap({x, y}) { // same for diamond, but smaller when cropped
-        return x === this.boardSize.x - 1
-    }
-
-    onTopEdgeOfDiamondMap({x, y}) {
-        return x === y - this.boardSize.x - 1
-    }
-
-    onBottomEdgeOfDiamondMap({x, y}) {
-        return x === y + this.boardSize.x - 1
-    }
-
-    validLocationOnDiamondMap({x, y}) {
-        (
-            x <= this.onLeftEdgeOfSquareMap({x, y}) &&
-            x >= this.onRightEdgeOfSquareMap({x, y}) &&
-            x > this.onTopEdgeOfDiamondMap({x, y}) &&
-            x < this.onBottomEdgeOfDiamondMap({x, y})
-        )
     }
 }

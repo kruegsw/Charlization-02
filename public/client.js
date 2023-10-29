@@ -20,9 +20,155 @@ socket.on("message-from-server-to-client", message => console.log(message))
 socket.on("disconnect", () => { console.log(`Client ${socket.id} disconnected from WebSocket`) })
 
 
-registerEventListener()
+registerEventListeners2()
 
-function registerEventListener() {
+function registerEventListeners2() {
+
+    document.addEventListener("keydown", (event) => {
+        if (canvas.selectedUnit) {
+            let unit = canvas.selectedUnit
+            let x = unit.coordinates.x
+            let y = unit.coordinates.y
+            let targetX
+            let targetY
+            switch (event.code) {
+                case "ArrowLeft":
+                    [targetX, targetY] = canvas.onLeftEdge({x, y}) ?
+                        canvas.targetCoordinatesIfMovingLeftEdgeToRightEdge({x, y}) : canvas.targetCoordinatesIfMovingLeft({x, y})
+                    moveUnitToTile({unit: unit, x: targetX, y: targetY}) // check if valid move, emit move to server, update canvas
+                    break
+                case "ArrowRight":
+                    [targetX, targetY] = canvas.onRightEdge({x, y}) ?
+                        canvas.targetCoordinatesIfMovingRightEdgeToLeftEdge({x, y}) : canvas.targetCoordinatesIfMovingRight({x, y})
+                    moveUnitToTile({unit: unit, x: targetX, y: targetY}) // check if valid move, emit move to server, update canvas
+                    break
+                case "ArrowUp":
+                    if (canvas.onTopEdgeOfDiamondMap({x, y})) {return}
+                    [targetX, targetY] = canvas.onLeftEdge({x, y}) ?
+                        canvas.targetCoordinatesIfMovingUpThroughLeftEdge({x, y}) : canvas.targetCoordinatesIfMovingUp({x, y})
+                    moveUnitToTile({unit: unit, x: targetX, y: targetY}) // check if valid move, emit move to server, update canvas
+                    break
+                case "ArrowDown":
+                    if (canvas.onBottomEdgeOfDiamondMap({x, y})) {return}
+                    [targetX, targetY] = canvas.onRightEdge({x, y}) ?
+                        canvas.targetCoordinatesIfMovingDownThroughRightEdge({x, y}) : canvas.targetCoordinatesIfMovingDown({x, y})
+                    moveUnitToTile({unit: unit, x: targetX, y: targetY}) // check if valid move, emit move to server, update canvas
+                    break
+                case "Tab":
+                    event.preventDefault()
+                    return
+                case "Escape":
+                    canvas.deselectTile()
+                    canvas.deselectUnit()
+                    return
+                default:
+                    return
+            }
+        } else {
+            if (event.code === "ArrowUp") { canvas.scrollUp(); return }
+            if (event.code === "ArrowDown") { canvas.scrollDown(); return }
+            if (event.code === "ArrowLeft") { canvas.scrollLeft(); return }
+            if (event.code === "ArrowRight") { canvas.scrollRight(); return }
+            if (event.code === "Escape") { return }
+        }
+        if (event.code === "Tab") {
+            event.preventDefault() // prevent screen scrolling when moving selected unit, and tabbing
+            canvas.selectNextUnit({board: clientGame.board, username: socket.id})
+            if ( !(canvas.tileIsVisibleOnScreen(canvas.selectedTile)) ) { canvas.centerScreenOnTile(canvas.selectedTile) }
+            console.log(canvas.selectedUnit)
+            return
+        }
+    })
+
+    window.addEventListener("pointerdown", (event) => {
+        //console.log(clientGame)
+        const rect = canvas.canvas.getBoundingClientRect()
+        mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
+        mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize.y)
+
+        const clickedTile = canvas.determineTileFromPixelCoordinates(event.offsetX, event.offsetY)
+        console.log(clickedTile)
+
+        if (canvas.selectedUnit) {
+            let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
+            if (clientGame.board.tiles[clickedTile.x][clickedTile.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
+            if (canvas.isInvalidMove(clickedTile)) { return }
+            socket.emit('moveUnitToTile', {unit: canvas.selectedUnit, tile: targetTile})
+            canvas.selectTile(targetTile)
+            canvas.deselectUnit()
+        } else {
+            const rect = canvas.canvas.getBoundingClientRect()
+            let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
+            canvas.selectTile(targetTile)
+            canvas.selectUnit({tile: targetTile, username: socket.id})
+        }
+        
+    })
+
+    window.addEventListener("resize", () => canvas.adjustCanvasSizeToBrowser(clientGame.board) )
+    window.addEventListener("wheel", (event) => {
+        event.preventDefault() 
+        canvas.scrollZoom(event)
+    }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
+}
+function animate() {
+    window.requestAnimationFrame(() => {
+        canvas.ctx.clearRect(0 -50000, 0 -50000, canvas.canvas.width +100000, canvas.canvas.height +100000) // clear canvas
+        canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
+        //canvas.renderMapFromOffscreenCanvas()
+
+        if (canvas.selectedUnit) { canvas.animateBlinkSelectedUnit() }
+        window.requestAnimationFrame(() => {animate()})
+    })
+}
+
+setInterval(() => {
+    // need to emit client sides ticks to avoid overloading the server
+    //io.emit('update-game', game)
+    //io.emit('message-from-server-to-client', "tick")
+}, 250)
+
+function isInvalidMove(unit, direction) {
+    return canvas.isInvalidMove({x: unit.coordinates.x + direction.x, y: unit.coordinates.y + direction.y})
+}
+
+function moveUnitInDirection(unit, direction) {
+    socket.emit('moveUnitInDirection', {unit, direction})
+    console.log(`moveUnitInDirection socket fired with unit = ${unit}, direction = ${direction}`)
+    canvas.deselectTile()
+    canvas.deselectUnit()
+}
+
+function moveUnitIfValidMove(unit, direction) { if (isInvalidMove(unit, direction)) {return} else { moveUnitInDirection(unit, direction) } }
+
+function moveUnitToTile({unit, x, y}) {
+    console.log(`${x}, ${y}`)
+    if (canvas.isValidMove({unit, x, y})) {
+        let tile = clientGame.board.tiles[x][y]
+        socket.emit('moveUnitToTile', {unit, tile})
+        canvas.selectTile(tile)
+        canvas.deselectUnit()
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+function registerEventListenerOld() {
 
     document.addEventListener("keydown", (event) => {
         console.log(event)
@@ -84,13 +230,13 @@ function registerEventListener() {
                 moveUnitIfValidMove(unit, direction)
             }
 
-            /*
-            if (clientGame.board.tiles[canvas.selectedUnit.coordinates.x+command.direction.x][canvas.selectedUnit.coordinates.y+command.direction.y].unit) {
-                canvas.sounds.swordFight.play()
-            } else {
-                canvas.sounds.movePiece.play()
-            }
-            */
+            
+            //if (clientGame.board.tiles[canvas.selectedUnit.coordinates.x+command.direction.x][canvas.selectedUnit.coordinates.y+command.direction.y].unit) {
+            //    canvas.sounds.swordFight.play()
+            //} else {
+            //    canvas.sounds.movePiece.play()
+            //}
+            
 
             if (event.code === "Escape") {
                 canvas.deselectTile()
@@ -117,27 +263,27 @@ function registerEventListener() {
         }
     });
 
-    /*  "click" and "pointerdown" are both valid for computer browser, but only "pointerdown" is valid for mobile, so using only pointerdown for now
-    window.addEventListener("click", (event) => {
-        console.log(clientGame)
-        const rect = canvas.canvas.getBoundingClientRect()
-        mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize)
-        mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize)
+    //  "click" and "pointerdown" are both valid for computer browser, but only "pointerdown" is valid for mobile, so using only pointerdown for now
+    //window.addEventListener("click", (event) => {
+    //    console.log(clientGame)
+    //    const rect = canvas.canvas.getBoundingClientRect()
+    //    mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize)
+    //    mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize)
 
-        if (canvas.selectedUnit) {
-            let targetTile = clientGame.board.tiles[mouse.x][mouse.y]
-            if (clientGame.board.tiles[mouse.x][mouse.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
-            socket.emit('moveUnitToTile', {unit: canvas.selectedUnit, tile: targetTile})
-            canvas.selectTile(targetTile)
-            canvas.deselectUnit()
-        } else {
-            const rect = canvas.canvas.getBoundingClientRect()
-            let targetTile = clientGame.board.tiles[mouse.x][mouse.y]
-            canvas.selectTile(targetTile)
-            canvas.selectUnit({tile: targetTile, username: socket.id})
-        }
-    })
-    */
+    //    if (canvas.selectedUnit) {
+    //        let targetTile = clientGame.board.tiles[mouse.x][mouse.y]
+    //        if (clientGame.board.tiles[mouse.x][mouse.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
+    //        socket.emit('moveUnitToTile', {unit: canvas.selectedUnit, tile: targetTile})
+    //        canvas.selectTile(targetTile)
+    //        canvas.deselectUnit()
+    //    } else {
+    //        const rect = canvas.canvas.getBoundingClientRect()
+    //        let targetTile = clientGame.board.tiles[mouse.x][mouse.y]
+    //        canvas.selectTile(targetTile)
+    //        canvas.selectUnit({tile: targetTile, username: socket.id})
+    //    }
+    //})
+    
 
     window.addEventListener("pointerdown", (event) => {
         //console.log(clientGame)
@@ -176,32 +322,4 @@ function registerEventListener() {
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
 }
 
-function animate() {
-    window.requestAnimationFrame(() => {
-        canvas.ctx.clearRect(0 -50000, 0 -50000, canvas.canvas.width +100000, canvas.canvas.height +100000) // clear canvas
-        canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
-        //canvas.renderMapFromOffscreenCanvas()
-
-        if (canvas.selectedUnit) { canvas.animateBlinkSelectedUnit() }
-        window.requestAnimationFrame(() => {animate()})
-    })
-}
-
-setInterval(() => {
-    // need to emit client sides ticks to avoid overloading the server
-    //io.emit('update-game', game)
-    //io.emit('message-from-server-to-client', "tick")
-}, 250)
-
-function isInvalidMove(unit, direction) {
-    return canvas.isInvalidMove({x: unit.coordinates.x + direction.x, y: unit.coordinates.y + direction.y})
-}
-
-function moveUnitInDirection(unit, direction) {
-    socket.emit('moveUnitInDirection', {unit, direction})
-    console.log(`moveUnitInDirection socket fired with unit = ${unit}, direction = ${direction}`)
-    canvas.deselectTile()
-    canvas.deselectUnit()
-}
-
-function moveUnitIfValidMove(unit, direction) { if (isInvalidMove(unit, direction)) {return} else { moveUnitInDirection(unit, direction) } }
+*/
