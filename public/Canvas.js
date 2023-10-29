@@ -205,23 +205,25 @@ class Canvas {
 
         // render the copied images of the tiles on either side of the board
         if (( this.orientation === "diamond" || this.orientation === "short diamond" )) {
-            if (this.#isCopiedTileForRightSideOfDiamondMap(tile)) {
+            if (this.#toBeCopiedForRightSideOfDiamondMap(tile)) {
                 this.ctx.save()
                 this.#prepareCanvasToRenderImageForRightReflection(tile)
                 this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
                 this.ctx.restore()
             }
-            if (this.#isCopiedTileForleftSideOfDiamondMap(tile)) {
+            if (this.#toBeCopiedForLeftSideOfDiamondMap(tile)) {
                 this.ctx.save()
                 this.#prepareCanvasToRenderImageForLeftReflection(tile)
                 this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
                 this.ctx.restore()
             }
         } else { // render image at left of board for standard
-            this.ctx.save()
-            this.#prepareCanvasToRenderImageForLeftReflection(tile)
-            this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
-            this.ctx.restore()
+            if (this.#toBeCopiedForLeftSideOfStandardMap(tile)) {
+                this.ctx.save()
+                this.#prepareCanvasToRenderImageForLeftReflection(tile)
+                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: terrainSpritesSheet, sprite: terrain})
+                this.ctx.restore()
+            }
         }
     }
 
@@ -240,23 +242,25 @@ class Canvas {
 
             // render the copied images of the tiles on either side of the board for diamond pattern
             if (( this.orientation === "diamond" || this.orientation === "short diamond" )) {
-                if (this.#isCopiedTileForRightSideOfDiamondMap(tile)) {
+                if (this.#toBeCopiedForRightSideOfDiamondMap(tile)) {
                     this.ctx.save()
                     this.#prepareCanvasToRenderImageForRightReflection(tile)
                     this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
                     this.ctx.restore()
                 }
-                if (this.#isCopiedTileForleftSideOfDiamondMap(tile)) {
+                if (this.#toBeCopiedForLeftSideOfDiamondMap(tile)) {
                     this.ctx.save()
                     this.#prepareCanvasToRenderImageForLeftReflection(tile)
                     this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
                     this.ctx.restore()
                 }
             } else { // render image at left of board for standard
-                this.ctx.save()
-                this.#prepareCanvasToRenderImageForLeftReflection(tile)
-                this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
-                this.ctx.restore()
+                if (this.#toBeCopiedForLeftSideOfStandardMap(tile)) {
+                    this.ctx.save()
+                    this.#prepareCanvasToRenderImageForLeftReflection(tile)
+                    this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: unitSpritesSheet, sprite: unit})
+                    this.ctx.restore()
+                }
             }
             
            /*
@@ -275,19 +279,55 @@ class Canvas {
         return isCroppedTileFromTopOfDiamondView || isCroppedTileFromBottomOfDiamondView
     }
 
+    /*
+    isCopiedTile(tile) {
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            return this.#toBeCopiedForRightSideOfDiamondMap(tile) || this.#toBeCopiedForLeftSideOfDiamondMap(tile)
+        } else {
+            return this.#isCopiedTileForStandardMap(tile)
+        }
+    }   
+    */
+
     // true if this tile should be copied to the right of the board
-    #isCopiedTileForRightSideOfDiamondMap(tile) {
+    #toBeCopiedForRightSideOfDiamondMap(tile) {
         const x = tile.coordinates.x
         const y = tile.coordinates.y
         return ( x < y - this.boardSize.x )   //x < this.boardSize.x + y  //  Math.floor(this.boardSize.x / 2) + 1
     }
 
     // true if this tile should be copied to the left of the board
-    #isCopiedTileForleftSideOfDiamondMap(tile) {
+    #toBeCopiedForLeftSideOfDiamondMap(tile) {
         const x = tile.coordinates.x
         const y = tile.coordinates.y
         return ( x > y - this.boardSize.x - 1)   //x < this.boardSize.x + y  //  Math.floor(this.boardSize.x / 2) + 1
     }
+
+    #toBeCopiedForLeftSideOfStandardMap(tile) {
+        return true // all tiles copied to left side
+    }
+
+    /*
+    #isCopiedTileForRightSideOfDiamondMap(tile) {
+        const x = tile.coordinates.x
+        const y = tile.coordinates.y
+        return (
+            x > y - this.boardSize.x - 1 - this.tileSize &&
+            x < this.boardSize.x
+        )
+    }
+
+    #isCopiedTileForStandardMap(tile) {
+        const x = tile.coordinates.x
+        const y = tile.coordinates.y
+        return (
+            x < 0 &&
+            x >= -this.boardSize.x &&  // copied cells are in same layout as board just copied to left side of y axis
+            y < this.boardSize.y &&
+            y >= 0
+        )
+    }
+    */
 
     // translate canvas (and rotated if diamond pattern) so image will be centered on board tile
     #prepareCanvasToRenderImage(tile) {
@@ -325,6 +365,24 @@ class Canvas {
             ...this.#imagePositionRelativeToCenterOfTileAndDimensions(), // destination (board) x, y, w, h
         )
     }
+
+    /////////////////////
+    #tileMovementFromBoardToRightCopy({x, y}) {
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            return {x: this.boardSize.x, y: -this.boardSize.x}
+        } else {
+            return {x: this.boardSize.x, y: 0}
+        }
+    }
+
+    #tileMovementFromBoardToLeftCopy({x, y}) {
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            return {x: -this.boardSize.x, y: +this.boardSize.x}
+        } else {
+            return {x: this.boardSize.x, y: 0}
+        }
+    }
+    //////////////////
 
     #findTileCenterPixel(tile) {
         //this.ctx.fillRect(0, 0, 5, 5) // draw dot at center of tile for troubleshooting
@@ -400,8 +458,24 @@ class Canvas {
     determineTileFromPixelCoordinates(x, y) {
         const currentTransformedCursor = this.getTransformedPoint(x, y)
         console.log(currentTransformedCursor)
-        const tileX = Math.floor(currentTransformedCursor.x / this.tileSize.x)
-        const tileY = Math.floor(currentTransformedCursor.y / this.tileSize.y)
+        let tileX = Math.floor(currentTransformedCursor.x / this.tileSize.x)
+        let tileY = Math.floor(currentTransformedCursor.y / this.tileSize.y)
+        if (tileX >= this.boardSize.x) { // check if location corresponds to a copied tile to right of board
+            const checkIfCopiedX = tileX - this.boardSize.x
+            const checkIfCopiedY = tileY + this.boardSize.x
+            console.log([checkIfCopiedX, checkIfCopiedY])
+            if (this.#isValidLocationOnMap({x: checkIfCopiedX, y: checkIfCopiedY})) {
+                tileX = checkIfCopiedX
+                tileY = checkIfCopiedY
+            }
+        }
+        if (tileX < 0) { // check if location corresponds to a copied tile to left of board
+            const checkIfCopiedX = tileX + this.boardSize.x
+            const checkIfCopiedY = tileY - this.boardSize.x
+            if (this.#isValidLocationOnMap({x: checkIfCopiedX, y: checkIfCopiedY})) {
+                [tileX, tileY] = [checkIfCopiedX, checkIfCopiedY]
+            }
+        }
         return {x: tileX, y: tileY}
     }
 
@@ -527,6 +601,7 @@ class Canvas {
 
     // most of these are just being started and probably will be re-factored
 
+    /*
     onLeftEdge({x, y}) { // same for diamond, but smaller when cropped
         return x === 0
     }
@@ -536,12 +611,13 @@ class Canvas {
     }
 
     onTopEdgeOfDiamondMap({x, y}) {
-        return x === y - this.boardSize.x - 1
+        return x === this.boardSize.x - y - 1
     }
 
     onBottomEdgeOfDiamondMap({x, y}) {
-        return x === y + this.boardSize.x - 1
+        return x === this.boardSize.y - y - 1
     }
+    */
 
     targetCoordinatesIfMovingLeftEdgeToRightEdge({x, y}) {
         let targetX
@@ -645,12 +721,31 @@ class Canvas {
         return [targetX, targetY]
     }
 
-    validLocationOnDiamondMap({x, y}) {
-        (
-            x <= this.onLeftEdgeOfSquareMap({x, y}) &&
-            x >= this.onRightEdgeOfSquareMap({x, y}) &&
-            x > this.onTopEdgeOfDiamondMap({x, y}) &&
-            x < this.onBottomEdgeOfDiamondMap({x, y})
+    #isValidLocationOnMap({x, y}) {
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            console.log(this.#isValidLocationOnDiamondMap({x, y}))
+            return this.#isValidLocationOnDiamondMap({x, y})
+        } else {
+            return this.#isValidLocationOnStandardMap({x, y})
+        }
+    }
+    
+    #isValidLocationOnStandardMap({x, y}) {
+        return (
+            x >= 0 &&
+            x < this.boardSize.x &&
+            y >= 0 &&
+            y < this.boardSize.y
+        )
+    }
+
+    #isValidLocationOnDiamondMap({x, y}) {
+        console.log(0, this.boardSize.x - 1, y - this.boardSize.x - 1, y + this.boardSize.x - 1)
+        return (
+            x >= 0 &&  // left edge
+            x <= (this.boardSize.x - 1) &&  // right edge
+            x >= (this.boardSize.x - y - 1) &&  // top edge
+            x <= (this.boardSize.y - y - 1)  // bottom edge
         )
     }
 

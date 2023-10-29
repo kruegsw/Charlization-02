@@ -20,9 +20,9 @@ socket.on("message-from-server-to-client", message => console.log(message))
 socket.on("disconnect", () => { console.log(`Client ${socket.id} disconnected from WebSocket`) })
 
 
-registerEventListeners2()
+registerEventListeners()
 
-function registerEventListeners2() {
+function registerEventListeners() {
 
     document.addEventListener("keydown", (event) => {
         if (canvas.selectedUnit) {
