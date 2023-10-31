@@ -31,14 +31,14 @@ class Canvas {
     // █████    █████     █     ███   ███    █████    █        ████    █   █   ███     ███    ████    █████   █   █
 
 
-    #adjustCanvasSizeToMatchBrowserOld() {
+    #adjustCanvasSizeToMatchBrowser() {
         const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution) test this later
         this.canvas.width = window.innerWidth //* devicePixelRatio
         this.canvas.height = window.innerHeight //* devicePixelRatio
     }
 
 
-    #adjustCanvasSizeToMatchBrowser() {  // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
+    #adjustCanvasSizeToMatchBrowserNew() {  // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
         
         this.canvas.width = window.innerWidth // * devicePixelRatio
         this.canvas.height = window.innerHeight // * devicePixelRatio
