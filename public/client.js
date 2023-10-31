@@ -1,5 +1,5 @@
 let clientGame = ""
-//let canvas = document.getElementById("canvas1")
+let canvas = document.getElementById("canvas1")
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
