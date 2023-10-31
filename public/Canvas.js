@@ -601,7 +601,6 @@ class Canvas {
 
     // most of these are just being started and probably will be re-factored
 
-    /*
     onLeftEdge({x, y}) { // same for diamond, but smaller when cropped
         return x === 0
     }
@@ -617,7 +616,6 @@ class Canvas {
     onBottomEdgeOfDiamondMap({x, y}) {
         return x === this.boardSize.y - y - 1
     }
-    */
 
     targetCoordinatesIfMovingLeftEdgeToRightEdge({x, y}) {
         let targetX
