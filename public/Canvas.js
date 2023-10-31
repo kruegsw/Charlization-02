@@ -10,14 +10,14 @@ class Canvas {
         this.selectedTile = ""
         this.sounds = {}
         this.sprites = {}
-        this.adjustCanvasSizeToBrowser(board)
-        this.initializeSounds()
-        this.initializeSprites()
-        this.initializeTerrain()
         this.view = {
             //origin: {x: 0, y: 0},  // referenced in client.js but x and y are not changed right now
             scale: 1 // update in scroolZoom
         }
+        this.adjustCanvasSizeToBrowser(board)
+        this.initializeSounds()
+        this.initializeSprites()
+        this.initializeTerrain()
         //this.#setOffScreenCanvas()
         //canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username})
     }
@@ -31,14 +31,14 @@ class Canvas {
     // █████    █████     █     ███   ███    █████    █        ████    █   █   ███     ███    ████    █████   █   █
 
 
-    #adjustCanvasSizeToMatchBrowser() {
+    #adjustCanvasSizeToMatchBrowserOld() {
         const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution) test this later
         this.canvas.width = window.innerWidth //* devicePixelRatio
         this.canvas.height = window.innerHeight //* devicePixelRatio
     }
 
 
-    #adjustCanvasSizeToMatchBrowserNew() {  // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
+    #adjustCanvasSizeToMatchBrowser() {  // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
         
         this.canvas.width = window.innerWidth // * devicePixelRatio
         this.canvas.height = window.innerHeight // * devicePixelRatio
