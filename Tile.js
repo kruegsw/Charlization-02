@@ -3,6 +3,7 @@ class Tile {
         this.terrain = this.generateRandomTerrain()
         this.unit = ""
         this.coordinates = {x: x, y: y}
+        this.isViewableBy = [] // array of players who can see this terrain
     }
 
     //undiscoveredTerrain() { return TERRAIN_TYPES.undiscovered }

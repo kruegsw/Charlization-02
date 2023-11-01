@@ -45,13 +45,13 @@ function registerEventListeners() {
                 case "ArrowUp":
                     if (canvas.onTopEdgeOfDiamondMap({x, y})) {return}
                     [targetX, targetY] = canvas.onLeftEdge({x, y}) ?
-                        canvas.targetCoordinatesIfMovingUpThroughLeftEdge({x, y}) : canvas.targetCoordinatesIfMovingUp({x, y})
+                        canvas.targetCoordinatesIfMovingUpOnLeftEdge({x, y}) : canvas.targetCoordinatesIfMovingUp({x, y})
                     moveUnitToTile({unit: unit, x: targetX, y: targetY}) // check if valid move, emit move to server, update canvas
                     break
                 case "ArrowDown":
                     if (canvas.onBottomEdgeOfDiamondMap({x, y})) {return}
                     [targetX, targetY] = canvas.onRightEdge({x, y}) ?
-                        canvas.targetCoordinatesIfMovingDownThroughRightEdge({x, y}) : canvas.targetCoordinatesIfMovingDown({x, y})
+                        canvas.targetCoordinatesIfMovingDownOnRightEdge({x, y}) : canvas.targetCoordinatesIfMovingDown({x, y})
                     moveUnitToTile({unit: unit, x: targetX, y: targetY}) // check if valid move, emit move to server, update canvas
                     break
                 case "Tab":

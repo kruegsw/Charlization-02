@@ -5,7 +5,7 @@ class Canvas {
         this.ctx.imageSmoothingEnabled = false;
         this.boardSize = {x: board.size.x, y: board.size.y}
         this.tileSize = {}
-        this.orientation = "short diamond"  // short diamond, diamond, or [nothing = standard]
+        this.orientation = ""  // short diamond, diamond, or [nothing = standard]
         this.selectedUnit = ""
         this.selectedTile = ""
         this.sounds = {}
@@ -460,20 +460,31 @@ class Canvas {
         console.log(currentTransformedCursor)
         let tileX = Math.floor(currentTransformedCursor.x / this.tileSize.x)
         let tileY = Math.floor(currentTransformedCursor.y / this.tileSize.y)
-        if (tileX >= this.boardSize.x) { // check if location corresponds to a copied tile to right of board
-            const checkIfCopiedX = tileX - this.boardSize.x
-            const checkIfCopiedY = tileY + this.boardSize.x
-            console.log([checkIfCopiedX, checkIfCopiedY])
-            if (this.#isValidLocationOnMap({x: checkIfCopiedX, y: checkIfCopiedY})) {
-                tileX = checkIfCopiedX
-                tileY = checkIfCopiedY
+        if (this.orientation === "diamond" || this.orientation === "short diamond") {
+            if (tileX >= this.boardSize.x) { // check if location corresponds to a copied tile to right of board
+                const checkIfCopiedX = tileX - this.boardSize.x
+                const checkIfCopiedY = tileY + this.boardSize.x
+                console.log([checkIfCopiedX, checkIfCopiedY])
+                if (this.#isValidLocationOnMap({x: checkIfCopiedX, y: checkIfCopiedY})) {
+                    tileX = checkIfCopiedX
+                    tileY = checkIfCopiedY
+                }
             }
-        }
-        if (tileX < 0) { // check if location corresponds to a copied tile to left of board
-            const checkIfCopiedX = tileX + this.boardSize.x
-            const checkIfCopiedY = tileY - this.boardSize.x
-            if (this.#isValidLocationOnMap({x: checkIfCopiedX, y: checkIfCopiedY})) {
-                [tileX, tileY] = [checkIfCopiedX, checkIfCopiedY]
+            if (tileX < 0) { // check if location corresponds to a copied tile to left of board
+                const checkIfCopiedX = tileX + this.boardSize.x
+                const checkIfCopiedY = tileY - this.boardSize.x
+                if (this.#isValidLocationOnMap({x: checkIfCopiedX, y: checkIfCopiedY})) {
+                    [tileX, tileY] = [checkIfCopiedX, checkIfCopiedY]
+                }
+            }
+        } else {
+            if (tileX >= this.boardSize.x) {return} // standard map has copied cells on left only
+            if (tileX < 0) {
+                const checkIfCopiedX = tileX + this.boardSize.x
+                const checkIfCopiedY = tileY
+                if (this.#isValidLocationOnMap({x: checkIfCopiedX, y: checkIfCopiedY})) {
+                    [tileX, tileY] = [checkIfCopiedX, checkIfCopiedY]
+                }
             }
         }
         return {x: tileX, y: tileY}
@@ -610,11 +621,11 @@ class Canvas {
     }
 
     onTopEdgeOfDiamondMap({x, y}) {
-        return x === this.boardSize.x - y - 1
+        return ( (x === this.boardSize.x - y - 1) && (this.orientation === "diamond" || this.orientation === "short diamond") )
     }
 
     onBottomEdgeOfDiamondMap({x, y}) {
-        return x === this.boardSize.y - y - 1
+        return ( (x === this.boardSize.y - y - 1) && (this.orientation === "diamond" || this.orientation === "short diamond") )
     }
 
     targetCoordinatesIfMovingLeftEdgeToRightEdge({x, y}) {
@@ -682,14 +693,15 @@ class Canvas {
         return [targetX, targetY]
     }
 
-    targetCoordinatesIfMovingUpThroughLeftEdge({x, y}) {
+    targetCoordinatesIfMovingUpOnLeftEdge({x, y}) {
         let targetX
         let targetY
         if (this.orientation === "diamond" || this.orientation === "short diamond") {
             targetX = x+(clientGame.board.size.x-1)
             targetY = y-(clientGame.board.size.x+1)
         } else {
-            return
+            targetX = x
+            targetY = y-1
         }
         return [targetX, targetY]
     }
@@ -707,14 +719,15 @@ class Canvas {
         return [targetX, targetY]
     }
 
-    targetCoordinatesIfMovingDownThroughRightEdge({x, y}) {
+    targetCoordinatesIfMovingDownOnRightEdge({x, y}) {
         let targetX
         let targetY                        
         if (this.orientation === "diamond" || this.orientation === "short diamond") {
             targetX = x-(clientGame.board.size.x-1)
             targetY = y+(clientGame.board.size.x+1)
         } else {
-            return
+            targetX = x
+            targetY = y+1
         }
         return [targetX, targetY]
     }
