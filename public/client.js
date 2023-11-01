@@ -99,6 +99,7 @@ function registerEventListeners() {
         } else {
             const rect = canvas.canvas.getBoundingClientRect()
             let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
+            canvas.drawCityCanvasOrigin({spriteSheet: canvas.sprites.city}) // gets covered up by animation frame
             canvas.selectTile(targetTile)
             canvas.selectUnit({tile: targetTile, username: socket.id})
         }

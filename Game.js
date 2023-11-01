@@ -1,4 +1,5 @@
 const Unit = require('./Unit')
+const City = require('./City')
 
 class Game {
     constructor({players, board}) {
@@ -37,6 +38,7 @@ class Game {
         this.board.tiles.forEach( (columnOfTiles, i) => {
             columnOfTiles.forEach( (tile, j) => {
                 if (tile.unit.player && tile.unit.player.username === username) {tile.unit = ""}
+                if (tile.city.player && tile.city.player.username === username) {tile.city = ""}
             })
         })
     }
@@ -46,6 +48,7 @@ class Game {
         let y = Math.floor(Math.random() * this.board.size.y)
         let tile = this.board.tiles[x][y]
         tile.unit = new Unit({player: player, coordinates: {x, y}})
+        tile.city = new City({player: player, coordinates: {x, y}})
     }
 
     addUnit({unit, tile}) {

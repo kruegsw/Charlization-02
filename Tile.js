@@ -2,6 +2,7 @@ class Tile {
     constructor({x, y}) {
         this.terrain = this.generateRandomTerrain()
         this.unit = ""
+        this.city = ""
         this.coordinates = {x: x, y: y}
         this.isViewableBy = [] // array of players who can see this terrain
     }

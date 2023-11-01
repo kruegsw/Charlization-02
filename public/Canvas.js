@@ -5,7 +5,7 @@ class Canvas {
         this.ctx.imageSmoothingEnabled = false;
         this.boardSize = {x: board.size.x, y: board.size.y}
         this.tileSize = {}
-        this.orientation = ""  // short diamond, diamond, or [nothing = standard]
+        this.orientation = "short diamond"  // short diamond, diamond, or [nothing = standard]
         this.selectedUnit = ""
         this.selectedTile = ""
         this.sounds = {}
@@ -16,8 +16,10 @@ class Canvas {
         }
         this.adjustCanvasSizeToBrowser(board)
         this.initializeSounds()
-        this.initializeSprites()
-        this.initializeTerrain()
+        this.initializeUnitSprites()
+        this.initializeTerrainSprites()
+        this.initializeCitiesSprites()
+        this.initializeCitySprite()
         //this.#setOffScreenCanvas()
         //canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username})
     }
@@ -171,6 +173,7 @@ class Canvas {
     #renderTile({tile, username}) {
         this.#renderTerrain(tile)
         this.#renderUnit(tile, username)
+        this.#renderCity(tile, username)
         this.#renderTileOutline(tile)
     }
 
@@ -272,6 +275,43 @@ class Canvas {
         }
     }
 
+    #renderCity(tile, username) {
+        
+        if (tile.city) { // unit exists on tile
+
+            // render tiles on the board
+            const city = "stone-bronze-1-open"
+            const citySpritesSheet = this.sprites.cities
+            this.ctx.save()
+            this.#prepareCanvasToRenderImage(tile)
+            this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: citySpritesSheet, sprite: city})
+            this.ctx.restore()
+
+            // render the copied images of the tiles on either side of the board for diamond pattern
+            if (( this.orientation === "diamond" || this.orientation === "short diamond" )) {
+                if (this.#toBeCopiedForRightSideOfDiamondMap(tile)) {
+                    this.ctx.save()
+                    this.#prepareCanvasToRenderImageForRightReflection(tile)
+                    this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: citySpritesSheet, sprite: city})
+                    this.ctx.restore()
+                }
+                if (this.#toBeCopiedForLeftSideOfDiamondMap(tile)) {
+                    this.ctx.save()
+                    this.#prepareCanvasToRenderImageForLeftReflection(tile)
+                    this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: citySpritesSheet, sprite: city})
+                    this.ctx.restore()
+                }
+            } else { // render image at left of board for standard
+                if (this.#toBeCopiedForLeftSideOfStandardMap(tile)) {
+                    this.ctx.save()
+                    this.#prepareCanvasToRenderImageForLeftReflection(tile)
+                    this.#drawSpriteCenteredOnCanvasOrigin({spriteSheet: citySpritesSheet, sprite: city})
+                    this.ctx.restore()
+                }
+            }
+        }
+    }
+
     // true if board tile is cropped
     #isCroppedTileforDiamondView({x, y}) {
         let isCroppedTileFromTopOfDiamondView = y < ( this.boardSize.x - x - 1 )
@@ -363,6 +403,14 @@ class Canvas {
             spriteSheet,
             ...this.#imageLocationAndDimensionsOnSpriteSheet(spriteSheet, sprite), // source (sprite sheet) image x, y, w, h
             ...this.#imagePositionRelativeToCenterOfTileAndDimensions(), // destination (board) x, y, w, h
+        )
+    }
+
+    drawCityCanvasOrigin({spriteSheet}) {
+        this.ctx.drawImage(
+            spriteSheet, 0, 0,
+            //...this.#imageLocationAndDimensionsOnSpriteSheet(spriteSheet, sprite), // source (sprite sheet) image x, y, w, h
+            //0, 0, window.size.x, window.size.y, // destination (board) x, y, w, h
         )
     }
 
@@ -509,6 +557,11 @@ class Canvas {
     }
 
     selectTile(tile) { this.selectedTile = tile }
+
+    // clearly this needs to be renamed or changed to be for cities only
+    lookInsideCity(tile) {
+        if (tile.city && this.clientOwnsUnit({unit: tile.city, username: username})) { this.selectedUnit = tile.unit }
+    }
 
     deselectUnit() { this.selectedUnit = "" }
 
@@ -808,7 +861,7 @@ class Canvas {
         this.sounds.swordFight = new Audio('SWORDFGT.WAV');
     }
 
-    initializeSprites() {
+    initializeUnitSprites() {
         this.sprites.units = new Image()
         this.sprites.units.src = "units.png"
         let unitSprites = [
@@ -827,7 +880,7 @@ class Canvas {
         })
     }
 
-    initializeTerrain() {
+    initializeTerrainSprites() {
         this.sprites.terrain2 = new Image()
         this.sprites.terrain2.src = "terrain2.png"
         let terrain2Sprites = [
@@ -869,6 +922,29 @@ class Canvas {
                 this.sprites.terrain1[terrain] = {x: 2+i*65, y: 2+j*33, w: 62, h: 30}
             })
         })
+    }
+
+    initializeCitiesSprites() {
+        this.sprites.cities = new Image()
+        this.sprites.cities.src = "cities.png"
+        let citiesSprites = [
+            ['stone-bronze-1-open', 'stone-bronze-2-open', 'stone-bronze-3-open', 'stone-bronze-4-open', '', 'stone-bronze-1-walled', 'stone-bronze-2-walled', 'stone-bronze-3-walled', 'stone-bronze-4-walled'],
+            ['ancient-classical-1-open', 'ancient-classical-2-open', 'ancient-classical-3-open', 'ancient-classical-4-open', '', 'ancient-classical-1-walled', 'ancient-classical-2-walled', 'ancient-classical-3-walled', 'ancient-classical-4-walled'],
+            ['far-east-1-open', 'far-east-2-open', 'far-east-3-open', 'far-east-4-open', '', 'far-east-1-walled', 'far-east-2-walled', 'far-east-3-walled', 'far-east-4-walled'],
+            ['medieval-1-open', 'medieval-2-open', 'medieval-3-open', 'medieval-4-open', '', 'medieval-1-walled', 'medieval-2-walled', 'medieval-3-walled', 'medieval-4-walled'],
+            ['early-industrial-1-open', 'early-industrial-2-open', 'early-industrial-3-open', 'early-industrial-4-open', '', 'early-industrial-1-walled', 'early-industrial-2-walled', 'early-industrial-3-walled', 'early-industrial-4-walled'],
+            ['modern-1-open', 'modern-2-open', 'modern-3-open', 'modern-4-open', '', 'modern-1-walled', 'modern-2-walled', 'modern-3-walled', 'modern-4-walled']
+        ]
+        citiesSprites.forEach( (row, j) => {
+            row.forEach( (city, i) => {
+                this.sprites.cities[city] = {x: 2+i*65, y: 40+j*49, w: 62, h: 46}
+            })
+        })
+    }
+
+    initializeCitySprite() {
+        this.sprites.city = new Image()
+        this.sprites.city.src = "city.png"
     }
 
     #imageLocationAndDimensionsOnSpriteSheet(terrainSpritesSheet, terrain) {
