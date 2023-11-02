@@ -47,18 +47,33 @@ class Game {
         let x = Math.floor(Math.random() * this.board.size.x)
         let y = Math.floor(Math.random() * this.board.size.y)
         let tile = this.board.tiles[x][y]
-        tile.unit = new Unit({player: player, coordinates: {x, y}})
-        tile.city = new City({player: player, coordinates: {x, y}})
+        let unitType = "settler"
+        tile.unit = new Unit({player: player, coordinates: {x, y}, unitType})
     }
 
     addUnit({unit, tile}) {
         tile.unit = unit
-        tile.unit.coordinates.x = tile.coordinates.x
-        tile.unit.coordinates.y = tile.coordinates.y
+        tile.unit.coordinates = tile.coordinates
+    }
+
+    addCity({player, tile}) {
+        tile.city = new City({player: player, coordinates: tile.coordinates})
     }
 
     removeUnit({tile}) {
         tile.unit = ""
+    }
+
+    unitOrders({unit, orders}) {
+        let x = unit.coordinates.x
+        let y = unit.coordinates.y
+        let tile = this.board.tiles[x][y]
+        if (unit.unitType === "settler") {
+            if (orders === "buildNewCity") {
+                this.addCity({player: unit.player, tile})
+                this.removeUnit({tile})
+            }
+        }
     }
 }
 

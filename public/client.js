@@ -25,6 +25,7 @@ registerEventListeners()
 function registerEventListeners() {
 
     document.addEventListener("keydown", (event) => {
+        console.log(event)
         if (canvas.selectedUnit) {
             let unit = canvas.selectedUnit
             let x = unit.coordinates.x
@@ -54,6 +55,13 @@ function registerEventListeners() {
                         canvas.targetCoordinatesIfMovingDownOnRightEdge({x, y}) : canvas.targetCoordinatesIfMovingDown({x, y})
                     moveUnitToTile({unit: unit, x: targetX, y: targetY}) // check if valid move, emit move to server, update canvas
                     break
+                case "KeyB":
+                    if (canvas.selectedUnit.unitType === "settler") {
+                        socket.emit('unitOrders', {unit: canvas.selectedUnit, orders: "buildNewCity"})
+                        canvas.deselectUnit()
+                        canvas.sounds.buildCity.play()
+                        return
+                    }
                 case "Tab":
                     event.preventDefault()
                     return

@@ -236,7 +236,7 @@ class Canvas {
         if (tile.unit) { // unit exists on tile
 
             // render tiles on the board
-            const unit = "legion"
+            const unit = tile.unit.unitType
             const unitSpritesSheet = this.sprites.units
             this.ctx.save()
             this.#prepareCanvasToRenderImage(tile)
@@ -859,6 +859,7 @@ class Canvas {
     initializeSounds() {
         this.sounds.movePiece = new Audio('MOVPIECE.WAV');
         this.sounds.swordFight = new Audio('SWORDFGT.WAV');
+        this.sounds.buildCity = new Audio('BLDCITY.WAV');
     }
 
     initializeUnitSprites() {
@@ -867,7 +868,7 @@ class Canvas {
         let unitSprites = [
             ['settler', 'engineer', 'warrior', 'phalanx', 'archer', 'legion', 'pikeman', 'musketeer', 'fanatic'],
             ['partisan', 'alpine', 'rifleman', 'marine', 'parachuter', 'humvee', 'horseman', 'chariot', 'elephant'],
-            ['crusader', 'knight', 'not sure cavalry', 'cavalary', 'armor', 'catapult', 'cannon', 'not sure cannon', 'howitzer'],
+            ['crusader', 'knight', 'not sure cavalry', 'cavalary', 'armor', 'catapult', 'cannon', 'artillery', 'howitzer'],
             ['plane', 'bomber', 'helicopter', 'fighter', 'stealth', 'trireme', 'caravel', 'galley', 'frigate'],
             ['ironclad', 'destroyer', 'cruser', 'not sure ship', 'battleship', 'submarine', 'carrier', 'transport', 'missile'],
             ['nuclear', 'diplomat', 'spy', 'caravan', 'freight', 'explorer', 'not sure barbarian', 'not sure boat', 'not sure ballon'],

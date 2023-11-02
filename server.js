@@ -34,6 +34,7 @@ io.on("connection", socket => {
 
     socket.on('moveUnitInDirection', ({unit, direction}) => game.moveUnitInDirection({unit, direction}) )
     socket.on('moveUnitToTile', ({unit, tile}) => game.moveUnitToTile({unit: unit, tile: tile}) )
+    socket.on('unitOrders', ({unit, orders}) => { game.unitOrders({unit, orders}) })
 
     socket.on('disconnect', (reason) => {
         console.log(`reason for ${socket.id} disconnect: ${reason}`)
