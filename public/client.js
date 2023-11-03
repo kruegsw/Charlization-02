@@ -4,12 +4,13 @@ let cityCanvas = document.getElementById("cityCanvas")
 let cityCtx = cityCanvas.getContext("2d")
 cityCanvas.width = window.innerWidth //* devicePixelRatio
 cityCanvas.height = window.innerHeight //* devicePixelRatio
+let canvasOrder = [canvas1, cityCanvas]
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
 //const socket = io("https://127.0.0.1:4000", {transports: ['websocket', 'polling']} )
-//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
-const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
+const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
+//const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
 socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame
@@ -73,6 +74,7 @@ function registerEventListeners() {
                 case "Escape":
                     canvas.deselectTile()
                     canvas.deselectUnit()
+                    cityCtx.clearRect(0, 0, window.innerWidth, window.innerHeight)
                     return
                 default:
                     return
@@ -82,7 +84,10 @@ function registerEventListeners() {
             if (event.code === "ArrowDown") { canvas.scrollDown(); return }
             if (event.code === "ArrowLeft") { canvas.scrollLeft(); return }
             if (event.code === "ArrowRight") { canvas.scrollRight(); return }
-            if (event.code === "Escape") { return }
+            if (event.code === "Escape") {
+                cityCtx.clearRect(0, 0, window.innerWidth, window.innerHeight) // clear city canvas (akin to close city window)
+                //bringToFront(canvas1)
+            }
         }
         if (event.code === "Tab") {
             event.preventDefault() // prevent screen scrolling when moving selected unit, and tabbing
@@ -95,6 +100,12 @@ function registerEventListeners() {
 
     window.addEventListener("pointerdown", (event) => {
         //console.log(clientGame)
+
+        if ( isAtFront(cityCanvas) ) {
+            console.log("clicking on city window")
+            return
+        }
+
         const rect = canvas.canvas.getBoundingClientRect()
         mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
         mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize.y)
@@ -119,6 +130,7 @@ function registerEventListeners() {
                     0, 0, 640, 480,
                     0, 0, window.innerWidth, window.innerHeight
                 )
+                //bringToFront(cityCanvas)
                 return
             }
             canvas.selectTile(targetTile)
@@ -173,8 +185,18 @@ function moveUnitToTile({unit, x, y}) {
     }
 }
 
+function bringToFront(element) {
+    element.style.zIndex = "0";
+    //canvasOrder.forEach
+    //for (let i = 0; i < this.canvasOrder.length; i++) {
+    //    let column = []
+    //    this.tiles.push(column)
+    //}
+}
 
-
+function isAtFront(element) {
+    element.style.zIndex === "0"
+}
 
 
 
