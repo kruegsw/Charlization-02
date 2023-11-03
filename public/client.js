@@ -1,10 +1,15 @@
 let clientGame = ""
 let canvas = document.getElementById("canvas1")
+let cityCanvas = document.getElementById("cityCanvas")
+let cityCtx = cityCanvas.getContext("2d")
+cityCanvas.width = window.innerWidth //* devicePixelRatio
+cityCanvas.height = window.innerHeight //* devicePixelRatio
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
-//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
-const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
+//const socket = io("https://127.0.0.1:4000", {transports: ['websocket', 'polling']} )
+const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
+//const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
 socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame
@@ -107,7 +112,15 @@ function registerEventListeners() {
         } else {
             const rect = canvas.canvas.getBoundingClientRect()
             let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
-            canvas.drawCityCanvasOrigin({spriteSheet: canvas.sprites.city}) // gets covered up by animation frame
+            if (targetTile.city) {
+                // render tiles on the board
+                const city = "stone-bronze-1-open"
+                const citySpritesSheet = canvas.sprites.cities
+                cityCtx.drawImage(
+                    citySpritesSheet, 0, 0,
+                )
+                return
+            }
             canvas.selectTile(targetTile)
             canvas.selectUnit({tile: targetTile, username: socket.id})
         }

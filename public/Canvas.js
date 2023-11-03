@@ -1,7 +1,7 @@
 class Canvas {
     constructor({canvasID, board}) {
         this.canvas = document.getElementById(canvasID)
-        this.ctx = this.canvas.getContext("2d", { alpha: false }) // turning off transprency of canvas and makes background black
+        this.ctx = this.canvas.getContext("2d")//, { alpha: false }) // turning off transprency of canvas and makes background black
         this.ctx.imageSmoothingEnabled = false;
         this.boardSize = {x: board.size.x, y: board.size.y}
         this.tileSize = {}
