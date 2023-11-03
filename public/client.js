@@ -8,8 +8,8 @@ let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
 //const socket = io("https://127.0.0.1:4000", {transports: ['websocket', 'polling']} )
-const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
-//const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
+//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
+const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
 socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame
@@ -110,14 +110,14 @@ function registerEventListeners() {
             canvas.selectTile(targetTile)
             canvas.deselectUnit()
         } else {
-            const rect = canvas.canvas.getBoundingClientRect()
             let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
             if (targetTile.city) {
                 // render tiles on the board
-                const city = "stone-bronze-1-open"
-                const citySpritesSheet = canvas.sprites.cities
+                const cityImage = canvas.sprites.city
                 cityCtx.drawImage(
-                    citySpritesSheet, 0, 0,
+                    cityImage,
+                    0, 0, 640, 480,
+                    0, 0, window.innerWidth, window.innerHeight
                 )
                 return
             }
