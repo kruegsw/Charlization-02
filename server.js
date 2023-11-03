@@ -1,4 +1,4 @@
-require('dotenv').config()
+frequire('dotenv').config()
 
 const express = require('express')
 const app = express()
@@ -48,6 +48,7 @@ io.on("connection", socket => {
 setInterval(() => {
     io.emit('update-game', game)
     //io.emit('message-from-server-to-client', "tick")
+    //yo dis tbuz first file update
 }, 250)
 
 httpServer.listen(process.env.PORT, () => {
