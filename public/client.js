@@ -8,9 +8,9 @@ let canvasOrder = [canvas1, cityCanvas]
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
-//const socket = io("https://127.0.0.1:4000", {transports: ['websocket', 'polling']} )
-//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )
-const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )
+//const socket = io("https://192.168.1.69:4000", {transports: ['websocket', 'polling']} )  // this is for testing in local area network
+//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )  // this is for testing on local machine only
+const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )  // this is for server
 socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame
@@ -27,6 +27,7 @@ socket.on("disconnect", () => { console.log(`Client ${socket.id} disconnected fr
 
 
 registerEventListeners()
+initializeTestSwipeMotionForMobile()
 
 function registerEventListeners() {
 
@@ -199,7 +200,61 @@ function isAtFront(element) {
 }
 
 
+function initializeTestSwipeMotionForMobile() {
 
+    document.addEventListener('touchstart', handleTouchStart, false);        
+    document.addEventListener('touchmove', handleTouchMove, false);
+
+    var xDown = null;                                                        
+    var yDown = null;
+
+    function getTouches(evt) {
+        evt.preventDefault()
+    return evt.touches ||             // browser API
+            evt.originalEvent.touches; // jQuery
+    }                                                     
+                                                                            
+    function handleTouchStart(evt) {
+        evt.preventDefault()
+        const firstTouch = getTouches(evt)[0];                                      
+        xDown = firstTouch.clientX;                                      
+        yDown = firstTouch.clientY;                                      
+    };                                                
+                                                                            
+    function handleTouchMove(evt) {
+        if ( ! xDown || ! yDown ) {
+            return;
+        }
+
+        var xUp = evt.touches[0].clientX;                                    
+        var yUp = evt.touches[0].clientY;
+
+        var xDiff = xDown - xUp;
+        var yDiff = yDown - yUp;
+                                                                            
+        if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) {/*most significant*/
+            if ( xDiff > 0 ) {
+                /* right swipe */
+                canvas.scrollRight()
+            } else {
+                /* left swipe */
+                canvas.scrollLeft()
+            }                       
+        } else {
+            if ( yDiff > 0 ) {
+                /* down swipe */ 
+                canvas.scrollDown()
+            } else { 
+                /* up swipe */
+                canvas.scrollUp()
+            }                                                                 
+        }
+        /* reset values */
+        xDown = null;
+        yDown = null;                                             
+    };
+
+}
 
 
 
