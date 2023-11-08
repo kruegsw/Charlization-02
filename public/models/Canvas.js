@@ -857,14 +857,14 @@ class Canvas {
 
 
     initializeSounds() {
-        this.sounds.movePiece = new Audio('MOVPIECE.WAV');
-        this.sounds.swordFight = new Audio('SWORDFGT.WAV');
-        this.sounds.buildCity = new Audio('BLDCITY.WAV');
+        this.sounds.movePiece = new Audio('/assets/sounds/MOVPIECE.WAV');
+        this.sounds.swordFight = new Audio('/assets/sounds/SWORDFGT.WAV');
+        this.sounds.buildCity = new Audio('/assets/sounds/BLDCITY.WAV');
     }
 
     initializeUnitSprites() {
         this.sprites.units = new Image()
-        this.sprites.units.src = "units.png"
+        this.sprites.units.src = "/assets/images/units.png"
         let unitSprites = [
             ['settler', 'engineer', 'warrior', 'phalanx', 'archer', 'legion', 'pikeman', 'musketeer', 'fanatic'],
             ['partisan', 'alpine', 'rifleman', 'marine', 'parachuter', 'humvee', 'horseman', 'chariot', 'elephant'],
@@ -883,7 +883,7 @@ class Canvas {
 
     initializeTerrainSprites() {
         this.sprites.terrain2 = new Image()
-        this.sprites.terrain2.src = "terrain2.png"
+        this.sprites.terrain2.src = "/assets/images/terrain2.png"
         let terrain2Sprites = [
             [],
             [],
@@ -904,7 +904,7 @@ class Canvas {
         })
         
         this.sprites.terrain1 = new Image()
-        this.sprites.terrain1.src = "terrain1.png"
+        this.sprites.terrain1.src = "/assets/images/terrain1.png"
         let terrain1Sprites = [
             ['desert', 'desert-2', 'oasis', 'oil'],//-1', 'desert-2'],
             ['prairie', '', 'bison', 'wheat'],
@@ -927,7 +927,7 @@ class Canvas {
 
     initializeCitiesSprites() {
         this.sprites.cities = new Image()
-        this.sprites.cities.src = "cities.png"
+        this.sprites.cities.src = "/assets/images/cities.png"
         let citiesSprites = [
             ['stone-bronze-1-open', 'stone-bronze-2-open', 'stone-bronze-3-open', 'stone-bronze-4-open', '', 'stone-bronze-1-walled', 'stone-bronze-2-walled', 'stone-bronze-3-walled', 'stone-bronze-4-walled'],
             ['ancient-classical-1-open', 'ancient-classical-2-open', 'ancient-classical-3-open', 'ancient-classical-4-open', '', 'ancient-classical-1-walled', 'ancient-classical-2-walled', 'ancient-classical-3-walled', 'ancient-classical-4-walled'],
@@ -945,7 +945,7 @@ class Canvas {
 
     initializeCitySprite() {
         this.sprites.city = new Image()
-        this.sprites.city.src = "city.png"
+        this.sprites.city.src = "/assets/images/city.png"
     }
 
     #imageLocationAndDimensionsOnSpriteSheet(terrainSpritesSheet, terrain) {
