@@ -30,17 +30,28 @@ io.on("connection", socket => {
     socket.on('message-from-client-to-server', message => {
         console.log(`message from client ${socket.id}: ${message}`)
         io.emit('message-from-server', `message from client ${socket.id}: ${message}`)
+        io.emit('update-game', game)
     })
 
-    socket.on('moveUnitInDirection', ({unit, direction}) => game.moveUnitInDirection({unit, direction}) )
-    socket.on('moveUnitToTile', ({unit, tile}) => game.moveUnitToTile({unit: unit, tile: tile}) )
-    socket.on('unitOrders', ({unit, orders}) => { game.unitOrders({unit, orders}) })
+    socket.on('moveUnitInDirection', ({unit, direction}) => {
+        game.moveUnitInDirection({unit, direction})
+        io.emit('update-game', game)
+    })
+    socket.on('moveUnitToTile', ({unit, tile}) => {
+        game.moveUnitToTile({unit: unit, tile: tile})
+        io.emit('update-game', game)
+    })
+    socket.on('unitOrders', ({unit, orders}) => {
+        game.unitOrders({unit, orders})
+        io.emit('update-game', game)
+    })
 
     socket.on('disconnect', (reason) => {
         console.log(`reason for ${socket.id} disconnect: ${reason}`)
         //io.emit('player-left-game', socket.id)
         game.removePlayerFromBoard({username: socket.id})
         delete game.players[socket.id]
+        io.emit('update-game', game)
         console.log(game.players)
     })
 })
@@ -49,7 +60,7 @@ setInterval(() => {
     io.emit('update-game', game)
     //io.emit('message-from-server-to-client', "tick")
     //yo dis tbuz first file update
-}, 250)
+}, 60000)
 
 httpServer.listen(process.env.PORT, () => {
     console.log(`listening on port ${process.env.PORT}`)

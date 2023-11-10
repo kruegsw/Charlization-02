@@ -1,7 +1,18 @@
+/*
+window.onload = function() { // this will be run when the whole page is loaded
+    registerEventListeners()
+    initializeTestSwipeMotionForMobile()
+    initializeTestPinchZoomForMobile()
+}
+*/
 
-registerEventListeners()
-initializeTestSwipeMotionForMobile()
-initializeTestPinchZoomForMobile()
+document.addEventListener('DOMContentLoaded', function() {
+    registerEventListeners()
+    initializeTestSwipeMotionForMobile()
+    initializeTestPinchZoomForMobile()
+})
+
+
 
 function registerEventListeners() {
 
@@ -74,7 +85,6 @@ function registerEventListeners() {
     })
 
     window.addEventListener("pointerdown", (event) => {
-        //console.log(clientGame)
 
         if ( isAtFront(cityCanvas) ) {
             console.log("clicking on city window")
