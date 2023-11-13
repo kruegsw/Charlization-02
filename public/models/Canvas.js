@@ -879,6 +879,7 @@ class Canvas {
                 this.sprites.units[unit] = {x: 2+i*65, y: 2+j*49, w: 62, h: 46}
             })
         })
+        this.sprites.units['shield'] = {x: 597, y: 30, w: 12, h: 20}
     }
 
     initializeTerrainSprites() {

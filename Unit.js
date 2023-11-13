@@ -5,6 +5,33 @@ class Unit {
         this.coordinates = coordinates
         this.selectable = true
         this.unitType = unitType
+        this.cost = 10
+        this.attack = 1
+        this.defence = 1
+        this.health = 1
+        this.firepower = 1
+        this.move = 1
+        this.orders = {
+
+        }
+        this.modifyAttributesBasedOnUnitType()
+}
+
+modifyAttributesBasedOnUnitType() {
+    switch(this.unitType) {
+        case 'settler':
+            this.cost = 40
+            this.attack = 0
+            this.defence = 1
+            this.health = 2
+            this.firepower = 1
+            this.move = 1
+            this.orders = {
+                'KeyB': 'buildNewCity'
+            }
+        case 'warrior':
+            return
+    }
 }
 
 static UNIT_TYPES = {
