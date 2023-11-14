@@ -505,14 +505,14 @@ class Canvas {
 
     determineTileFromPixelCoordinates(x, y) {
         const currentTransformedCursor = this.getTransformedPoint(x, y)
-        console.log(currentTransformedCursor)
+        //console.log(currentTransformedCursor)
         let tileX = Math.floor(currentTransformedCursor.x / this.tileSize.x)
         let tileY = Math.floor(currentTransformedCursor.y / this.tileSize.y)
         if (this.orientation === "diamond" || this.orientation === "short diamond") {
             if (tileX >= this.boardSize.x) { // check if location corresponds to a copied tile to right of board
                 const checkIfCopiedX = tileX - this.boardSize.x
                 const checkIfCopiedY = tileY + this.boardSize.x
-                console.log([checkIfCopiedX, checkIfCopiedY])
+                //console.log([checkIfCopiedX, checkIfCopiedY])
                 if (this.#isValidLocationOnMap({x: checkIfCopiedX, y: checkIfCopiedY})) {
                     tileX = checkIfCopiedX
                     tileY = checkIfCopiedY
@@ -787,7 +787,7 @@ class Canvas {
 
     #isValidLocationOnMap({x, y}) {
         if (this.orientation === "diamond" || this.orientation === "short diamond") {
-            console.log(this.#isValidLocationOnDiamondMap({x, y}))
+            //console.log(this.#isValidLocationOnDiamondMap({x, y}))
             return this.#isValidLocationOnDiamondMap({x, y})
         } else {
             return this.#isValidLocationOnStandardMap({x, y})
@@ -804,7 +804,7 @@ class Canvas {
     }
 
     #isValidLocationOnDiamondMap({x, y}) {
-        console.log(0, this.boardSize.x - 1, y - this.boardSize.x - 1, y + this.boardSize.x - 1)
+        //console.log(0, this.boardSize.x - 1, y - this.boardSize.x - 1, y + this.boardSize.x - 1)
         return (
             x >= 0 &&  // left edge
             x <= (this.boardSize.x - 1) &&  // right edge
