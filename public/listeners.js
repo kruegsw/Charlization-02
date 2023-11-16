@@ -110,8 +110,8 @@ function registerEventListeners() {
             popup.style.display = 'none';
         }
     })
-/*
-    canvas1.addEventListener("pointerdown", (event) => {
+
+    window.addEventListener("pointerdown", (event) => {
         console.log('listener added')
 
         if ( isAtFront(cityCanvas) ) {
@@ -165,7 +165,7 @@ function registerEventListeners() {
         if (pointerDown) { canvas.panMouse(pointerDownLocation.x-event.x,pointerDownLocation.y-event.y); return }
         //console.log(mouse.x,mouse.y);
     })
-*/
+
     window.addEventListener("resize", () => canvas.adjustCanvasSizeToBrowser(clientGame.board) )
     window.addEventListener("wheel", (event) => {
         event.preventDefault() 
