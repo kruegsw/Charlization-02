@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
     //initializeTestPinchZoomForMobile()
 })
 
+let pointerDown = false;
+const pointerDownLocation = { x: undefined, y: undefined }
 
 
 function registerEventListeners() {
@@ -117,6 +119,10 @@ function registerEventListeners() {
             return
         }
 
+        pointerDown = true;
+        pointerDownLocation.x = event.x;
+        pointerDownLocation.y = event.y;
+        
         const rect = canvas.canvas.getBoundingClientRect()
         mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
         mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize.y)
@@ -147,7 +153,17 @@ function registerEventListeners() {
             canvas.selectTile(targetTile)
             canvas.selectUnit({tile: targetTile, username: socket.id})
         }
-        
+        console.log("mouse down")
+    })
+
+    window.addEventListener("pointerup", (event) => {
+        pointerDown = false;
+        console.log("mouse up");
+    })
+
+    window.addEventListener("pointermove", (event) => {
+        if (pointerDown) { canvas.panMouse(pointerDownLocation.x-event.x,pointerDownLocation.y-event.y); return }
+        //console.log(mouse.x,mouse.y);
     })
 */
     window.addEventListener("resize", () => canvas.adjustCanvasSizeToBrowser(clientGame.board) )
@@ -155,6 +171,7 @@ function registerEventListeners() {
         event.preventDefault() 
         canvas.scrollZoom(event)
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
+
 }
 
 function isInvalidMove(unit, direction) {
@@ -329,9 +346,7 @@ function initializeTestPinchZoomForMobile() { // https://developer.mozilla.org/e
           prevDiff = -1;
         }
     }
-      
-      
-      
+
       
 }
 */
