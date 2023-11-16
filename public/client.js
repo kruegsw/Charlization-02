@@ -54,7 +54,7 @@ canvas1.addEventListener("pointerdown", (event) => {
 })
 
 //const socket = io("https://192.168.1.69:4000", {transports: ['websocket', 'polling']} )  // this is for testing in local area network
-const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )  // this is for testing on local machine only
+//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )  // this is for testing on local machine only
 //const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )  // this is for server
 // socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )  // this is for testing on local machine only
 const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )  // this is for server
