@@ -1,5 +1,6 @@
 let clientGame = ""
 //let canvas = document.getElementById("canvas1")
+const popup = document.getElementById('popup');
 let cityCanvas = document.getElementById("cityCanvas")
 let cityCtx = cityCanvas.getContext("2d")
 cityCanvas.width = window.innerWidth //* devicePixelRatio

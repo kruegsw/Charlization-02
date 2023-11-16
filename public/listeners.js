@@ -9,7 +9,7 @@ window.onload = function() { // this will be run when the whole page is loaded
 document.addEventListener('DOMContentLoaded', function() {
     registerEventListeners()
     initializeTestSwipeMotionForMobile()
-    initializeTestPinchZoomForMobile()
+    //initializeTestPinchZoomForMobile()
 })
 
 let pointerDown = false;
@@ -52,12 +52,9 @@ function registerEventListeners() {
                     break
                 case "KeyB":
                     socket.emit('unitOrders', {unit: canvas.selectedUnit, orders: canvas.selectedUnit.orders[event.code]})
-                    //if (canvas.selectedUnit.unitType === "settler") {
-                    //    socket.emit('unitOrders', {unit: canvas.selectedUnit, orders: "buildNewCity"})
-                        canvas.deselectUnit()
-                        canvas.sounds.buildCity.play()
-                        return
-                    //}
+                    canvas.deselectUnit()
+                    canvas.sounds.buildCity.play()
+                    return
                 case "Tab":
                     event.preventDefault()
                     return
@@ -85,6 +82,32 @@ function registerEventListeners() {
             if ( !(canvas.tileIsVisibleOnScreen(canvas.selectedTile)) ) { canvas.centerScreenOnTile(canvas.selectedTile) }
             console.log(canvas.selectedUnit)
             return
+        }
+    })
+
+    window.addEventListener("pointermove", (event) => {
+
+        const rect = canvas.canvas.getBoundingClientRect()
+        mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
+        mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize.y)
+
+        const hoveredTileXY = canvas.determineTileFromPixelCoordinates(event.offsetX, event.offsetY)
+        let hoveredTile = clientGame.board.tiles[hoveredTileXY.x][hoveredTileXY.y]
+        console.log(hoveredTile)
+
+        if (hoveredTile.unit) {
+            // Set the popup content and position
+            console.log('unit')
+            const objectInfo = `${hoveredTile.unit.unitType}`;
+            popup.innerHTML = objectInfo;
+            popup.style.left = `${event.x + 10}px`;
+            popup.style.top = `${event.y + 10}px`;
+
+            // Show the popup
+            popup.style.display = 'block';
+        } else {
+            // Hide the popup if the mouse is not over the object
+            popup.style.display = 'none';
         }
     })
 
@@ -242,6 +265,7 @@ function initializeTestSwipeMotionForMobile() {  // https://stackoverflow.com/qu
 
 }
 
+/*
 function initializeTestPinchZoomForMobile() { // https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events/Pinch_zoom_gestures
     // Global vars to cache event state
     const evCache = [];
@@ -324,3 +348,4 @@ function initializeTestPinchZoomForMobile() { // https://developer.mozilla.org/e
 
       
 }
+*/

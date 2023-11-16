@@ -11,9 +11,11 @@ canvas {
     position: absolute;
 }
 
+/*
 #cityCanvas {
-    z-index: 0;   
+    z-index: 0;
 }
+*/
 
 #canvas1 {
     position: absolute;
@@ -22,7 +24,7 @@ canvas {
     height: 100%;*/
     top: 0;
     left: 0;
-    z-index: -1;
+    /*z-index: -1;*/
 }
 
 /*
@@ -36,3 +38,13 @@ canvas {
     z-index: -4;
 }
 */
+
+#popup {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
