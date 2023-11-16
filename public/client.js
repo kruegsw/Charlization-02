@@ -1,5 +1,5 @@
 let clientGame = ""
-//let canvas = document.getElementById("canvas1")
+const canvas1 = document.getElementById("canvas1")
 const popup = document.getElementById('popup');
 let cityCanvas = document.getElementById("cityCanvas")
 let cityCtx = cityCanvas.getContext("2d")
@@ -9,13 +9,57 @@ cityCanvas.height = window.innerHeight //* devicePixelRatio
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
+
+
+console.log(canvas1)
+canvas1.addEventListener("pointerdown", (event) => {
+    console.log('listener added')
+
+    if ( isAtFront(cityCanvas) ) {
+        console.log("clicking on city window")
+        return
+    }
+
+    const rect = canvas1.getBoundingClientRect()
+    mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
+    mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize.y)
+
+    const clickedTile = canvas.determineTileFromPixelCoordinates(event.offsetX, event.offsetY)
+    console.log(clickedTile)
+
+    if (canvas.selectedUnit) {
+        let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
+        if (clientGame.board.tiles[clickedTile.x][clickedTile.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
+        if (canvas.isInvalidMove(clickedTile)) { return }
+        socket.emit('moveUnitToTile', {unit: canvas.selectedUnit, tile: targetTile})
+        canvas.selectTile(targetTile)
+        canvas.deselectUnit()
+    } else {
+        let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
+        if (targetTile.city) {
+            // render tiles on the board
+            const cityImage = canvas.sprites.city
+            cityCtx.drawImage(
+                cityImage,
+                0, 0, 640, 480,
+                0, 0, window.innerWidth, window.innerHeight
+            )
+            //bringToFront(cityCanvas)
+            return
+        }
+        canvas.selectTile(targetTile)
+        canvas.selectUnit({tile: targetTile, username: socket.id})
+    }
+    
+})
+
 //const socket = io("https://192.168.1.69:4000", {transports: ['websocket', 'polling']} )  // this is for testing in local area network
-//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )  // this is for testing on local machine only
-const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )  // this is for server
+const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )  // this is for testing on local machine only
+//const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )  // this is for server
 socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame
-    canvas = new Canvas({canvasID: "canvas1", board: clientGame.board})
+    canvas = new Canvas({canvas: canvas1, board: clientGame.board})
     localPlayer = serverGame.players[socket.id]
     animate()
 })

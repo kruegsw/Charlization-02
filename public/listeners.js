@@ -91,11 +91,11 @@ function registerEventListeners() {
 
         const hoveredTileXY = canvas.determineTileFromPixelCoordinates(event.offsetX, event.offsetY)
         let hoveredTile = clientGame.board.tiles[hoveredTileXY.x][hoveredTileXY.y]
-        console.log(hoveredTile)
+        //console.log(hoveredTile)
 
         if (hoveredTile.unit) {
             // Set the popup content and position
-            console.log('unit')
+            //console.log('unit')
             const objectInfo = `${hoveredTile.unit.unitType}`;
             popup.innerHTML = objectInfo;
             popup.style.left = `${event.x + 10}px`;
@@ -108,8 +108,9 @@ function registerEventListeners() {
             popup.style.display = 'none';
         }
     })
-
-    window.addEventListener("pointerdown", (event) => {
+/*
+    canvas1.addEventListener("pointerdown", (event) => {
+        console.log('listener added')
 
         if ( isAtFront(cityCanvas) ) {
             console.log("clicking on city window")
@@ -148,7 +149,7 @@ function registerEventListeners() {
         }
         
     })
-
+*/
     window.addEventListener("resize", () => canvas.adjustCanvasSizeToBrowser(clientGame.board) )
     window.addEventListener("wheel", (event) => {
         event.preventDefault() 
