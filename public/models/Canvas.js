@@ -600,6 +600,17 @@ class Canvas {
             this.ctx.translate(0, this.tileSize.y*this.view.scale)
         }
     }
+
+    panMouse(dx,dy) {
+        if (true) {
+            this.ctx.translate(dx/10,dy/10)
+            //console.log(dx,dy)
+            //console.log("move dx=" + dx + " and dy=" & dy)
+        } else {
+            //.ctx.translate(0, this.tileSize.y*this.view.scale)
+        }
+    }
+
         //const currentTransformedOrigin = this.getTransformedPoint(0, 0)
         //const currentTransformedTileSizeY = this.getTransformedPoint(0, this.tileSize.y)
         //const currentTransformedTileSizeY = this.getTransformedPoint(0, this.tileSize.y*this.view.scale)
