@@ -608,9 +608,7 @@ class Canvas {
             //const pointerCurrentPixelLocationTransformedCursor = this.getTransformedPoint(dx, dy)
             //console.log(transformedPointerDownPixelLocation)
             this.ctx.translate(
-                //this.tileSize.x*this.view.scale*.01, this.tileSize.y*this.view.scale*.01
-                dx*this.view.scale, //pointerCurrentPixelLocationTransformedCursor.x,
-                dy*this.view.scale //dy*this.view.scale //pointerCurrentPixelLocationTransformedCursor.y
+                dx*this.view.scale,dy*this.view.scale 
             )
             //this.ctx.translate(pointerCurrentPixelLocationTransformedCursor.x, pointerCurrentPixelLocationTransformedCursor.y)
             console.log("dx,dy = " + dx + " " + dy)

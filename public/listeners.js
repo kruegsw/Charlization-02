@@ -110,7 +110,7 @@ function registerEventListeners() {
             popup.style.display = 'none';
         }
     })
-
+ 
     window.addEventListener("pointerdown", (event) => {
         event.preventDefault()
         console.log("listener added " + event.x + " " + event.y)
@@ -175,16 +175,16 @@ function registerEventListeners() {
         if (pointerDown) {
             if (first_pass_pan) {
                 first_pass_pan = false;
-                old_event.x = event.x
-                old_event.y = event.y
+                old_event.x = canvas.getTransformedPoint(event.x,event.y).x
+                old_event.y = canvas.getTransformedPoint(event.x,event.y).y
             } else {
             canvas.panMouse(
-                old_event.x - event.x,
-                old_event.y - event.y)
+                old_event.x - canvas.getTransformedPoint(event.x,event.y).x,
+                old_event.y - canvas.getTransformedPoint(event.x,event.y).y)
                 //pointerDownPixelLocation.x - event.x,
                 //pointerDownPixelLocation.y - event.y)
-                old_event.x = event.x
-                old_event.y = event.y
+                old_event.x = canvas.getTransformedPoint(event.x,event.y).x
+                old_event.y = canvas.getTransformedPoint(event.x,event.y).y
             return
             }
         }        
