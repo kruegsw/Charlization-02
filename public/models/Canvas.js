@@ -569,7 +569,7 @@ class Canvas {
 
     scrollZoom(event) {  // https://roblouie.com/article/617/transforming-mouse-coordinates-to-canvas-coordinates/
 
-        console.log(event)
+        //console.log(event)
 
         const currentTransformedCursor = this.getTransformedPoint(event.x, event.y);
         
@@ -578,7 +578,7 @@ class Canvas {
         this.ctx.translate(currentTransformedCursor.x, currentTransformedCursor.y);
         this.ctx.scale(zoom, zoom);
         this.ctx.translate(-currentTransformedCursor.x, -currentTransformedCursor.y);
-        console.log(currentTransformedCursor)
+        //console.log(currentTransformedCursor)
 
         this.view.scale = Math.pow(this.view.scale, zoom)
         
@@ -595,15 +595,23 @@ class Canvas {
             //const currentTransformedTileSizeY = this.getTransformedPoint(0, this.tileSize.y*this.view.scale)
             //this.ctx.translate(currentTransformedTileSize.x, currentTransformedTileSize.y)
             this.ctx.translate(this.tileSize.x*this.view.scale, this.tileSize.y*this.view.scale)
-            console.log(this.view.scale)
+            //console.log(this.view.scale)
         } else {
             this.ctx.translate(0, this.tileSize.y*this.view.scale)
         }
     }
 
-    panMouse(dx,dy) {
+    panMouse(transformedPointerDownPixelLocation, dx, dy) {
         if (true) {
-            this.ctx.translate(dx/10,dy/10)
+            //const pointerDownPixelLocationTransformedCursor = this.getTransformedPoint(pointerDownPixelLocationX, pointerDownPixelLocationY)
+            const currentTransformedTopLeftScreenPixel = this.getTransformedPoint(0, 0)
+            const pointerCurrentPixelLocationTransformedCursor = this.getTransformedPoint(dx, dy)
+            console.log(transformedPointerDownPixelLocation)
+            this.ctx.translate(
+                pointerCurrentPixelLocationTransformedCursor.x,
+                pointerCurrentPixelLocationTransformedCursor.y
+            )
+            //this.ctx.translate(pointerCurrentPixelLocationTransformedCursor.x, pointerCurrentPixelLocationTransformedCursor.y)
             //console.log(dx,dy)
             //console.log("move dx=" + dx + " and dy=" & dy)
         } else {

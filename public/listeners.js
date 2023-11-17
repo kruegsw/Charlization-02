@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
 })
 
 let pointerDown = false;
-const pointerDownLocation = { x: undefined, y: undefined }
-
+const pointerDownPixelLocation = { x: undefined, y: undefined }
+let transformedPointerDownPixelLocation
 
 function registerEventListeners() {
 
@@ -113,6 +113,7 @@ function registerEventListeners() {
 
     window.addEventListener("pointerdown", (event) => {
         console.log('listener added')
+        transformedPointerDownPixelLocation = canvas.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
 
         if ( isAtFront(cityCanvas) ) {
             console.log("clicking on city window")
@@ -120,8 +121,8 @@ function registerEventListeners() {
         }
 
         pointerDown = true;
-        pointerDownLocation.x = event.x;
-        pointerDownLocation.y = event.y;
+        pointerDownPixelLocation.x = event.x;
+        pointerDownPixelLocation.y = event.y;
         
         const rect = canvas.canvas.getBoundingClientRect()
         mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
@@ -162,7 +163,10 @@ function registerEventListeners() {
     })
 
     window.addEventListener("pointermove", (event) => {
-        if (pointerDown) { canvas.panMouse(pointerDownLocation.x-event.x,pointerDownLocation.y-event.y); return }
+        if (pointerDown) {
+            canvas.panMouse(transformedPointerDownPixelLocation, event.x, event.y)
+            return
+        }
         //console.log(mouse.x,mouse.y);
     })
 
