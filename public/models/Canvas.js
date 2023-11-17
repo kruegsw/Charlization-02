@@ -12,7 +12,7 @@ class Canvas {
         this.sprites = {}
         this.view = {
             //origin: {x: 0, y: 0},  // referenced in client.js but x and y are not changed right now
-            scale: 1 // update in scroolZoom
+            scale: 0.5 // update in scroolZoom
         }
         this.adjustCanvasSizeToBrowser(board)
         this.initializeSounds()
@@ -601,18 +601,17 @@ class Canvas {
         }
     }
 
-    panMouse(transformedPointerDownPixelLocation, dx, dy) {
+    panMouse(dx, dy) {
         if (true) {
             //const pointerDownPixelLocationTransformedCursor = this.getTransformedPoint(pointerDownPixelLocationX, pointerDownPixelLocationY)
-            const currentTransformedTopLeftScreenPixel = this.getTransformedPoint(0, 0)
-            const pointerCurrentPixelLocationTransformedCursor = this.getTransformedPoint(dx, dy)
-            console.log(transformedPointerDownPixelLocation)
+            //const currentTransformedTopLeftScreenPixel = this.getTransformedPoint(0, 0)
+            //const pointerCurrentPixelLocationTransformedCursor = this.getTransformedPoint(dx, dy)
+            //console.log(transformedPointerDownPixelLocation)
             this.ctx.translate(
-                pointerCurrentPixelLocationTransformedCursor.x,
-                pointerCurrentPixelLocationTransformedCursor.y
+                dx*this.view.scale,dy*this.view.scale 
             )
             //this.ctx.translate(pointerCurrentPixelLocationTransformedCursor.x, pointerCurrentPixelLocationTransformedCursor.y)
-            //console.log(dx,dy)
+            console.log("dx,dy = " + dx + " " + dy)
             //console.log("move dx=" + dx + " and dy=" & dy)
         } else {
             //.ctx.translate(0, this.tileSize.y*this.view.scale)

@@ -110,10 +110,11 @@ function registerEventListeners() {
             popup.style.display = 'none';
         }
     })
-
+ 
     window.addEventListener("pointerdown", (event) => {
-        event.preventDefault() // this probably isn't doing anything, was added to address mobile jumping issue
-        transformedPointerDownPixelLocation = canvas.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y) // not currently used, trying to fix mouse panning
+        event.preventDefault()
+        console.log('listener added')
+        transformedPointerDownPixelLocation = canvas.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
 
         // WILL BE USED LATER ON FOR CITY VIEW //
         if ( isAtFront(cityCanvas) ) {
@@ -122,11 +123,9 @@ function registerEventListeners() {
         }
         ////////////////////////////////////////
 
-        // THIS IS FOR THE MOUSE PANNING //
         pointerDown = true;
         pointerDownPixelLocation.x = event.x;
         pointerDownPixelLocation.y = event.y;
-        ///////////////////////////////////
         
         const rect = canvas.canvas.getBoundingClientRect()
         mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
@@ -153,22 +152,40 @@ function registerEventListeners() {
             canvas.selectTile(targetTile)
             canvas.selectUnit({tile: targetTile, username: socket.id})
         }
-        console.log("mouse down")
+        console.log("down:" + event.x + " " + event.y);
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
 
 
     window.addEventListener("pointerup", (event) => {
         pointerDown = false;
-        console.log("mouse up");
+        first_pass_pan = true;
+        //console.log("mouse up");
     })
 
+    const old_event = {x: 0, y: 0}
+    let first_pass_pan = true;
     window.addEventListener("pointermove", (event) => {
+        //pointerDownPixelLocation
         event.preventDefault()
         if (pointerDown) {
-            canvas.panMouse(transformedPointerDownPixelLocation, event.x, event.y)
+            if (first_pass_pan) {
+                first_pass_pan = false;
+                old_event.x = canvas.getTransformedPoint(event.x,event.y).x
+                old_event.y = canvas.getTransformedPoint(event.x,event.y).y
+            } else {
+            canvas.panMouse(
+                old_event.x - canvas.getTransformedPoint(event.x,event.y).x,
+                old_event.y - canvas.getTransformedPoint(event.x,event.y).y)
+                //pointerDownPixelLocation.x - event.x,
+                //pointerDownPixelLocation.y - event.y)
+                old_event.x = canvas.getTransformedPoint(event.x,event.y).x
+                old_event.y = canvas.getTransformedPoint(event.x,event.y).y
             return
-        }
-        //console.log(mouse.x,mouse.y);
+            }
+        }        
+        console.log("move event:" + event.x + " " + event.y);
+        console.log("move old event:" + event.x + " " + event.y);
+        //console.log("dy = " + pointerDownPixelLocation.y & " - " & event.y)
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
 
 
