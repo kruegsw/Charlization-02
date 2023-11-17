@@ -156,7 +156,8 @@ function registerEventListeners() {
             canvas.selectUnit({tile: targetTile, username: socket.id})
         }
         console.log("mouse down")
-    })
+    }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
+
 
     window.addEventListener("pointerup", (event) => {
         pointerDown = false;
@@ -170,7 +171,8 @@ function registerEventListeners() {
             return
         }
         //console.log(mouse.x,mouse.y);
-    })
+    }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
+
 
     window.addEventListener("resize", () => canvas.adjustCanvasSizeToBrowser(clientGame.board) )
     window.addEventListener("wheel", (event) => {
