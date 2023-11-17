@@ -163,6 +163,7 @@ function registerEventListeners() {
     })
 
     window.addEventListener("pointermove", (event) => {
+        event.preventDefault()
         if (pointerDown) {
             canvas.panMouse(transformedPointerDownPixelLocation, event.x, event.y)
             return
