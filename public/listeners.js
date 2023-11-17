@@ -112,6 +112,7 @@ function registerEventListeners() {
     })
 
     window.addEventListener("pointerdown", (event) => {
+        event.preventDefault()
         console.log('listener added')
         transformedPointerDownPixelLocation = canvas.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
 
