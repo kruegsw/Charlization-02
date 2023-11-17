@@ -112,18 +112,21 @@ function registerEventListeners() {
     })
 
     window.addEventListener("pointerdown", (event) => {
-        event.preventDefault()
-        console.log('listener added')
-        transformedPointerDownPixelLocation = canvas.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
+        event.preventDefault() // this probably isn't doing anything, was added to address mobile jumping issue
+        transformedPointerDownPixelLocation = canvas.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y) // not currently used, trying to fix mouse panning
 
+        // WILL BE USED LATER ON FOR CITY VIEW //
         if ( isAtFront(cityCanvas) ) {
             console.log("clicking on city window")
             return
         }
+        ////////////////////////////////////////
 
+        // THIS IS FOR THE MOUSE PANNING //
         pointerDown = true;
         pointerDownPixelLocation.x = event.x;
         pointerDownPixelLocation.y = event.y;
+        ///////////////////////////////////
         
         const rect = canvas.canvas.getBoundingClientRect()
         mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
@@ -142,13 +145,8 @@ function registerEventListeners() {
         } else {
             let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
             if (targetTile.city) {
-                // render tiles on the board
-                const cityImage = canvas.sprites.city
-                cityCtx.drawImage(
-                    cityImage,
-                    0, 0, 640, 480,
-                    0, 0, window.innerWidth, window.innerHeight
-                )
+                let = citySprite = canvas.sprites.city
+                CityCanvas.renderCity(cityCtx, citySprite)
                 //bringToFront(cityCanvas)
                 return
             }
