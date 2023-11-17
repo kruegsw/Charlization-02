@@ -601,17 +601,43 @@ class Canvas {
         }
     }
 
-    panMouse(dx, dy) {
+    panMouse(pointerDownPixelLocation, dx, dy) {
         if (true) {
-            //const pointerDownPixelLocationTransformedCursor = this.getTransformedPoint(pointerDownPixelLocationX, pointerDownPixelLocationY)
+            const pointerDownPixelLocationTransformedCursor = this.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
             //const currentTransformedTopLeftScreenPixel = this.getTransformedPoint(0, 0)
-            //const pointerCurrentPixelLocationTransformedCursor = this.getTransformedPoint(dx, dy)
+            const pointerCurrentPixelLocationTransformedCursor = this.getTransformedPoint(dx, dy)
             //console.log(transformedPointerDownPixelLocation)
+            //this.ctx.translate(
+            //    dx*this.view.scale,dy*this.view.scale 
+            //)
+            //this.ctx.translate(
+            //    pointerDownPixelLocationTransformedCursor.x,
+            //    pointerDownPixelLocationTransformedCursor.y
+            //)
+            /*
             this.ctx.translate(
-                dx*this.view.scale,dy*this.view.scale 
+                pointerCurrentPixelLocationTransformedCursor.x,
+                pointerCurrentPixelLocationTransformedCursor.y
             )
-            //this.ctx.translate(pointerCurrentPixelLocationTransformedCursor.x, pointerCurrentPixelLocationTransformedCursor.y)
-            console.log("dx,dy = " + dx + " " + dy)
+            */
+            const radians = this.#radiansForImageAngleAdjustment()  // I know why this doesn't work now ..
+            //-this.tileSize.x * Math.cos(radians) // x
+            //-this.tileSize.y * Math.sin(radians) // y
+            //this.tileSize.x / Math.cos(radians), // w
+            //this.tileSize.y / Math.sin(radians) // h
+            /*
+            this.ctx.translate(
+                (dx *  Math.cos(radians) + dy *  Math.sin(radians) ),
+                (dx * -Math.cos(radians) + dy * -Math.sin(radians) )
+            )
+            */
+            this.ctx.translate(
+                dx,
+                dy
+            )
+            console.log(dx, dy)
+            console.log(pointerCurrentPixelLocationTransformedCursor)  // I know why this doesn't work now ..
+            //console.log("dx,dy = " + dx + " " + dy)
             //console.log("move dx=" + dx + " and dy=" & dy)
         } else {
             //.ctx.translate(0, this.tileSize.y*this.view.scale)

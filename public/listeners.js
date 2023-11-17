@@ -114,7 +114,10 @@ function registerEventListeners() {
     window.addEventListener("pointerdown", (event) => {
         event.preventDefault()
         console.log('listener added')
-        transformedPointerDownPixelLocation = canvas.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
+        pointerDown = true;
+        pointerDownPixelLocation.x = event.x;
+        pointerDownPixelLocation.y = event.y;
+        //transformedPointerDownPixelLocation = canvas.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
 
         // WILL BE USED LATER ON FOR CITY VIEW //
         if ( isAtFront(cityCanvas) ) {
@@ -122,10 +125,6 @@ function registerEventListeners() {
             return
         }
         ////////////////////////////////////////
-
-        pointerDown = true;
-        pointerDownPixelLocation.x = event.x;
-        pointerDownPixelLocation.y = event.y;
         
         const rect = canvas.canvas.getBoundingClientRect()
         mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
@@ -167,6 +166,14 @@ function registerEventListeners() {
     window.addEventListener("pointermove", (event) => {
         //pointerDownPixelLocation
         event.preventDefault()
+        console.log(event)
+
+        if (pointerDown) {
+            canvas.panMouse(pointerDownPixelLocation, event.movementX, event.movementY)
+        }
+
+        // mousepan code ////////////////////////////////////////////////////
+        /*
         if (pointerDown) {
             if (first_pass_pan) {
                 first_pass_pan = false;
@@ -182,10 +189,13 @@ function registerEventListeners() {
                 old_event.y = canvas.getTransformedPoint(event.x,event.y).y
             return
             }
-        }        
+        } 
+        */
         console.log("move event:" + event.x + " " + event.y);
         console.log("move old event:" + event.x + " " + event.y);
-        //console.log("dy = " + pointerDownPixelLocation.y & " - " & event.y)
+        
+        ////////////////////////////////////////////////////////////////////////
+        
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
 
 
