@@ -630,12 +630,23 @@ class Canvas {
                 (dx *  Math.cos(radians) + dy *  Math.sin(radians) ),
                 (dx * -Math.cos(radians) + dy * -Math.sin(radians) )
             )
+            a, b, c, d, e, f
+            this.ctx.transform(1, 0.5, -1, 0.5, 0, 0)
             */
+            let a = -1 // 1 original transform
+            let b = 2 // 0.5 original transform
+            let c = 1 // -1 original transform 
+            let d = 2 // 0.5 original transform
+            let e = 0
+            let f = 0
+            let newDX = a*dx + c*dy + e
+            let newDY = b*dx + d*dy + f
             this.ctx.translate(
-                dx,
-                dy
+                newDX,
+                newDY
             )
             console.log(dx, dy)
+            console.log(newDX, newDY)
             console.log(pointerCurrentPixelLocationTransformedCursor)  // I know why this doesn't work now ..
             //console.log("dx,dy = " + dx + " " + dy)
             //console.log("move dx=" + dx + " and dy=" & dy)
