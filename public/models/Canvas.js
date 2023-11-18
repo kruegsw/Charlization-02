@@ -19,7 +19,6 @@ class Canvas {
         this.initializeUnitSprites()
         this.initializeTerrainSprites()
         this.initializeCitiesSprites()
-        this.initializeCitySprite()
         //this.#setOffScreenCanvas()
         //canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username})
     }
@@ -997,11 +996,6 @@ class Canvas {
                 this.sprites.cities[city] = {x: 2+i*65, y: 40+j*49, w: 62, h: 46}
             })
         })
-    }
-
-    initializeCitySprite() {
-        this.sprites.city = new Image()
-        this.sprites.city.src = "/assets/images/city.png"
     }
 
     #imageLocationAndDimensionsOnSpriteSheet(terrainSpritesSheet, terrain) {

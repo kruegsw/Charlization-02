@@ -1,8 +1,9 @@
 let clientGame = ""
 const canvas1 = document.getElementById("canvas1")
 const popup = document.getElementById('popup');
-let cityCanvas = document.getElementById("cityCanvas")
-let cityCtx = cityCanvas.getContext("2d")
+const cityCanvas = document.getElementById("cityCanvas")
+const cityCtx = cityCanvas.getContext("2d")
+const cityCanvasController = new CityCanvas()
 cityCanvas.width = window.innerWidth //* devicePixelRatio
 cityCanvas.height = window.innerHeight //* devicePixelRatio
 //let canvasOrder = [canvas1, cityCanvas]

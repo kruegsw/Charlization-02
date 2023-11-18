@@ -143,8 +143,7 @@ function registerEventListeners() {
         } else {
             let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
             if (targetTile.city) {
-                let = citySprite = canvas.sprites.city
-                CityCanvas.renderCity(cityCtx, citySprite)
+                cityCanvasController.renderCity(cityCanvas, cityCtx, targetTile.city)
                 //bringToFront(cityCanvas)
                 return
             }
