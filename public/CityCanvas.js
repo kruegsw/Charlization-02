@@ -5,20 +5,107 @@ class CityCanvas {
         this.initializeSprites()
     }
 
+
+    // █████    █████   ██    █   ████    █████   █████    ███   ██    █    █████
+    // █    █   █       █ █   █   █   █   █       █    █    █    █ █   █   █    
+    // ██████   █████   █  █  █   █   █   █████   ██████    █    █  █  █   █   ███ 
+    // █   █    █       █   █ █   █   █   █       █   █     █    █   █ █   █    █
+    // █    █   █████   █    ██   ████    █████   █    █   ███   █    ██    ████
+
     renderCity(cityCanvas, cityCtx, cityObject) {
-        cityCtx.drawImage(
-            this.sprites.city,
-            0, 0, 640, 480,
-            0, 0, cityCanvas.width, cityCanvas.height
-        )
-        let citizen = 'ancient-happy-man'
-        cityCtx.drawImage(
-            this.sprites.people,
-            this.sprites.people[citizen].x, this.sprites.people[citizen].y, this.sprites.people[citizen].w, this.sprites.people[citizen].h,
-            cityCanvas.width*(6)/640, cityCanvas.height*(2+8)/421, cityCanvas.width*(this.sprites.people[citizen].w)/640, cityCanvas.width*(this.sprites.people[citizen].h)/640
-        )
+        this.drawCityBackground(cityCanvas, cityCtx)
+        this.drawCitizen(cityCanvas, cityCtx)
+        this.drawBottomRightBottoms(cityCanvas, cityCtx)
         console.log(cityObject)
     }
+
+    // ███ █ ███ █ █   ██  ███ ███ █ █ ███ ██  ███ █ █ █  █ ██ 
+    // █   █  █  █ █   ███ █ █ █   ██  █   █ █ █ █ █ █ ██ █ █ █
+    // █   █  █   █    ███ ███ █   ██  █ █ ██  █ █ █ █ █ ██ █ █
+    // ███ █  █   █    ██  █ █ ███ █ █ ███ █ █ ███ ███ █  █ ██
+
+    drawCityBackground(canvas, ctx) {
+        ctx.drawImage(
+            this.sprites.city,
+            0, 0, 640, 480,
+            0, 0, canvas.width, canvas.height
+        )
+    }
+    
+
+    // ███ █ ███ █ ███ ███ █  █ ███
+    // █   █  █  █   █ ██  ██ █ █
+    // █   █  █  █  █  █   █ ██   █
+    // ███ █  █  █ ███ ███ █  █ ███
+
+    drawCitizen(canvas, ctx, citizen = 'ancient-content-man') {
+        ctx.drawImage(
+            this.sprites.people,
+            this.sprites.people[citizen].x, this.sprites.people[citizen].y, this.sprites.people[citizen].w, this.sprites.people[citizen].h,
+            canvas.width*(6)/640, canvas.height*(2+8)/421, canvas.width*(this.sprites.people[citizen].w)/640, canvas.width*(this.sprites.people[citizen].h)/640
+        )
+    }
+
+    // ██  ███ ███ ███ █ █ ██  ███ ███   █████ ███ ███
+    // █ █ ██  █   █ █ █ █ █ █ █   ██    █ █ █ █ █ █ █
+    // ██  █     █ █ █ █ █ ██  █   █     █ █ █ ███ ███
+    // █ █ ███ ███ ███ ███ █ █ ███ ███   █ █ █ █ █ █
+
+    // ██  ███ ███ ███ █ █ ██  ███ ███ ███ ███ ███
+    // █ █ ██  █   █ █ █ █ █ █ █   ██  █   ██  █
+    // ██  █     █ █ █ █ █ ██  █   █     █ █     █
+    // █ █ ███ ███ ███ ███ █ █ ███ ███ ███ ███ ███
+
+    // ███ ███ ███ ██    ███ ███ ███ ██  ███ ███ ███
+    // █   █ █ █ █ █ █   █    █  █ █ █ █ █ █ █   ██
+    // ███ █ █ █ █ █ █     █  █  █ █ ██  ███ █ █ █
+    // █   ███ ███ ██    ███  █  ███ █ █ █ █ ███ ███
+
+    // █ █ █  █ █ ███ ███   ███ █ █ ███ ███ ███ ██  ███ ███ ██
+    // █ █ ██ █ █  █  █     █   █ █ █ █ █ █ █ █ █ █  █  ██  █ █
+    // █ █ █ ██ █  █    █     █ █ █ ███ ███ █ █ ██   █  █   █ █
+    // ███ █  █ █  █  ███   ███ ███ █   █   ███ █ █  █  ███ ██
+
+    // ███ █ ███ █ █   █ █████ ███ ██  ███ █ █ ███ █████ ███ █  █ ███ ███
+    // █   █  █  █ █   █ █ █ █ █ █ █ █ █ █ █ █ ██  █ █ █ ██  ██ █  █  █
+    // █   █  █   █    █ █ █ █ ███ ██  █ █ █ █ █   █ █ █ █   █ ██  █    █
+    // ███ █  █   █    █ █ █ █ █   █ █ ███  █  ███ █ █ █ ███ █  █  █  ███
+
+    // █ █ █  █ █ ███ ███   ███ ██  ███ ███ ███ █  █ ███
+    // █ █ ██ █ █  █  █     █ █ █ █ ██  █   ██  ██ █  █
+    // █ █ █ ██ █  █    █   ███ ██  █     █ █   █ ██  █
+    // ███ █  █ █  █  ███   █   █ █ ███ ███ ███ █  █  █
+
+    // █ █  █   ███ ██  ███ ██  █ █ ███ ███ █ ███ █  █
+    // █ ██ █   █ █ █ █ █ █ █ █ █ █ █    █  █ █ █ ██ █
+    // █ █ ██   ███ ██  █ █ █ █ █ █ █    █  █ █ █ █ ██
+    // █ █  █   █   █ █ ███ ██  ███ ███  █  █ ███ █  █
+
+    // ██  █ █ ███ ███ █ █ █  █ ███
+    // ███ █ █  █   █  █ █ ██ █ █
+    // █ █ █ █  █   █  █ █ █ ██   █
+    // ██  ███  █   █  ███ █  █ ███
+
+    drawBottomRightBottoms(canvas, ctx) {
+        this.drawGrayButton(ctx, 100, 100, 200, 200, 'testText')
+    }
+
+    drawGrayButton(ctx, x, y, w, h, text) {
+        ctx.beginPath();
+        ctx.rect(x, y, w, h);
+        ctx.fillStyle = 'rgba(215,222,217,1)';  // color of stone
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#000000';
+        ctx.stroke();
+        ctx.closePath();
+        ctx.font = '20pt Times New Roman';
+        ctx.fillStyle = '#000000';
+        ctx.fillText(text, x + w / 4, y + 64);
+    }
+
+    // production area is 438, 166 to 632, 356  ...  632 - 438 = 194 pixels wide, 365 - 166 = 190 high
+    // width ... 4 voids at 4 px each... 178 left ... assume inProduction takes 
 
 
 
@@ -56,7 +143,7 @@ class CityCanvas {
         ]
         citizenSprites.forEach( (row, j) => {
             row.forEach( (citizen, i) => {
-                this.sprites.people[citizen] = {x: 3+i*28, y: 7+j*31, w: 27, h: 30}
+                this.sprites.people[citizen] = {x: 3+i*28, y: 7+j*31, w: 25, h: 28}
             })
         })
         console.log(this.sprites)

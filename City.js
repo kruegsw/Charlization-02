@@ -3,10 +3,16 @@ class City {
         this.player = player
         this.color = this.player.color
         this.coordinates = coordinates
-        this.selectable = true
-        //this.selected = false
-        this.citizens = 1
-        this.population = this.citizens*(10000+5000*(this.citizens-1))
+        this.citizens = {
+            content: 1,
+            happy: 0,
+            unhappy: 0,
+            pirate: 0,
+            entertainer: 0,
+            taxcollector: 0,
+            scientist: 0,
+        }
+        this.population = this.citizenCount()*(10000+5000*(this.citizenCount()-1))
         this.unitsSupported = []
         this.unitsPresent = []
         this.cityImprovements = []
@@ -23,10 +29,14 @@ class City {
         }
         this.foodStorage = 0
         this.inProduction = {
-            inProduction: "",
+            inProduction: "warrior",
             cost: 10,
             progress: 0
         }
+    }
+
+    citizenCount() {
+        return Object.values(this.citizens).reduce( (sum, countOfCitizenType) => sum + countOfCitizenType)
     }
 }
 
