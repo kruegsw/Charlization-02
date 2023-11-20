@@ -2,7 +2,6 @@ class Canvas {
     constructor({canvas, board}) {
         this.canvas = canvas
         this.ctx = this.canvas.getContext("2d")//, { alpha: false }) // turning off transprency of canvas and makes background black
-        this.ctx.imageSmoothingEnabled = false;
         this.boardSize = {x: board.size.x, y: board.size.y}
         this.tileSize = {}
         this.orientation = "short diamond"  // short diamond, diamond, or [nothing = standard]
@@ -31,6 +30,14 @@ class Canvas {
     // █    █   █        █ █     █   █   █   █         █       █   █   █  █   █   █   █ █ █       █   █       █  █
     // █████    █████     █     ███   ███    █████    █        ████    █   █   ███     ███    ████    █████   █   █
 
+    #fixPixelBlur() {
+        // https://stackoverflow.com/questions/31910043/html5-canvas-drawimage-draws-image-blurry
+        //doesn't work
+        this.ctx.imageSmoothingEnabled = false;
+        this.ctx.mozImageSmoothingEnabled = false;
+        this.ctx.webkitImageSmoothingEnabled = false;
+        this.ctx.msImageSmoothingEnabled = false;
+    }
 
     #adjustCanvasSizeToMatchBrowserOld() {
         const devicePixelRatio = window.devicePixelRatio || 1 // adjust resolution (e.g. macbook pro retina display has 2x resolution) test this later
@@ -88,6 +95,7 @@ class Canvas {
         this.#adjustCanvasSizeToMatchBrowser() // scrollZoom does not work unless canvas height and width are set to the window innerHeight & innerWeidth
         this.#setTileSize(board)
         this.#setCanvasOrientation()
+        this.#fixPixelBlur()
     }
 
     #setTileSize(board) {
