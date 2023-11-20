@@ -32,7 +32,6 @@ class Canvas {
 
     #fixPixelBlur() {
         // https://stackoverflow.com/questions/31910043/html5-canvas-drawimage-draws-image-blurry
-        //doesn't work
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.mozImageSmoothingEnabled = false;
         this.ctx.webkitImageSmoothingEnabled = false;

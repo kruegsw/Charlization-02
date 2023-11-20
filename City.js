@@ -4,13 +4,13 @@ class City {
         this.color = this.player.color
         this.coordinates = coordinates
         this.citizens = {
-            content: 1,
-            happy: 0,
-            unhappy: 0,
-            pirate: 0,
-            entertainer: 0,
-            taxcollector: 0,
-            scientist: 0,
+            happy: 10,
+            content: 4,
+            unhappy: 4,
+            pirate: 6,
+            entertainer: 2,
+            taxcollector: 2,
+            scientist: 2,
         }
         this.population = this.citizenCount()*(10000+5000*(this.citizenCount()-1))
         this.unitsSupported = []

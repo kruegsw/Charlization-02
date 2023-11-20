@@ -6,6 +6,21 @@ class CityCanvas {
     }
 
 
+    // █████    █████   █   █   ███   ███    █████        █    ████    ████    ███    █   █    ████   █████   ████
+    // █    █   █       █   █    █   █   █   █           █     █   █   █   █  █   █   █   █   █       █       █   █
+    // █    █   █████    █ █     █   █       █████      █      ████    █████  █   █   █ █ █    ███    █████   █████
+    // █    █   █        █ █     █   █   █   █         █       █   █   █  █   █   █   █ █ █       █   █       █  █
+    // █████    █████     █     ███   ███    █████    █        ████    █   █   ███     ███    ████    █████   █   █
+
+    #fixPixelBlur() {
+        // https://stackoverflow.com/questions/31910043/html5-canvas-drawimage-draws-image-blurry
+        this.ctx.imageSmoothingEnabled = false;
+        this.ctx.mozImageSmoothingEnabled = false;
+        this.ctx.webkitImageSmoothingEnabled = false;
+        this.ctx.msImageSmoothingEnabled = false;
+    }
+
+
     // █████    █████   ██    █   ████    █████   █████    ███   ██    █    █████
     // █    █   █       █ █   █   █   █   █       █    █    █    █ █   █   █    
     // ██████   █████   █  █  █   █   █   █████   ██████    █    █  █  █   █   ███ 
@@ -14,9 +29,10 @@ class CityCanvas {
 
     renderCity(cityCanvas, cityCtx, cityObject) {
         this.drawCityBackground(cityCanvas, cityCtx)
-        this.drawCitizens(cityCanvas, cityCtx)
+        this.drawCitizens(cityCanvas, cityCtx, cityObject)
         this.drawInProduction(cityCanvas, cityCtx)
         this.drawBottomRightButtons(cityCanvas, cityCtx)
+        this.#fixPixelBlur()
         console.log(cityObject)
     }
 
@@ -34,12 +50,12 @@ class CityCanvas {
         ctx.fillText(text, x + w / 4, y + 64);
     }
 
-    drawSpriteScaledToCanvas(canvas, ctx, spriteSheet, spriteSheetXYWH, canvasXYWH) {
-        console.log(spriteSheet, spriteSheetXYWH, canvasXYWH)
+    drawSpriteScaledToCanvas(canvas, ctx, spriteSheet, spriteSheetXYWH, canvasXY) {
+        console.log(spriteSheet, spriteSheetXYWH, canvasXY)
         ctx.drawImage(
             spriteSheet,
             ...Object.values(spriteSheetXYWH), // x, y, w, h,
-            canvas.width*canvasXYWH.x/640, canvas.height*canvasXYWH.y/480, canvas.width*(spriteSheetXYWH.w)/640, canvas.width*(spriteSheetXYWH.h)/640
+            canvas.width*canvasXY.x/640, canvas.height*canvasXY.y/480, canvas.width*(spriteSheetXYWH.w)/640, canvas.width*(spriteSheetXYWH.h)/640
         )
     }
 
@@ -62,11 +78,49 @@ class CityCanvas {
     // █   █  █  █  █  █   █ ██   █
     // ███ █  █  █ ███ ███ █  █ ███
 
-    drawCitizens(canvas, ctx, citizenSprite = this.sprites.people.ancient.content.man) {
+    drawCitizens(canvas, ctx, cityObject) {
+        // for now, assume 16 available spaces 25 px wide (dimension of citizen sprite)
+        // if count of citizen is > 16, then citizens will need to overlap, increment = 400 px / citizens
+        let era = "ancient" // notice era hard coded to ancient for now
+        const canvasXYWH = this.sprites.city.citizens
+        let canvasXY = {x: canvasXYWH.x, y: canvasXYWH.y}
+        const xIncrement = Math.min(25, 375 / this.#citizenCount(cityObject) )
+        let gapUsed = 0
+        for (let citizenType in cityObject.citizens) {
+            let genderCounter = 0
+            if (citizenType === "entertainer" || citizenType === "taxcollector" || citizenType === "scientist") {
+                if (!gapUsed) {gapUsed = 1; canvasXY.x += xIncrement} // make a space between normal citizens and specialists
+                for (let i = 0; i < cityObject.citizens[citizenType]; i++) {    
+                    console.log(citizenType)
+                    let citizenSprite = this.sprites.people[era]["specialist"][citizenType] //[citizenType][gender] // notice era hard coded to ancient for now
+                    this.#drawCitizen(canvas, ctx, citizenSprite, canvasXY)
+                    canvasXY.x += xIncrement // adjust x position to right for next citizen
+                }
+            } else {
+                for (let i = 0; i < cityObject.citizens[citizenType]; i++) {
+                    let gender = this.#getCitizenGender(genderCounter)
+                    genderCounter++
+                    let citizenSprite = this.sprites.people[era][citizenType][gender] //[citizenType][gender]
+                    this.#drawCitizen(canvas, ctx, citizenSprite, canvasXY)
+                    canvasXY.x += xIncrement // adjust x position to right for next citizen
+                }
+            }
+          }
+    }
+
+    #citizenCount(cityObject) { // this function exists in City class definition as instance method but could not be called here so I copied it here
+        return Object.values(cityObject.citizens).reduce( (sum, countOfCitizenType) => sum + countOfCitizenType)
+    }
+
+    #getCitizenGender(n) {
+        const genders = ["man", "woman"]
+        return genders[n % 2]
+    }
+
+    #drawCitizen(canvas, ctx, citizenSprite, canvasXY) {
         let spriteSheet = this.sprites.people
-        let spriteSheetXYWH = citizenSprite
-        let canvasXYWH = this.sprites.city.citizens
-        this.drawSpriteScaledToCanvas(canvas, ctx, spriteSheet, spriteSheetXYWH, canvasXYWH)
+        console.log(canvas, ctx, spriteSheet, citizenSprite, canvasXY)
+        this.drawSpriteScaledToCanvas(canvas, ctx, spriteSheet, citizenSprite, canvasXY)
     }
 
     // ██  ███ ███ ███ █ █ ██  ███ ███   █████ ███ ███
@@ -126,6 +180,21 @@ class CityCanvas {
     // production area is 438, 166 to 632, 356  ...  632 - 438 = 194 pixels wide, 365 - 166 = 190 high
     // width ... 4 voids at 4 px each... 178 left ... assume inProduction takes 
 
+
+
+    // █    █    ████   █████   █████       ███   ██    █   █████   █████   █████    █████    ███     ███    █████
+    // █    █   █       █       █    █       █    █ █   █     █     █       █    █   █       █   █   █   █   █
+    // █    █    ███    █████   ██████       █    █  █  █     █     █████   ██████   █████   █████   █       █████
+    // █    █       █   █       █   █        █    █   █ █     █     █       █   █    █       █   █   █   █   █
+    //  ████    ████    █████   █    █      ███   █    ██     █     █████   █    █   █       █   █    ███    █████
+
+
+
+    // ████    █   █   █       █████    ████        █    ██ ██    ███    █   █   █████   ██ ██   █████   ██    █   █████
+    // █   █   █   █   █       █       █           █     █ █ █   █   █   █   █   █       █ █ █   █       █ █   █     █
+    // █████   █   █   █       █████    ███       █      █ █ █   █   █    █ █    ████    █ █ █   █████   █  █  █     █
+    // █  █    █   █   █       █           █     █       █   █   █   █    █ █    █       █   █   █       █   █ █     █
+    // █   █    ███    █████   █████   ████     █        █   █    ███      █     █████   █   █   █████   █    ██     █
 
 
     //  ████   █████   █████    ███   █████   █████    ████         █     ████    ███    █   █   ██    █   ████     ████
