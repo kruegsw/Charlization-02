@@ -1,8 +1,11 @@
 class CityCanvas {
-    constructor() {
+    constructor(canvas) {
+        this.canvas = canvas
+        this.ctx = this.canvas.getContext("2d")
         this.sounds = {}
         this.sprites = {}
         this.initializeSprites()
+        this.adjustCanvasSizeToBrowser()
     }
 
 
@@ -21,17 +24,61 @@ class CityCanvas {
     }
 
 
+    #adjustCanvasSizeToMatchBrowser() {  // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
+        
+        if (window.innerWidth / window.innerHeight > 640/480 ) {
+            this.canvas.height = window.innerHeight
+            this.canvas.width = this.canvas.height*640/480
+        } else {
+            this.canvas.width = window.innerWidth
+            this.canvas.height = this.canvas.width*480/640
+        }
+
+        //this.canvas.width = window.innerWidth // * devicePixelRatio
+        //this.canvas.height = window.innerHeight // * devicePixelRatio
+
+        const devicePixelRatio = window.devicePixelRatio
+        if (devicePixelRatio > 1) {
+
+            if (window.innerWidth / window.innerHeight > 640/480 ) {
+                this.canvas.height = window.innerHeight
+                this.canvas.width = this.canvas.height*640/480
+            } else {
+                this.canvas.width = window.innerWidth
+                this.canvas.height = this.canvas.width*480/640
+            }
+
+            // 2. Force it to display at the original (logical) size with CSS or style attributes
+            //this.canvas.style.width = window.innerWidth + 'px'
+            //this.canvas.style.height = window.innerHeight + 'px'
+
+            /*
+            // 3. Scale the context so you can draw on it without considering the ratio.
+            this.ctx.scale(devicePixelRatio, devicePixelRatio)
+
+            // update scale parameter for
+            this.view.scale = Math.pow(this.view.scale, devicePixelRatio)
+            */
+        }
+    }
+
+    adjustCanvasSizeToBrowser() {
+        this.#adjustCanvasSizeToMatchBrowser() // scrollZoom does not work unless canvas height and width are set to the window innerHeight & innerWeidth
+        this.#fixPixelBlur()
+    }
+
+
     // █████    █████   ██    █   ████    █████   █████    ███   ██    █    █████
     // █    █   █       █ █   █   █   █   █       █    █    █    █ █   █   █    
     // ██████   █████   █  █  █   █   █   █████   ██████    █    █  █  █   █   ███ 
     // █   █    █       █   █ █   █   █   █       █   █     █    █   █ █   █    █
     // █    █   █████   █    ██   ████    █████   █    █   ███   █    ██    ████
 
-    renderCity(cityCanvas, cityCtx, cityObject) {
-        this.drawCityBackground(cityCanvas, cityCtx)
-        this.drawCitizens(cityCanvas, cityCtx, cityObject)
-        this.drawInProduction(cityCanvas, cityCtx)
-        this.drawBottomRightButtons(cityCanvas, cityCtx)
+    renderCity(cityObject) {
+        this.drawCityBackground()
+        this.drawCitizens(cityObject)
+        this.drawInProduction()
+        this.drawBottomRightButtons()
         this.#fixPixelBlur()
         console.log(cityObject)
     }
@@ -50,12 +97,12 @@ class CityCanvas {
         ctx.fillText(text, x + w / 4, y + 64);
     }
 
-    drawSpriteScaledToCanvas(canvas, ctx, spriteSheet, spriteSheetXYWH, canvasXY) {
+    drawSpriteScaledToCanvas(spriteSheet, spriteSheetXYWH, canvasXY) {
         console.log(spriteSheet, spriteSheetXYWH, canvasXY)
-        ctx.drawImage(
+        this.ctx.drawImage(
             spriteSheet,
             ...Object.values(spriteSheetXYWH), // x, y, w, h,
-            canvas.width*canvasXY.x/640, canvas.height*canvasXY.y/480, canvas.width*(spriteSheetXYWH.w)/640, canvas.width*(spriteSheetXYWH.h)/640
+            this.canvas.width*canvasXY.x/640, this.canvas.height*canvasXY.y/480, this.canvas.width*(spriteSheetXYWH.w)/640, this.canvas.height*(spriteSheetXYWH.h)/480
         )
     }
 
@@ -64,11 +111,11 @@ class CityCanvas {
     // █   █  █   █    ███ ███ █   ██  █ █ ██  █ █ █ █ █ ██ █ █
     // ███ █  █   █    ██  █ █ ███ █ █ ███ █ █ ███ ███ █  █ ██
 
-    drawCityBackground(canvas, ctx) {
-        ctx.drawImage(
+    drawCityBackground() {
+        this.ctx.drawImage(
             this.sprites.city,
             ...Object.values(this.sprites.city.background), // x, y, w, h,
-            0, 0, canvas.width, canvas.height
+            0, 0, this.canvas.width, this.canvas.height
         )
     }
     
@@ -78,7 +125,7 @@ class CityCanvas {
     // █   █  █  █  █  █   █ ██   █
     // ███ █  █  █ ███ ███ █  █ ███
 
-    drawCitizens(canvas, ctx, cityObject) {
+    drawCitizens(cityObject) {
         // for now, assume 16 available spaces 25 px wide (dimension of citizen sprite)
         // if count of citizen is > 16, then citizens will need to overlap, increment = 400 px / citizens
         let era = "ancient" // notice era hard coded to ancient for now
@@ -93,7 +140,7 @@ class CityCanvas {
                 for (let i = 0; i < cityObject.citizens[citizenType]; i++) {    
                     console.log(citizenType)
                     let citizenSprite = this.sprites.people[era]["specialist"][citizenType] //[citizenType][gender] // notice era hard coded to ancient for now
-                    this.#drawCitizen(canvas, ctx, citizenSprite, canvasXY)
+                    this.#drawCitizen(citizenSprite, canvasXY)
                     canvasXY.x += xIncrement // adjust x position to right for next citizen
                 }
             } else {
@@ -101,7 +148,7 @@ class CityCanvas {
                     let gender = this.#getCitizenGender(genderCounter)
                     genderCounter++
                     let citizenSprite = this.sprites.people[era][citizenType][gender] //[citizenType][gender]
-                    this.#drawCitizen(canvas, ctx, citizenSprite, canvasXY)
+                    this.#drawCitizen(citizenSprite, canvasXY)
                     canvasXY.x += xIncrement // adjust x position to right for next citizen
                 }
             }
@@ -117,10 +164,9 @@ class CityCanvas {
         return genders[n % 2]
     }
 
-    #drawCitizen(canvas, ctx, citizenSprite, canvasXY) {
+    #drawCitizen(citizenSprite, canvasXY) {
         let spriteSheet = this.sprites.people
-        console.log(canvas, ctx, spriteSheet, citizenSprite, canvasXY)
-        this.drawSpriteScaledToCanvas(canvas, ctx, spriteSheet, citizenSprite, canvasXY)
+        this.drawSpriteScaledToCanvas(spriteSheet, citizenSprite, canvasXY)
     }
 
     // ██  ███ ███ ███ █ █ ██  ███ ███   █████ ███ ███
@@ -158,13 +204,13 @@ class CityCanvas {
     // █ █ ██   ███ ██  █ █ █ █ █ █ █    █  █ █ █ █ ██
     // █ █  █   █   █ █ ███ ██  ███ ███  █  █ ███ █  █
 
-    drawInProduction(canvas, ctx) {
-        this.drawInProductionText(canvas, ctx)
+    drawInProduction() {
+        this.drawInProductionText()
     }
 
-    drawInProductionText(canvas, ctx) {
+    drawInProductionText() {
         let inProductionText = this.sprites.city.inProduction.text
-        this.drawSpriteScaledToCanvas(canvas, ctx, this.sprites.city, this.sprites.people.ancient.content.woman, this.sprites.city.inProduction.text)
+        this.drawSpriteScaledToCanvas(this.sprites.city, this.sprites.people.ancient.content.woman, this.sprites.city.inProduction.text)
         //this.drawGrayButton(ctx, inProductionText.x, inProductionText.y, inProductionText.w, inProductionText.h, 'testText')
     }
 
@@ -173,8 +219,8 @@ class CityCanvas {
     // █ █ █ █  █   █  █ █ █ ██   █
     // ██  ███  █   █  ███ █  █ ███
 
-    drawBottomRightButtons(canvas, ctx) {
-        this.drawGrayButton(ctx, 100, 100, 200, 200, 'testText')
+    drawBottomRightButtons() {
+        this.drawGrayButton(this.ctx, 100, 100, 200, 200, 'testText')
     }
 
     // production area is 438, 166 to 632, 356  ...  632 - 438 = 194 pixels wide, 365 - 166 = 190 high

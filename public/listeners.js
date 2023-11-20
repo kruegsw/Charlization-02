@@ -61,7 +61,7 @@ function registerEventListeners() {
                 case "Escape":
                     canvas.deselectTile()
                     canvas.deselectUnit()
-                    cityCtx.clearRect(0, 0, window.innerWidth, window.innerHeight)
+                    cityCanvasController.canvas.clearRect(0, 0, window.innerWidth, window.innerHeight)
                     return
                 default:
                     return
@@ -72,7 +72,7 @@ function registerEventListeners() {
             if (event.code === "ArrowLeft") { canvas.scrollLeft(); return }
             if (event.code === "ArrowRight") { canvas.scrollRight(); return }
             if (event.code === "Escape") {
-                cityCtx.clearRect(0, 0, window.innerWidth, window.innerHeight) // clear city canvas (akin to close city window)
+                cityCanvasController.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight) // clear city canvas (akin to close city window)
                 //bringToFront(canvas1)
             }
         }
@@ -143,7 +143,7 @@ function registerEventListeners() {
         } else {
             let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
             if (targetTile.city) {
-                cityCanvasController.renderCity(cityCanvas, cityCtx, targetTile.city)
+                cityCanvasController.renderCity(targetTile.city)
                 //bringToFront(cityCanvas)
                 return
             }
@@ -198,7 +198,10 @@ function registerEventListeners() {
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
 
 
-    window.addEventListener("resize", () => canvas.adjustCanvasSizeToBrowser(clientGame.board) )
+    window.addEventListener("resize", () => {
+        canvas.adjustCanvasSizeToBrowser(clientGame.board)
+        cityCanvasController.adjustCanvasSizeToBrowser()
+    } )
     window.addEventListener("wheel", (event) => {
         event.preventDefault() 
         canvas.scrollZoom(event)
