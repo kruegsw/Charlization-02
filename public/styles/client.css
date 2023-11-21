@@ -22,7 +22,7 @@ canvas {
     z-index: 0;   
 }
 
-#canvas1 {
+#boardCanvas {
     position: absolute;
     /*background: black;*/
     /*width: 100%;

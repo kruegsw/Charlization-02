@@ -1,21 +1,22 @@
 let clientGame = ""
-const canvas1 = document.getElementById("canvas1")
+const boardCanvas = document.getElementById("boardCanvas")
+const boardCanvasController = new Canvas({canvas: boardCanvas, /*board: clientGame.board}*/})
 const popup = document.getElementById('popup');
 const cityCanvas = document.getElementById("cityCanvas")
 //const cityCtx = cityCanvas.getContext("2d")
 const cityCanvasController = new CityCanvas(cityCanvas)
-//let canvasOrder = [canvas1, cityCanvas]
+//let canvasOrder = [boardCanvas, cityCanvas]
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
 //const socket = io("https://192.168.1.69:4000", {transports: ['websocket', 'polling']} )  // this is for testing in local area network
 //const socket = io("https://0.0.0.0:4000", {transports: ['websocket', 'polling']} )  // this is for testing in local area network
-//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )  // this is for testing on local machine only
-const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )  // this is for server
+const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )  // this is for testing on local machine only
+//const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )  // this is for server
 socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame
-    canvas = new Canvas({canvas: canvas1, board: clientGame.board})
+    boardCanvasController.setBoard(clientGame.board)
     localPlayer = serverGame.players[socket.id]
     animate()
 })
@@ -28,11 +29,11 @@ socket.on("disconnect", () => { console.log(`Client ${socket.id} disconnected fr
 
 function animate() {
     window.requestAnimationFrame(() => {
-        canvas.ctx.clearRect(0 -50000, 0 -50000, canvas.canvas.width +100000, canvas.canvas.height +100000) // clear canvas
-        canvas.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
+        boardCanvasController.ctx.clearRect(0 -50000, 0 -50000, boardCanvasController.canvas.width +100000, boardCanvasController.canvas.height +100000) // clear canvas
+        boardCanvasController.renderMap({board: clientGame.board, username: localPlayer.username}) // redraw canvas
         //canvas.renderMapFromOffscreenCanvas()
 
-        if (canvas.selectedUnit) { canvas.animateBlinkSelectedUnit() }
+        if (boardCanvasController.selectedUnit) { boardCanvasController.animateBlinkSelectedUnit() }
         window.requestAnimationFrame(() => {animate()})
     })
 }

@@ -21,56 +21,56 @@ function registerEventListeners() {
     document.addEventListener("keydown", (event) => {
         console.log(event)
         console.log(clientGame)
-        if (canvas.selectedUnit) {
-            let unit = canvas.selectedUnit
+        if (boardCanvasController.selectedUnit) {
+            let unit = boardCanvasController.selectedUnit
             let x = unit.coordinates.x
             let y = unit.coordinates.y
             let targetX
             let targetY
             switch (event.code) {
                 case "ArrowLeft":
-                    [targetX, targetY] = canvas.onLeftEdge({x, y}) ?
-                        canvas.targetCoordinatesIfMovingLeftEdgeToRightEdge({x, y}) : canvas.targetCoordinatesIfMovingLeft({x, y})
+                    [targetX, targetY] = boardCanvasController.onLeftEdge({x, y}) ?
+                    boardCanvasController.targetCoordinatesIfMovingLeftEdgeToRightEdge({x, y}) : boardCanvasController.targetCoordinatesIfMovingLeft({x, y})
                     moveUnitToTile({unit: unit, x: targetX, y: targetY}) // check if valid move, emit move to server, update canvas
                     break
                 case "ArrowRight":
-                    [targetX, targetY] = canvas.onRightEdge({x, y}) ?
-                        canvas.targetCoordinatesIfMovingRightEdgeToLeftEdge({x, y}) : canvas.targetCoordinatesIfMovingRight({x, y})
+                    [targetX, targetY] = boardCanvasController.onRightEdge({x, y}) ?
+                    boardCanvasController.targetCoordinatesIfMovingRightEdgeToLeftEdge({x, y}) : boardCanvasController.targetCoordinatesIfMovingRight({x, y})
                     moveUnitToTile({unit: unit, x: targetX, y: targetY}) // check if valid move, emit move to server, update canvas
                     break
                 case "ArrowUp":
-                    if (canvas.onTopEdgeOfDiamondMap({x, y})) {return}
-                    [targetX, targetY] = canvas.onLeftEdge({x, y}) ?
-                        canvas.targetCoordinatesIfMovingUpOnLeftEdge({x, y}) : canvas.targetCoordinatesIfMovingUp({x, y})
+                    if (boardCanvasController.onTopEdgeOfDiamondMap({x, y})) {return}
+                    [targetX, targetY] = boardCanvasController.onLeftEdge({x, y}) ?
+                    boardCanvasController.targetCoordinatesIfMovingUpOnLeftEdge({x, y}) : boardCanvasController.targetCoordinatesIfMovingUp({x, y})
                     moveUnitToTile({unit: unit, x: targetX, y: targetY}) // check if valid move, emit move to server, update canvas
                     break
                 case "ArrowDown":
-                    if (canvas.onBottomEdgeOfDiamondMap({x, y})) {return}
-                    [targetX, targetY] = canvas.onRightEdge({x, y}) ?
-                        canvas.targetCoordinatesIfMovingDownOnRightEdge({x, y}) : canvas.targetCoordinatesIfMovingDown({x, y})
+                    if (boardCanvasController.onBottomEdgeOfDiamondMap({x, y})) {return}
+                    [targetX, targetY] = boardCanvasController.onRightEdge({x, y}) ?
+                    boardCanvasController.targetCoordinatesIfMovingDownOnRightEdge({x, y}) : boardCanvasController.targetCoordinatesIfMovingDown({x, y})
                     moveUnitToTile({unit: unit, x: targetX, y: targetY}) // check if valid move, emit move to server, update canvas
                     break
                 case "KeyB":
-                    socket.emit('unitOrders', {unit: canvas.selectedUnit, orders: canvas.selectedUnit.orders[event.code]})
-                    canvas.deselectUnit()
-                    canvas.sounds.buildCity.play()
+                    socket.emit('unitOrders', {unit: boardCanvasController.selectedUnit, orders: boardCanvasController.selectedUnit.orders[event.code]})
+                    boardCanvasController.deselectUnit()
+                    boardCanvasController.sounds.buildCity.play()
                     return
                 case "Tab":
                     event.preventDefault()
                     return
                 case "Escape":
-                    canvas.deselectTile()
-                    canvas.deselectUnit()
+                    boardCanvasController.deselectTile()
+                    boardCanvasController.deselectUnit()
                     cityCanvasController.canvas.clearRect(0, 0, window.innerWidth, window.innerHeight)
                     return
                 default:
                     return
             }
         } else {
-            if (event.code === "ArrowUp") { canvas.scrollUp(); return }
-            if (event.code === "ArrowDown") { canvas.scrollDown(); return }
-            if (event.code === "ArrowLeft") { canvas.scrollLeft(); return }
-            if (event.code === "ArrowRight") { canvas.scrollRight(); return }
+            if (event.code === "ArrowUp") { boardCanvasController.scrollUp(); return }
+            if (event.code === "ArrowDown") { boardCanvasController.scrollDown(); return }
+            if (event.code === "ArrowLeft") { boardCanvasController.scrollLeft(); return }
+            if (event.code === "ArrowRight") { boardCanvasController.scrollRight(); return }
             if (event.code === "Escape") {
                 cityCanvasController.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight) // clear city canvas (akin to close city window)
                 //bringToFront(canvas1)
@@ -78,20 +78,20 @@ function registerEventListeners() {
         }
         if (event.code === "Tab") {
             event.preventDefault() // prevent screen scrolling when moving selected unit, and tabbing
-            canvas.selectNextUnit({board: clientGame.board, username: socket.id})
-            if ( !(canvas.tileIsVisibleOnScreen(canvas.selectedTile)) ) { canvas.centerScreenOnTile(canvas.selectedTile) }
-            console.log(canvas.selectedUnit)
+            boardCanvasController.selectNextUnit({board: clientGame.board, username: socket.id})
+            if ( !(boardCanvasController.tileIsVisibleOnScreen(boardCanvasController.selectedTile)) ) { boardCanvasController.centerScreenOnTile(boardCanvasController.selectedTile) }
+            console.log(boardCanvasController.selectedUnit)
             return
         }
     })
 
     window.addEventListener("pointermove", (event) => {
 
-        const rect = canvas.canvas.getBoundingClientRect()
-        mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
-        mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize.y)
+        const rect = boardCanvasController.canvas.getBoundingClientRect()
+        mouse.x = Math.floor((event.x - rect.left) / boardCanvasController.tileSize.x)
+        mouse.y = Math.floor((event.y - rect.top) / boardCanvasController.tileSize.y)
 
-        const hoveredTileXY = canvas.determineTileFromPixelCoordinates(event.offsetX, event.offsetY)
+        const hoveredTileXY = boardCanvasController.determineTileFromPixelCoordinates(event.offsetX, event.offsetY)
         let hoveredTile = clientGame.board.tiles[hoveredTileXY.x][hoveredTileXY.y]
         //console.log(hoveredTile)
 
@@ -126,20 +126,20 @@ function registerEventListeners() {
         }
         ////////////////////////////////////////
         
-        const rect = canvas.canvas.getBoundingClientRect()
-        mouse.x = Math.floor((event.x - rect.left) / canvas.tileSize.x)
-        mouse.y = Math.floor((event.y - rect.top) / canvas.tileSize.y)
+        const rect = boardCanvasController.canvas.getBoundingClientRect()
+        mouse.x = Math.floor((event.x - rect.left) / boardCanvasController.tileSize.x)
+        mouse.y = Math.floor((event.y - rect.top) / boardCanvasController.tileSize.y)
 
-        const clickedTile = canvas.determineTileFromPixelCoordinates(event.offsetX, event.offsetY)
+        const clickedTile = boardCanvasController.determineTileFromPixelCoordinates(event.offsetX, event.offsetY)
         console.log(clickedTile)
 
-        if (canvas.selectedUnit) {
+        if (boardCanvasController.selectedUnit) {
             let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
-            if (clientGame.board.tiles[clickedTile.x][clickedTile.y].unit) {canvas.sounds.swordFight.play()} else {canvas.sounds.movePiece.play()}
-            if (canvas.isInvalidMove(clickedTile)) { return }
-            socket.emit('moveUnitToTile', {unit: canvas.selectedUnit, tile: targetTile})
-            canvas.selectTile(targetTile)
-            canvas.deselectUnit()
+            if (clientGame.board.tiles[clickedTile.x][clickedTile.y].unit) {boardCanvasController.sounds.swordFight.play()} else {boardCanvasController.sounds.movePiece.play()}
+            if (boardCanvasController.isInvalidMove(clickedTile)) { return }
+            socket.emit('moveUnitToTile', {unit: boardCanvasController.selectedUnit, tile: targetTile})
+            boardCanvasController.selectTile(targetTile)
+            boardCanvasController.deselectUnit()
         } else {
             let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
             if (targetTile.city) {
@@ -147,8 +147,8 @@ function registerEventListeners() {
                 //bringToFront(cityCanvas)
                 return
             }
-            canvas.selectTile(targetTile)
-            canvas.selectUnit({tile: targetTile, username: socket.id})
+            boardCanvasController.selectTile(targetTile)
+            boardCanvasController.selectUnit({tile: targetTile, username: socket.id})
         }
         console.log("down:" + event.x + " " + event.y);
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
@@ -168,7 +168,7 @@ function registerEventListeners() {
         console.log(event)
 
         if (pointerDown) {
-            canvas.panMouse(pointerDownPixelLocation, event.movementX, event.movementY)
+            boardCanvasController.panMouse(pointerDownPixelLocation, event.movementX, event.movementY)
         }
 
         // mousepan code ////////////////////////////////////////////////////
@@ -199,36 +199,36 @@ function registerEventListeners() {
 
 
     window.addEventListener("resize", () => {
-        canvas.adjustCanvasSizeToBrowser(clientGame.board)
+        boardCanvasController.adjustCanvasSizeToBrowser(clientGame.board)
         cityCanvasController.adjustCanvasSizeToBrowser()
     } )
     window.addEventListener("wheel", (event) => {
         event.preventDefault() 
-        canvas.scrollZoom(event)
+        boardCanvasController.scrollZoom(event)
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
 
 }
 
 function isInvalidMove(unit, direction) {
-    return canvas.isInvalidMove({x: unit.coordinates.x + direction.x, y: unit.coordinates.y + direction.y})
+    return boardCanvasController.isInvalidMove({x: unit.coordinates.x + direction.x, y: unit.coordinates.y + direction.y})
 }
 
 function moveUnitInDirection(unit, direction) {
     socket.emit('moveUnitInDirection', {unit, direction})
     console.log(`moveUnitInDirection socket fired with unit = ${unit}, direction = ${direction}`)
-    canvas.deselectTile()
-    canvas.deselectUnit()
+    boardCanvasController.deselectTile()
+    boardCanvasController.deselectUnit()
 }
 
 function moveUnitIfValidMove(unit, direction) { if (isInvalidMove(unit, direction)) {return} else { moveUnitInDirection(unit, direction) } }
 
 function moveUnitToTile({unit, x, y}) {
     console.log(`${x}, ${y}`)
-    if (canvas.isValidMove({unit, x, y})) {
+    if (boardCanvasController.isValidMove({unit, x, y})) {
         let tile = clientGame.board.tiles[x][y]
         socket.emit('moveUnitToTile', {unit, tile})
-        canvas.selectTile(tile)
-        canvas.deselectUnit()
+        boardCanvasController.selectTile(tile)
+        boardCanvasController.deselectUnit()
     }
 }
 
@@ -280,18 +280,18 @@ function initializeTestSwipeMotionForMobile() {  // https://stackoverflow.com/qu
         if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) {/*most significant*/
             if ( xDiff > 0 ) {
                 /* right swipe */
-                canvas.scrollRight()
+                boardCanvasController.scrollRight()
             } else {
                 /* left swipe */
-                canvas.scrollLeft()
+                boardCanvasController.scrollLeft()
             }                       
         } else {
             if ( yDiff > 0 ) {
                 /* down swipe */ 
-                canvas.scrollDown()
+                boardCanvasController.scrollDown()
             } else { 
                 /* up swipe */
-                canvas.scrollUp()
+                boardCanvasController.scrollUp()
             }                                                                 
         }
         /* reset values */

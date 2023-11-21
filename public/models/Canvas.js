@@ -2,7 +2,7 @@ class Canvas {
     constructor({canvas, board}) {
         this.canvas = canvas
         this.ctx = this.canvas.getContext("2d")//, { alpha: false }) // turning off transprency of canvas and makes background black
-        this.boardSize = {x: board.size.x, y: board.size.y}
+        //this.boardSize = {x: board.size.x, y: board.size.y}
         this.tileSize = {}
         this.orientation = "short diamond"  // short diamond, diamond, or [nothing = standard]
         this.selectedUnit = ""
@@ -13,7 +13,7 @@ class Canvas {
             //origin: {x: 0, y: 0},  // referenced in client.js but x and y are not changed right now
             scale: 0.5 // update in scroolZoom
         }
-        this.adjustCanvasSizeToBrowser(board)
+        //this.adjustCanvasSizeToBrowser(board)
         this.initializeSounds()
         this.initializeUnitSprites()
         this.initializeTerrainSprites()
@@ -22,7 +22,10 @@ class Canvas {
         //canvas.renderMapOffScreenCanvas({board: clientGame.board, username: localPlayer.username})
     }
 
-
+    setBoard(board) {
+        this.boardSize = {x: board.size.x, y: board.size.y}
+        this.adjustCanvasSizeToBrowser(board)
+    }
 
     // █████    █████   █   █   ███   ███    █████        █    ████    ████    ███    █   █    ████   █████   ████
     // █    █   █       █   █    █   █   █   █           █     █   █   █   █  █   █   █   █   █       █       █   █
