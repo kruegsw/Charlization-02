@@ -94,10 +94,10 @@ function registerEventListeners() {
         mouse.y = Math.floor((event.y - rect.top) / boardCanvasController.tileSize.y)
 
         const hoveredTileXY = boardCanvasController.determineTileFromPixelCoordinates(event.offsetX, event.offsetY)
-        let hoveredTile = clientGame.board.tiles[hoveredTileXY.x][hoveredTileXY.y]
+        let hoveredTile = clientGame.board.tiles?.[hoveredTileXY.x]?.[hoveredTileXY.y]
         //console.log(hoveredTile)
 
-        if (hoveredTile.unit) {
+        if (hoveredTile?.unit) {
             // Set the popup content and position
             //console.log('unit')
             const objectInfo = `${hoveredTile.unit.unitType}`;
@@ -168,7 +168,7 @@ function registerEventListeners() {
     boardCanvas.addEventListener("pointermove", (event) => {
         //pointerDownPixelLocation
         event.preventDefault()
-        console.log(event)
+        //console.log(event)
 
         if (pointerDown) {
             boardCanvasController.panMouse(pointerDownPixelLocation, event.movementX, event.movementY)
@@ -193,8 +193,8 @@ function registerEventListeners() {
             }
         } 
         */
-        console.log("move event:" + event.x + " " + event.y);
-        console.log("move old event:" + event.x + " " + event.y);
+        //console.log("move event:" + event.x + " " + event.y);
+        //console.log("move old event:" + event.x + " " + event.y);
         
         ////////////////////////////////////////////////////////////////////////
         

@@ -23,15 +23,16 @@ class CityCanvas {
         this.ctx.msImageSmoothingEnabled = false;
     }
 
-
     #adjustCanvasSizeToMatchBrowser() {  // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
+
+        const citySpriteXYWH = this.sprites.city.background
         
-        if (window.innerWidth / window.innerHeight > 640/480 ) {
+        if (window.innerWidth / window.innerHeight > citySpriteXYWH.w/citySpriteXYWH.h ) {
             this.canvas.height = window.innerHeight
-            this.canvas.width = this.canvas.height*640/480
+            this.canvas.width = this.canvas.height*citySpriteXYWH.w/citySpriteXYWH.h
         } else {
             this.canvas.width = window.innerWidth
-            this.canvas.height = this.canvas.width*480/640
+            this.canvas.height = this.canvas.width*citySpriteXYWH.h/citySpriteXYWH.w
         }
 
         //this.canvas.width = window.innerWidth // * devicePixelRatio
@@ -40,12 +41,12 @@ class CityCanvas {
         const devicePixelRatio = window.devicePixelRatio
         if (devicePixelRatio > 1) {
 
-            if (window.innerWidth / window.innerHeight > 640/480 ) {
+            if (window.innerWidth / window.innerHeight > citySpriteXYWH.w/citySpriteXYWH.h ) {
                 this.canvas.height = window.innerHeight
-                this.canvas.width = this.canvas.height*640/480
+                this.canvas.width = this.canvas.height*citySpriteXYWH.w/citySpriteXYWH.h
             } else {
                 this.canvas.width = window.innerWidth
-                this.canvas.height = this.canvas.width*480/640
+                this.canvas.height = this.canvas.width*citySpriteXYWH.h/citySpriteXYWH.w
             }
 
             // 2. Force it to display at the original (logical) size with CSS or style attributes
@@ -77,33 +78,31 @@ class CityCanvas {
     renderCity(cityObject) {
         this.drawCityBackground()
         this.drawCitizens(cityObject)
-        this.drawInProduction()
+        this.drawInProduction(cityObject)
         this.drawBottomRightButtons()
+        this.drawResources(cityObject)
         this.#fixPixelBlur()
-        console.log(cityObject)
+        //console.log(cityObject)
     }
 
-    drawGrayButton(ctx, x, y, w, h, text) {
-        ctx.beginPath();
-        ctx.rect(x, y, w, h);
-        ctx.fillStyle = 'rgba(215,222,217,1)';  // color of stone
-        ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = '#000000';
-        ctx.stroke();
-        ctx.closePath();
-        ctx.font = '20pt Times New Roman';
-        ctx.fillStyle = '#000000';
-        ctx.fillText(text, x + w / 4, y + 64);
-    }
-
-    drawSpriteScaledToCanvas(spriteSheet, spriteSheetXYWH, canvasXY) {
-        console.log(spriteSheet, spriteSheetXYWH, canvasXY)
+    drawSpriteScaledToCanvas(spriteSheet, spriteSheetXYWH, canvasXYWH) {
+        //console.log(spriteSheet, spriteSheetXYWH, canvasXY)
+        const citySpriteXYWH = this.sprites.city.background
         this.ctx.drawImage(
             spriteSheet,
             ...Object.values(spriteSheetXYWH), // x, y, w, h,
-            this.canvas.width*canvasXY.x/640, this.canvas.height*canvasXY.y/480, this.canvas.width*(spriteSheetXYWH.w)/640, this.canvas.height*(spriteSheetXYWH.h)/480
+            this.canvas.width*(canvasXYWH.x/citySpriteXYWH.w), this.canvas.height*(canvasXYWH.y/citySpriteXYWH.h), this.canvas.width*(spriteSheetXYWH.w/citySpriteXYWH.w), this.canvas.height*(spriteSheetXYWH.h/citySpriteXYWH.h)
         )
+    }
+
+    getSpriteXYWHScaledToCanvasXYWH(spriteSheetXYWH) {
+        const citySpriteXYWH = this.sprites.city.background
+        return {
+            x: this.canvas.width*(spriteSheetXYWH.x/citySpriteXYWH.w),
+            y: this.canvas.height*(spriteSheetXYWH.y/citySpriteXYWH.h),
+            w: this.canvas.width*(spriteSheetXYWH.w/citySpriteXYWH.w),
+            h: this.canvas.height*(spriteSheetXYWH.h/citySpriteXYWH.h)
+        }
     }
 
     // ███ █ ███ █ █   ██  ███ ███ █ █ ███ ██  ███ █ █ █  █ ██ 
@@ -129,27 +128,26 @@ class CityCanvas {
         // for now, assume 16 available spaces 25 px wide (dimension of citizen sprite)
         // if count of citizen is > 16, then citizens will need to overlap, increment = 400 px / citizens
         let era = "ancient" // notice era hard coded to ancient for now
-        const canvasXYWH = this.sprites.city.citizens
-        let canvasXY = {x: canvasXYWH.x, y: canvasXYWH.y}
+        const canvasXYWH = {...this.sprites.city.citizens} // create clone to avoid mutatation
         const xIncrement = Math.min(25, 375 / this.#citizenCount(cityObject) )
         let gapUsed = 0
         for (let citizenType in cityObject.citizens) {
             let genderCounter = 0
             if (citizenType === "entertainer" || citizenType === "taxcollector" || citizenType === "scientist") {
-                if (!gapUsed) {gapUsed = 1; canvasXY.x += xIncrement} // make a space between normal citizens and specialists
+                if (!gapUsed) {gapUsed = 1; canvasXYWH.x += xIncrement} // make a space between normal citizens and specialists
                 for (let i = 0; i < cityObject.citizens[citizenType]; i++) {    
-                    console.log(citizenType)
+                    //console.log(citizenType)
                     let citizenSprite = this.sprites.people[era]["specialist"][citizenType] //[citizenType][gender] // notice era hard coded to ancient for now
-                    this.#drawCitizen(citizenSprite, canvasXY)
-                    canvasXY.x += xIncrement // adjust x position to right for next citizen
+                    this.#drawCitizen(citizenSprite, canvasXYWH)
+                    canvasXYWH.x += xIncrement // adjust x position to right for next citizen
                 }
             } else {
                 for (let i = 0; i < cityObject.citizens[citizenType]; i++) {
                     let gender = this.#getCitizenGender(genderCounter)
                     genderCounter++
                     let citizenSprite = this.sprites.people[era][citizenType][gender] //[citizenType][gender]
-                    this.#drawCitizen(citizenSprite, canvasXY)
-                    canvasXY.x += xIncrement // adjust x position to right for next citizen
+                    this.#drawCitizen(citizenSprite, canvasXYWH)
+                    canvasXYWH.x += xIncrement // adjust x position to right for next citizen
                 }
             }
           }
@@ -164,9 +162,9 @@ class CityCanvas {
         return genders[n % 2]
     }
 
-    #drawCitizen(citizenSprite, canvasXY) {
+    #drawCitizen(citizenSprite, canvasXYWH) {
         let spriteSheet = this.sprites.people
-        this.drawSpriteScaledToCanvas(spriteSheet, citizenSprite, canvasXY)
+        this.drawSpriteScaledToCanvas(spriteSheet, citizenSprite, canvasXYWH)
     }
 
     // ██  ███ ███ ███ █ █ ██  ███ ███   █████ ███ ███
@@ -178,6 +176,18 @@ class CityCanvas {
     // █ █ ██  █   █ █ █ █ █ █ █   ██  █  
     // ██  █     █ █ █ █ █ ██  █   █     █
     // █ █ ███ ███ ███ ███ █ █ ███ ███ ███
+
+    drawResources(cityObject) {
+        this.drawResourcesProduction(cityObject)
+    }
+
+    drawResourcesProduction(cityObject) {
+        const production = cityObject.resources.production
+        const canvasXYWH = {...this.sprites.city.resources.wasteSupportProduction}
+        const spriteSheet = this.sprites.icons
+        const iconSprite = this.sprites.icons.production
+        this.drawSpriteScaledToCanvas(spriteSheet, iconSprite, canvasXYWH)
+    }
 
     // ███ ███ ███ ██    ███ ███ ███ ██  ███ ███ ███
     // █   █ █ █ █ █ █   █    █  █ █ █ █ █ █ █   ██
@@ -204,20 +214,54 @@ class CityCanvas {
     // █ █ ██   ███ ██  █ █ █ █ █ █ █    █  █ █ █ █ ██
     // █ █  █   █   █ █ ███ ██  ███ ███  █  █ ███ █  █
 
-    drawInProduction() {
+    drawInProduction(cityObject) {
         this.drawInProductionText()
+        this.drawBlueShadowBox()
     }
 
     drawInProductionText() {
-        let inProductionText = this.sprites.city.inProduction.text
         this.drawSpriteScaledToCanvas(this.sprites.city, this.sprites.people.ancient.content.woman, this.sprites.city.inProduction.text)
         //this.drawGrayButton(ctx, inProductionText.x, inProductionText.y, inProductionText.w, inProductionText.h, 'testText')
+    }
+
+    drawBlueShadowBox() {
+        const boxXYWH = this.getSpriteXYWHScaledToCanvasXYWH(this.sprites.city.inProduction.progress)
+        this.ctx.beginPath()
+        this.ctx.moveTo(boxXYWH.x, boxXYWH.y + boxXYWH.h)
+        this.ctx.lineTo(boxXYWH.x, boxXYWH.y)
+        this.ctx.lineTo(boxXYWH.x + boxXYWH.w, boxXYWH.y)
+        this.ctx.lineWidth = 2
+        this.ctx.strokeStyle = 'lightblue'
+        this.ctx.stroke()
+        this.ctx.beginPath()
+        this.ctx.moveTo(boxXYWH.x + boxXYWH.w, boxXYWH.y)
+        this.ctx.lineTo(boxXYWH.x + boxXYWH.w, boxXYWH.y + boxXYWH.h)
+        this.ctx.lineTo(boxXYWH.x, boxXYWH.y + boxXYWH.h)
+        this.ctx.lineWidth = 2
+        this.ctx.strokeStyle = 'darkblue'
+        this.ctx.stroke()
     }
 
     // ██  █ █ ███ ███ █ █ █  █ ███
     // ███ █ █  █   █  █ █ ██ █ █
     // █ █ █ █  █   █  █ █ █ ██   █
     // ██  ███  █   █  ███ █  █ ███
+
+
+
+    drawGrayButton(ctx, x, y, w, h, text) {
+        ctx.beginPath();
+        ctx.rect(x, y, w, h);
+        //ctx.fillStyle = 'rgba(215,222,217,1)';  // color of stone
+        //ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#000000';
+        ctx.stroke();
+        ctx.closePath();
+        ctx.font = '20pt Times New Roman';
+        ctx.fillStyle = '#000000';
+        ctx.fillText(text, x + w / 4, y + 64);
+    }
 
     drawBottomRightButtons() {
         this.drawGrayButton(this.ctx, 100, 100, 200, 200, 'testText')
@@ -259,21 +303,23 @@ class CityCanvas {
     initializeCitySprites() {
         this.sprites.city = new Image()
         this.sprites.city.src = "/assets/images/city.png"
-        this.sprites.city.background = {x: 0, y: 0, w: 640, h: 480}
+        this.sprites.city.background = {x: 0, y: 0, w: 640, h: 420}
         this.sprites.city.citizens = {x: 6, y: 10, w: 424, h: 26}
         this.sprites.city.resourceMap = {x: 1, y: 1, w: 1, h: 1}
-        this.sprites.city.resources = {x: 1, y: 1, w: 1, h: 1}
+        this.sprites.city.resources = {x: 199, y: 46, w: 238, h: 166,  // 437 212
+            wasteSupportProduction: {x: 199, y: 181, w: 238, h: 16},  // 437 197
+        }
         this.sprites.city.foodStorage = {x: 1, y: 1, w: 1, h: 1}
         this.sprites.city.unitsSupported = {x: 1, y: 1, w: 1, h: 1}
         this.sprites.city.cityImprovements = {x: 1, y: 1, w: 1, h: 1}
         this.sprites.city.unitsPresent = {x: 1, y: 1, w: 1, h: 1}
         this.sprites.city.inProduction = {
-            x: 437, y: 165, w: 194, h: 190,
+            x: 437, y: 165, w: 194, h: 190,  // 631, 355
             text: {x: 441, y: 169, w: 186, h: 10},
             buyButton: {x: 441, y: 181, w: 70, h: 25},
             inProductionIcon: {x: 513, y: 182, w: 42, h: 23},
             changeButton: {x: 557, y: 181, w: 70, h: 25},  // 182 /26 = 7   42 for dragon  70 for button
-            progress: {x: 441, y: 208, w: 186, h: 152}
+            progress: {x: 445, y: 208, w: 178, h: 145}
         }
         this.sprites.city.buttons = {x: 1, y: 1, w: 1, h: 1}
     }
@@ -281,6 +327,17 @@ class CityCanvas {
     initializeIconSprites() {
         this.sprites.icons = new Image()
         this.sprites.icons.src = "/assets/images/icons.png"
+        let iconSpritesLargeResourceBoxes = [
+            ['hunger', 'waste', 'corruption'],
+            ['food', 'production', 'trade'],
+            ['luxury', 'tax', 'science'],
+            ['bigUnhappyFace', 'notSure']
+        ]
+        iconSpritesLargeResourceBoxes.forEach( (row, i) => {
+            row.forEach( (icon, j) => {
+                this.sprites.icons[icon] = {x: 1+j*(14+1), y: 290+i*(14+1), w: 14, h: 14}
+            })
+        } )
     }
 
     initializePeopleSprites() {
@@ -298,17 +355,13 @@ class CityCanvas {
         citizenSprites.forEach( (row, j) => {
             let era = citizenRow[j]
             if (!this.sprites.people[era]) { this.sprites.people[era] = {} }
-            console.log(era)
             row.forEach( (_citizen, i) => {
                 let citizenType = columnCitizenType[i]
-                console.log(citizenType)
                 if (!this.sprites.people[era][citizenType]) { this.sprites.people[era][citizenType] = {} }
                 let citizenGender = columnCitizenGenderOrSpecialistType[i]
-                console.log(citizenGender)
                 this.sprites.people[era][citizenType][citizenGender] = {x: 3+i*28, y: 7+j*31, w: 25, h: 28}
             })
         })
-        console.log(this.sprites)
     }
 
 }

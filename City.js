@@ -18,14 +18,16 @@ class City {
         this.cityImprovements = []
         this.resources = {
             food: 0,
+            hunger: 0,
             surplus: 0,
             trade: 0,
             corruption: 0,
             tax: 0,
             luxury: 0,
             science: 0,
+            production: 4,
             support: 0,
-            production: 0
+            waste: 0
         }
         this.foodStorage = 0
         this.inProduction = {

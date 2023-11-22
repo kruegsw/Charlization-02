@@ -3,7 +3,6 @@ const boardCanvas = document.getElementById("boardCanvas")
 const boardCanvasController = new Canvas({canvas: boardCanvas, /*board: clientGame.board}*/})
 const popup = document.getElementById('popup');
 const cityCanvas = document.getElementById("cityCanvas")
-//const cityCtx = cityCanvas.getContext("2d")
 const cityCanvasController = new CityCanvas(cityCanvas)
 
 let canvasOrder = [boardCanvas, cityCanvas] // keep track of which html element is in front
