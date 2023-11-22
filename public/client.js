@@ -5,7 +5,10 @@ const popup = document.getElementById('popup');
 const cityCanvas = document.getElementById("cityCanvas")
 //const cityCtx = cityCanvas.getContext("2d")
 const cityCanvasController = new CityCanvas(cityCanvas)
-//let canvasOrder = [boardCanvas, cityCanvas]
+
+let canvasOrder = [boardCanvas, cityCanvas] // keep track of which html element is in front
+setZindex() // first element in canvasOrder will be in front, last element will be in the back
+
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
@@ -36,6 +39,13 @@ function animate() {
         if (boardCanvasController.selectedUnit) { boardCanvasController.animateBlinkSelectedUnit() }
         window.requestAnimationFrame(() => {animate()})
     })
+}
+
+function setZindex() {  
+    canvasOrder.forEach( (element, i) => {
+        element.style.zIndex = -i
+    })
+    console.log(canvasOrder)
 }
 
 

@@ -62,6 +62,7 @@ function registerEventListeners() {
                     boardCanvasController.deselectTile()
                     boardCanvasController.deselectUnit()
                     cityCanvasController.canvas.clearRect(0, 0, window.innerWidth, window.innerHeight)
+                    bringToFront(boardCanvas)
                     return
                 default:
                     return
@@ -73,7 +74,8 @@ function registerEventListeners() {
             if (event.code === "ArrowRight") { boardCanvasController.scrollRight(); return }
             if (event.code === "Escape") {
                 cityCanvasController.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight) // clear city canvas (akin to close city window)
-                //bringToFront(canvas1)
+                bringToFront(boardCanvas)
+                return
             }
         }
         if (event.code === "Tab") {
@@ -85,7 +87,7 @@ function registerEventListeners() {
         }
     })
 
-    window.addEventListener("pointermove", (event) => {
+    boardCanvas.addEventListener("pointermove", (event) => {
 
         const rect = boardCanvasController.canvas.getBoundingClientRect()
         mouse.x = Math.floor((event.x - rect.left) / boardCanvasController.tileSize.x)
@@ -111,7 +113,7 @@ function registerEventListeners() {
         }
     })
  
-    window.addEventListener("pointerdown", (event) => {
+    boardCanvas.addEventListener("pointerdown", (event) => {
         event.preventDefault()
         console.log('listener added')
         pointerDown = true;
@@ -144,7 +146,8 @@ function registerEventListeners() {
             let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
             if (targetTile.city) {
                 cityCanvasController.renderCity(targetTile.city)
-                //bringToFront(cityCanvas)
+                bringToFront(cityCanvas)
+                pointerDown = false; // otherwise boardCanvas thinks the pointer is still down
                 return
             }
             boardCanvasController.selectTile(targetTile)
@@ -154,7 +157,7 @@ function registerEventListeners() {
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
 
 
-    window.addEventListener("pointerup", (event) => {
+    boardCanvas.addEventListener("pointerup", (event) => {
         pointerDown = false;
         first_pass_pan = true;
         //console.log("mouse up");
@@ -162,7 +165,7 @@ function registerEventListeners() {
 
     const old_event = {x: 0, y: 0}
     let first_pass_pan = true;
-    window.addEventListener("pointermove", (event) => {
+    boardCanvas.addEventListener("pointermove", (event) => {
         //pointerDownPixelLocation
         event.preventDefault()
         console.log(event)
@@ -202,7 +205,7 @@ function registerEventListeners() {
         boardCanvasController.adjustCanvasSizeToBrowser(clientGame.board)
         cityCanvasController.adjustCanvasSizeToBrowser()
     } )
-    window.addEventListener("wheel", (event) => {
+    boardCanvas.addEventListener("wheel", (event) => {
         event.preventDefault() 
         boardCanvasController.scrollZoom(event)
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
@@ -233,7 +236,9 @@ function moveUnitToTile({unit, x, y}) {
 }
 
 function bringToFront(element) {
-    element.style.zIndex = "0";
+    canvasOrder.unshift(element) // add element to end of array (so it will be in the front when 'setZindex' is called)
+    canvasOrder = [...new Set(canvasOrder)];  // creates unique array i.e. removes extra element from array
+    setZindex() // set z-index according to order of canvasOrder array
     //canvasOrder.forEach
     //for (let i = 0; i < this.canvasOrder.length; i++) {
     //    let column = []
