@@ -31,9 +31,9 @@ class City {
         }
         this.foodStorage = 0
         this.inProduction = {
-            inProduction: "warrior",
-            cost: 10,
-            progress: 0
+            inProduction: "palace",
+            cost: 40,
+            progress: 32
         }
     }
 

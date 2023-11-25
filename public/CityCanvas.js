@@ -95,13 +95,75 @@ class CityCanvas {
         )
     }
 
-    getSpriteXYWHScaledToCanvasXYWH(spriteSheetXYWH) {
-        const citySpriteXYWH = this.sprites.city.background
+    getScaledCanvasXYWH(cityXYWH) {
+        const cityBackground = this.sprites.city.background
         return {
-            x: this.canvas.width*(spriteSheetXYWH.x/citySpriteXYWH.w),
-            y: this.canvas.height*(spriteSheetXYWH.y/citySpriteXYWH.h),
-            w: this.canvas.width*(spriteSheetXYWH.w/citySpriteXYWH.w),
-            h: this.canvas.height*(spriteSheetXYWH.h/citySpriteXYWH.h)
+            x: this.canvas.width*(cityXYWH.x/cityBackground.w),
+            y: this.canvas.height*(cityXYWH.y/cityBackground.h),
+            w: this.canvas.width*(cityXYWH.w/cityBackground.w),
+            h: this.canvas.height*(cityXYWH.h/cityBackground.h)
+        }
+    }
+
+    MOOdrawSpriteScaledToCanvas(spriteSheet, spriteSheetXYWH) {
+        //console.log(spriteSheet, spriteSheetXYWH, canvasXY)
+        const canvasXYWH = this.getScaledCanvasXYWH(spriteSheetXYWH)
+        this.ctx.drawImage(
+            spriteSheet,
+            ...Object.values(spriteSheetXYWH), // x, y, w, h,
+            canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h
+        )
+    }
+
+    /*
+    drawUnitSpriteScaledToCanvasForInProduction(spriteSheet, spriteSheetXYWH, canvasXYWH) {
+        //console.log(spriteSheet, spriteSheetXYWH, canvasXY)
+        const citySpriteXYWH = this.sprites.city.background
+        this.ctx.drawImage(
+            spriteSheet,
+            ...Object.values(spriteSheetXYWH), // x, y, w, h,
+            this.canvas.width*(canvasXYWH.x/citySpriteXYWH.w), this.canvas.height*(canvasXYWH.y/citySpriteXYWH.h), this.canvas.width*(spriteSheetXYWH.w/citySpriteXYWH.w), this.canvas.height*(spriteSheetXYWH.h/citySpriteXYWH.h)
+        )
+    }
+
+    drawSpriteScaledToCanvasAndCenteredWithinXYWH(spriteSheet, spriteSheetXYWH, canvasXYWH) {
+        //console.log(spriteSheet, spriteSheetXYWH, canvasXY)
+        const citySpriteXYWH = this.sprites.city.background
+        this.ctx.drawImage(
+            spriteSheet,
+            ...Object.values(spriteSheetXYWH), // x, y, w, h,
+            this.canvas.width*((canvasXYWH.x-spriteSheetXYWH.w/2)/citySpriteXYWH.w), this.canvas.height*((canvasXYWH.y-spriteSheetXYWH.h/2)/citySpriteXYWH.h), this.canvas.width*(spriteSheetXYWH.w/citySpriteXYWH.w), this.canvas.height*(spriteSheetXYWH.h/citySpriteXYWH.h)
+        )
+    }
+    */
+
+    drawTextScaledToCanvas(text, canvasXYWH) {
+        const citySpriteXYWH = this.sprites.city.background
+        //this.ctx.font = "48px serif";
+        //this.ctx.strokeText(text, this.canvas.width*(canvasXYWH.x/citySpriteXYWH.w), this.canvas.height*((canvasXYWH.y+canvasXYWH.h)/citySpriteXYWH.h));
+
+        //ctx.lineWidth = 4;
+        //ctx.strokeStyle = "#000000";
+        this.ctx.fillStyle = "lightblue";
+        //this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h)
+        this.ctx.font=`${this.canvas.height*canvasXYWH.h/citySpriteXYWH.h}px Times New Roman`;
+        this.ctx.textAlign = "center"; 
+        this.ctx.textBaseline = "middle";
+        //this.ctx.fillStyle = "#000000";
+        //this.ctx.fillText("Attack!",rectX+(rectWidth/2),rectY+(rectHeight/2));
+        //this.ctx.font = '20pt Times New Roman';
+        //this.ctx.fillStyle = '#000000';
+        this.ctx.fillText(text, this.canvas.width*((canvasXYWH.x+canvasXYWH.w/2)/citySpriteXYWH.w), this.canvas.height*((canvasXYWH.y+canvasXYWH.h/2)/citySpriteXYWH.h))
+        //this.ctx.fillText(text, x + w / 4, y + 64);
+    }
+
+    getScaledCanvasXYWH(cityXYWH) {
+        const cityBackground = this.sprites.city.background
+        return {
+            x: this.canvas.width*(cityXYWH.x/cityBackground.w),
+            y: this.canvas.height*(cityXYWH.y/cityBackground.h),
+            w: this.canvas.width*(cityXYWH.w/cityBackground.w),
+            h: this.canvas.height*(cityXYWH.h/cityBackground.h)
         }
     }
 
@@ -215,31 +277,117 @@ class CityCanvas {
     // █ █  █   █   █ █ ███ ██  ███ ███  █  █ ███ █  █
 
     drawInProduction(cityObject) {
-        this.drawInProductionText()
         this.drawBlueShadowBox()
+        this.drawBuyBox()
+        this.drawChangeBox()
+        this.drawInProductionProgress(cityObject)
+        this.drawInProductionText(cityObject)
+        this.drawInProductionImage(cityObject)
     }
 
-    drawInProductionText() {
-        this.drawSpriteScaledToCanvas(this.sprites.city, this.sprites.people.ancient.content.woman, this.sprites.city.inProduction.text)
-        //this.drawGrayButton(ctx, inProductionText.x, inProductionText.y, inProductionText.w, inProductionText.h, 'testText')
-    }
+    //drawInProductionText() {
+    //    this.drawSpriteScaledToCanvas(this.sprites.city, this.sprites.people.ancient.content.woman, this.sprites.city.inProduction.text)
+    //    //this.drawGrayButton(ctx, inProductionText.x, inProductionText.y, inProductionText.w, inProductionText.h, 'testText')
+    //}
 
     drawBlueShadowBox() {
-        const boxXYWH = this.getSpriteXYWHScaledToCanvasXYWH(this.sprites.city.inProduction.progress)
+        const boxXYWH = this.getScaledCanvasXYWH(this.sprites.city.inProduction.progress)
         this.ctx.beginPath()
         this.ctx.moveTo(boxXYWH.x, boxXYWH.y + boxXYWH.h)
         this.ctx.lineTo(boxXYWH.x, boxXYWH.y)
         this.ctx.lineTo(boxXYWH.x + boxXYWH.w, boxXYWH.y)
-        this.ctx.lineWidth = 2
+        this.ctx.lineWidth = 1
         this.ctx.strokeStyle = 'lightblue'
         this.ctx.stroke()
         this.ctx.beginPath()
         this.ctx.moveTo(boxXYWH.x + boxXYWH.w, boxXYWH.y)
         this.ctx.lineTo(boxXYWH.x + boxXYWH.w, boxXYWH.y + boxXYWH.h)
         this.ctx.lineTo(boxXYWH.x, boxXYWH.y + boxXYWH.h)
-        this.ctx.lineWidth = 2
+        this.ctx.lineWidth = 1
         this.ctx.strokeStyle = 'darkblue'
         this.ctx.stroke()
+    }
+
+    drawBuyBox() {
+        const text = "Buy"
+        let canvasXYWH = this.getScaledCanvasXYWH(this.sprites.city.inProduction.buyButton)
+        this.ctx.beginPath();
+        this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h);
+        this.ctx.fillStyle = 'rgba(180,180,180,1)';  // color of stone
+        this.ctx.fill();
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeStyle = '#000000';
+        this.ctx.stroke();
+        this.ctx.closePath();
+        canvasXYWH = {...this.sprites.city.inProduction.buyButton}
+        this.drawTextScaledToCanvas(text, canvasXYWH)
+        //this.ctx.font = '20pt Times New Roman';
+        //this.ctx.fillStyle = '#000000';
+        //this.ctx.fillText(text, canvasXYWH.x + canvasXYWH.w / 4, canvasXYWH.y + 64);
+    }
+    
+    drawChangeBox() {
+        const text = "Change"
+        const canvasXYWH = this.getScaledCanvasXYWH(this.sprites.city.inProduction.changeButton)
+        //const canvasXYWH = {...this.sprites.city.inProduction.buyButton}
+        this.ctx.beginPath();
+        this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h);
+        this.ctx.fillStyle = 'rgba(180,180,180,1)';  // color of stone
+        this.ctx.fill();
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeStyle = '#000000';
+        this.ctx.stroke();
+        this.ctx.closePath();
+        this.ctx.font = '20pt Times New Roman';
+        this.ctx.fillStyle = '#000000';
+        this.ctx.fillText(text, canvasXYWH.x + canvasXYWH.w / 4, canvasXYWH.y + 64);
+    }
+
+    drawInProductionText(cityObject) {
+        const inProductionText = cityObject.inProduction.inProduction
+        const canvasXYWH = {...this.sprites.city.inProduction.text}
+        this.drawTextScaledToCanvas(inProductionText, canvasXYWH)
+    }
+
+    drawInProductionImage(cityObject) {
+        const inProductionText = cityObject.inProduction.inProduction
+        const canvasXYWH = {...this.sprites.city.inProduction.inProductionImage}
+        let spriteSheet = this.sprites.units // assume InProductioni is a unit
+        let spriteSheetXYWH = {... this.sprites.units[inProductionText]}
+        if (this.sprites.icons[inProductionText]) { // if the inProduction is a wonder or improvement
+            spriteSheet = this.sprites.icons
+            spriteSheetXYWH = {... this.sprites.icons[inProductionText]}
+        }
+        // manually scale unit to fix the available area
+        this.drawSpriteScaledToCanvas(spriteSheet, spriteSheetXYWH, canvasXYWH)
+    }
+
+    drawInProductionProgress(cityObject) {
+        const cost = cityObject.inProduction.cost
+        const progress = cityObject.inProduction.progress
+        const canvasXYWH = {...this.sprites.city.inProduction.progress}
+        const spriteSheet = this.sprites.icons
+        const iconSprite = this.sprites.icons.production
+        const rowsOfShields = Math.min(cost / 10, 10)
+        const shieldsPerRow = cost / rowsOfShields
+        const sideMargin = iconSprite.w / 2
+        const overhangWithoutAdjustment = sideMargin * 2 * ( (shieldsPerRow * (1/10)) - 1 ) * (10 / shieldsPerRow)
+        const rowStartingX = canvasXYWH.x + sideMargin
+        const xIncrement = (canvasXYWH.w - (sideMargin * 2) - overhangWithoutAdjustment) / shieldsPerRow//, (canvasXYWH.w - iconSprite.w) / (10 / (cost / 100)) )
+        const yIncrement = Math.min((canvasXYWH.h - 2 - 2) / rowsOfShields, iconSprite.h + 2)
+        canvasXYWH.x = canvasXYWH.x + sideMargin // left margin will be one half of a shield width
+        canvasXYWH.y = canvasXYWH.y + 2
+        let shieldsPainted = 0
+        for (let i = 0; i < rowsOfShields; i++) {
+            for (let j = 0; j < shieldsPerRow; j++) {
+                this.drawSpriteScaledToCanvas(spriteSheet, iconSprite, canvasXYWH)
+                shieldsPainted++
+                canvasXYWH.x += xIncrement // adjust x position to right for next citizen
+                if (shieldsPainted >= progress) {return}
+            }
+            canvasXYWH.x = rowStartingX
+            canvasXYWH.y = canvasXYWH.y + yIncrement
+        }
     }
 
     // ██  █ █ ███ ███ █ █ █  █ ███
@@ -247,24 +395,8 @@ class CityCanvas {
     // █ █ █ █  █   █  █ █ █ ██   █
     // ██  ███  █   █  ███ █  █ ███
 
-
-
-    drawGrayButton(ctx, x, y, w, h, text) {
-        ctx.beginPath();
-        ctx.rect(x, y, w, h);
-        //ctx.fillStyle = 'rgba(215,222,217,1)';  // color of stone
-        //ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = '#000000';
-        ctx.stroke();
-        ctx.closePath();
-        ctx.font = '20pt Times New Roman';
-        ctx.fillStyle = '#000000';
-        ctx.fillText(text, x + w / 4, y + 64);
-    }
-
     drawBottomRightButtons() {
-        this.drawGrayButton(this.ctx, 100, 100, 200, 200, 'testText')
+        //this.drawGrayButton(100, 100, 200, 200, 'testText')
     }
 
     // production area is 438, 166 to 632, 356  ...  632 - 438 = 194 pixels wide, 365 - 166 = 190 high
@@ -298,6 +430,8 @@ class CityCanvas {
         this.initializeCitySprites()
         this.initializeIconSprites()
         this.initializePeopleSprites()
+        this.initializeUnitSprites()  // redundant with boardCanvass
+        console.log(this.sprites)
     }
 
     initializeCitySprites() {
@@ -316,9 +450,9 @@ class CityCanvas {
         this.sprites.city.inProduction = {
             x: 437, y: 165, w: 194, h: 190,  // 631, 355
             text: {x: 441, y: 169, w: 186, h: 10},
-            buyButton: {x: 441, y: 181, w: 70, h: 25},
-            inProductionIcon: {x: 513, y: 182, w: 42, h: 23},
-            changeButton: {x: 557, y: 181, w: 70, h: 25},  // 182 /26 = 7   42 for dragon  70 for button
+            buyButton: {x: 444, y: 181, w: 64, h: 23},
+            inProductionImage: {x: 513, y: 182, w: 42, h: 23},
+            changeButton: {x: 557, y: 181, w: 70, h: 24},  // 182 /26 = 7   42 for dragon  70 for button
             progress: {x: 445, y: 208, w: 178, h: 145}
         }
         this.sprites.city.buttons = {x: 1, y: 1, w: 1, h: 1}
@@ -336,6 +470,22 @@ class CityCanvas {
         iconSpritesLargeResourceBoxes.forEach( (row, i) => {
             row.forEach( (icon, j) => {
                 this.sprites.icons[icon] = {x: 1+j*(14+1), y: 290+i*(14+1), w: 14, h: 14}
+            })
+        } )
+        let iconSpritesImprovementsBoxes = [
+            ['palace', 'barracks', 'granary', 'temple', 'marketplace', 'library', 'courthouse', 'cityWalls'],
+            ['aqueduct', 'bank', 'cathedral', 'university', 'massTransit', 'colloseum', 'factory', 'manufacturingPlant'],
+            ['SDIdefence', 'recyclingCenter', 'powerPlant', 'hydroPlant', 'nuclearPlant', 'stockExchange', 'sewerSystem', 'supermarket'],
+            ['superhighways', 'reasearchLab', 'SAMmissileBattery', 'coastalFortress', 'solarPlant', 'harbor', 'offshorePlatform', 'airport'],
+            ['policeStation', 'SSstructural', 'SScomponent', 'SSmodule', '(Capitalization)'],
+            ['pyramids', 'hangingGardens', 'collosus', 'lighthouse', 'greatLibrary', 'oracle', 'greatWall'],
+            ['sunTzusWarAcademy', 'kingRichardsCrusade', 'marcoPolosEmbassy', 'michelangelosChapel', 'copernicussObservatory', 'magellansExpedition', 'shakespearesTheatre'],
+            ['leonardosWorkshop', 'JSBachsCathedral', 'isaacNewtonsCollege', 'adamSmithsTradingCo', 'darwinsVoyage', 'statueOfLiberty', 'eiffelTower'],
+            ['womensSuffrage', 'hooverDam', 'manhattanProject', 'unitedNations', 'apolloProgram', 'SETIprogram', 'cureForCancer']
+        ]
+        iconSpritesImprovementsBoxes.forEach( (row, i) => {
+            row.forEach( (icon, j) => {
+                this.sprites.icons[icon] = {x: 343+j*((379-343)+1), y: 1+i*((21-1)+1), w: (379-343), h: (21-1)}
             })
         } )
     }
@@ -362,6 +512,26 @@ class CityCanvas {
                 this.sprites.people[era][citizenType][citizenGender] = {x: 3+i*28, y: 7+j*31, w: 25, h: 28}
             })
         })
+    }
+
+    initializeUnitSprites() { // this is redundant with boardCanvas
+        this.sprites.units = new Image()
+        this.sprites.units.src = "/assets/images/units.png"
+        let unitSprites = [
+            ['settler', 'engineer', 'warrior', 'phalanx', 'archer', 'legion', 'pikeman', 'musketeer', 'fanatic'],
+            ['partisan', 'alpine', 'rifleman', 'marine', 'parachuter', 'humvee', 'horseman', 'chariot', 'elephant'],
+            ['crusader', 'knight', 'not sure cavalry', 'cavalary', 'armor', 'catapult', 'cannon', 'artillery', 'howitzer'],
+            ['plane', 'bomber', 'helicopter', 'fighter', 'stealth', 'trireme', 'caravel', 'galley', 'frigate'],
+            ['ironclad', 'destroyer', 'cruser', 'not sure ship', 'battleship', 'submarine', 'carrier', 'transport', 'missile'],
+            ['nuclear', 'diplomat', 'spy', 'caravan', 'freight', 'explorer', 'not sure barbarian', 'not sure boat', 'not sure ballon'],
+            ['barb1', 'barb2', 'barb3', 'barb4', 'barb5', 'barb6', 'barb7', 'barb8', 'barb9', 'barb10']
+        ]
+        unitSprites.forEach( (row, j) => {
+            row.forEach( (unit, i) => {
+                this.sprites.units[unit] = {x: 2+i*65, y: 2+j*49, w: 62, h: 46}
+            })
+        })
+        this.sprites.units['shield'] = {x: 597, y: 30, w: 12, h: 20}
     }
 
 }
