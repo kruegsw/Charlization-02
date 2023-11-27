@@ -95,6 +95,15 @@ class CityCanvas {
         )
     }
 
+    drawSpriteScaledToCanvasAndAvailableWidth(spriteSheet, spriteSheetXYWH, canvasXYWH) {
+        const citySpriteXYWH = this.sprites.city.background
+        this.ctx.drawImage(
+            spriteSheet,
+            ...Object.values(spriteSheetXYWH), // x, y, w, h,
+            this.canvas.width*(canvasXYWH.x/citySpriteXYWH.w), this.canvas.height*(canvasXYWH.y/citySpriteXYWH.h), this.canvas.width*(canvasXYWH.w/citySpriteXYWH.w), this.canvas.height*(canvasXYWH.w*(spriteSheetXYWH.h/spriteSheetXYWH.w)/citySpriteXYWH.h)
+        )
+    }
+
     getScaledCanvasXYWH(cityXYWH) {
         const cityBackground = this.sprites.city.background
         return {
@@ -137,16 +146,47 @@ class CityCanvas {
     }
     */
 
-    drawTextScaledToCanvas(text, canvasXYWH) {
+    drawShadowBorder(leftAndTopColor, rightAndBottomColor, spriteXYWH, lineWidth) {
+        const boxXYWH = this.getScaledCanvasXYWH(spriteXYWH)
+        this.ctx.beginPath()
+        this.ctx.moveTo(boxXYWH.x, boxXYWH.y + boxXYWH.h)
+        this.ctx.lineTo(boxXYWH.x, boxXYWH.y)
+        this.ctx.lineTo(boxXYWH.x + boxXYWH.w, boxXYWH.y)
+        this.ctx.lineWidth = lineWidth
+        this.ctx.strokeStyle = leftAndTopColor
+        this.ctx.stroke()
+        this.ctx.beginPath()
+        this.ctx.moveTo(boxXYWH.x + boxXYWH.w, boxXYWH.y)
+        this.ctx.lineTo(boxXYWH.x + boxXYWH.w, boxXYWH.y + boxXYWH.h)
+        this.ctx.lineTo(boxXYWH.x, boxXYWH.y + boxXYWH.h)
+        this.ctx.lineWidth = lineWidth
+        this.ctx.strokeStyle = rightAndBottomColor
+        this.ctx.stroke()
+    }
+
+    drawGrayButtonWithCenteredBlackText(spriteXYWH, text, textColor, textHeight) {
+        let canvasXYWH = this.getScaledCanvasXYWH(spriteXYWH)
+        this.ctx.beginPath();
+        this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h);
+        this.ctx.fillStyle = 'rgba(180,180,180,1)';  // color of stone
+        this.ctx.fill();
+        this.ctx.stroke();
+        this.ctx.closePath();
+        canvasXYWH = {...spriteXYWH}
+        this.drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight)
+        this.drawShadowBorder('lightgray', 'gray', spriteXYWH, 4)
+    }
+
+    drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight) {
         const citySpriteXYWH = this.sprites.city.background
         //this.ctx.font = "48px serif";
         //this.ctx.strokeText(text, this.canvas.width*(canvasXYWH.x/citySpriteXYWH.w), this.canvas.height*((canvasXYWH.y+canvasXYWH.h)/citySpriteXYWH.h));
 
         //ctx.lineWidth = 4;
         //ctx.strokeStyle = "#000000";
-        this.ctx.fillStyle = "lightblue";
+        this.ctx.fillStyle = textColor;
         //this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h)
-        this.ctx.font=`${this.canvas.height*canvasXYWH.h/citySpriteXYWH.h}px Times New Roman`;
+        this.ctx.font=`${this.canvas.height*textHeight/citySpriteXYWH.h}px Helvetica`;
         this.ctx.textAlign = "center"; 
         this.ctx.textBaseline = "middle";
         //this.ctx.fillStyle = "#000000";
@@ -277,11 +317,10 @@ class CityCanvas {
     // █ █  █   █   █ █ ███ ██  ███ ███  █  █ ███ █  █
 
     drawInProduction(cityObject) {
-        this.drawBlueShadowBox()
+        this.drawInProductionShadowBorder(cityObject)
         this.drawBuyBox()
         this.drawChangeBox()
         this.drawInProductionProgress(cityObject)
-        this.drawInProductionText(cityObject)
         this.drawInProductionImage(cityObject)
     }
 
@@ -290,76 +329,45 @@ class CityCanvas {
     //    //this.drawGrayButton(ctx, inProductionText.x, inProductionText.y, inProductionText.w, inProductionText.h, 'testText')
     //}
 
-    drawBlueShadowBox() {
-        const boxXYWH = this.getScaledCanvasXYWH(this.sprites.city.inProduction.progress)
-        this.ctx.beginPath()
-        this.ctx.moveTo(boxXYWH.x, boxXYWH.y + boxXYWH.h)
-        this.ctx.lineTo(boxXYWH.x, boxXYWH.y)
-        this.ctx.lineTo(boxXYWH.x + boxXYWH.w, boxXYWH.y)
-        this.ctx.lineWidth = 1
-        this.ctx.strokeStyle = 'lightblue'
-        this.ctx.stroke()
-        this.ctx.beginPath()
-        this.ctx.moveTo(boxXYWH.x + boxXYWH.w, boxXYWH.y)
-        this.ctx.lineTo(boxXYWH.x + boxXYWH.w, boxXYWH.y + boxXYWH.h)
-        this.ctx.lineTo(boxXYWH.x, boxXYWH.y + boxXYWH.h)
-        this.ctx.lineWidth = 1
-        this.ctx.strokeStyle = 'darkblue'
-        this.ctx.stroke()
+    drawInProductionShadowBorder(cityObject) {
+        const cost = cityObject.inProduction.cost
+        const rowsOfShields = Math.min(cost / 10, 10)
+        const iconSpriteHeight = 14
+        const margin = 2
+        const inProductionProgressWithAdjustedHeight = {...this.sprites.city.inProduction.progress}
+        inProductionProgressWithAdjustedHeight.h = rowsOfShields * (iconSpriteHeight + margin) + margin
+        this.drawShadowBorder('lightblue', 'darkblue', inProductionProgressWithAdjustedHeight, 1)
     }
 
     drawBuyBox() {
-        const text = "Buy"
-        let canvasXYWH = this.getScaledCanvasXYWH(this.sprites.city.inProduction.buyButton)
-        this.ctx.beginPath();
-        this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h);
-        this.ctx.fillStyle = 'rgba(180,180,180,1)';  // color of stone
-        this.ctx.fill();
-        this.ctx.lineWidth = 1;
-        this.ctx.strokeStyle = '#000000';
-        this.ctx.stroke();
-        this.ctx.closePath();
-        canvasXYWH = {...this.sprites.city.inProduction.buyButton}
-        this.drawTextScaledToCanvas(text, canvasXYWH)
-        //this.ctx.font = '20pt Times New Roman';
-        //this.ctx.fillStyle = '#000000';
-        //this.ctx.fillText(text, canvasXYWH.x + canvasXYWH.w / 4, canvasXYWH.y + 64);
+        this.drawGrayButtonWithCenteredBlackText(this.sprites.city.inProduction.buyButton, "Buy", 'black', this.sprites.city.inProduction.buyButton.h/2)
     }
     
     drawChangeBox() {
-        const text = "Change"
-        const canvasXYWH = this.getScaledCanvasXYWH(this.sprites.city.inProduction.changeButton)
-        //const canvasXYWH = {...this.sprites.city.inProduction.buyButton}
-        this.ctx.beginPath();
-        this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h);
-        this.ctx.fillStyle = 'rgba(180,180,180,1)';  // color of stone
-        this.ctx.fill();
-        this.ctx.lineWidth = 1;
-        this.ctx.strokeStyle = '#000000';
-        this.ctx.stroke();
-        this.ctx.closePath();
-        this.ctx.font = '20pt Times New Roman';
-        this.ctx.fillStyle = '#000000';
-        this.ctx.fillText(text, canvasXYWH.x + canvasXYWH.w / 4, canvasXYWH.y + 64);
+        this.drawGrayButtonWithCenteredBlackText(this.sprites.city.inProduction.changeButton, "Change", 'black', this.sprites.city.inProduction.changeButton.h/2)
     }
 
     drawInProductionText(cityObject) {
         const inProductionText = cityObject.inProduction.inProduction
         const canvasXYWH = {...this.sprites.city.inProduction.text}
-        this.drawTextScaledToCanvas(inProductionText, canvasXYWH)
+        const textHeight = canvasXYWH.h
+        this.drawTextScaledToCanvas(inProductionText, canvasXYWH, 'SteelBlue', textHeight)
     }
 
     drawInProductionImage(cityObject) {
         const inProductionText = cityObject.inProduction.inProduction
-        const canvasXYWH = {...this.sprites.city.inProduction.inProductionImage}
-        let spriteSheet = this.sprites.units // assume InProductioni is a unit
-        let spriteSheetXYWH = {... this.sprites.units[inProductionText]}
         if (this.sprites.icons[inProductionText]) { // if the inProduction is a wonder or improvement
-            spriteSheet = this.sprites.icons
-            spriteSheetXYWH = {... this.sprites.icons[inProductionText]}
+            const spriteSheet = this.sprites.icons
+            const spriteSheetXYWH = {... this.sprites.icons[inProductionText]}
+            const canvasXYWH = {...this.sprites.city.inProduction.inProductionImage}
+            this.drawInProductionText(cityObject)
+            this.drawSpriteScaledToCanvas(spriteSheet, spriteSheetXYWH, canvasXYWH) // manually scale unit to fix the available area
+        } else {
+            const spriteSheet = this.sprites.units
+            const spriteSheetXYWH = {... this.sprites.units[inProductionText]}
+            const canvasXYWH = {...this.sprites.city.inProduction.inProductionImageForUnits}
+            this.drawSpriteScaledToCanvasAndAvailableWidth(spriteSheet, spriteSheetXYWH, canvasXYWH)
         }
-        // manually scale unit to fix the available area
-        this.drawSpriteScaledToCanvas(spriteSheet, spriteSheetXYWH, canvasXYWH)
     }
 
     drawInProductionProgress(cityObject) {
@@ -450,9 +458,10 @@ class CityCanvas {
         this.sprites.city.inProduction = {
             x: 437, y: 165, w: 194, h: 190,  // 631, 355
             text: {x: 441, y: 169, w: 186, h: 10},
-            buyButton: {x: 444, y: 181, w: 64, h: 23},
-            inProductionImage: {x: 513, y: 182, w: 42, h: 23},
-            changeButton: {x: 557, y: 181, w: 70, h: 24},  // 182 /26 = 7   42 for dragon  70 for button
+            buyButton: {x: 446, y: 181, w: 64, h: 23},
+            inProductionImage: {x: 516, y: 182, w: 40, h: 23},
+            inProductionImageForUnits: {x: 513, y: 170, w: 48, h: 23},
+            changeButton: {x: 558, y: 181, w: 64, h: 23},  // 182 /26 = 7   42 for dragon  70 for button
             progress: {x: 445, y: 208, w: 178, h: 145}
         }
         this.sprites.city.buttons = {x: 1, y: 1, w: 1, h: 1}
@@ -485,7 +494,7 @@ class CityCanvas {
         ]
         iconSpritesImprovementsBoxes.forEach( (row, i) => {
             row.forEach( (icon, j) => {
-                this.sprites.icons[icon] = {x: 343+j*((379-343)+1), y: 1+i*((21-1)+1), w: (379-343), h: (21-1)}
+                this.sprites.icons[icon] = {x: 343+j*((379-343)+1), y: 1+i*((21-1)+1), w: (379-343), h: (21-1)}  //  42  36     23   20
             })
         } )
     }
