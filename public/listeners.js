@@ -138,8 +138,8 @@ function registerEventListeners() {
         } else {
             let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
             if (targetTile.city) {
-                selectedCity = targetTile.city
-                cityCanvasController.renderCity(selectedCity)
+                cityCanvasController.cityObject = targetTile.city
+                cityCanvasController.renderCity()
                 bringToFront(cityCanvas)
                 pointerDown = false; // otherwise boardCanvas thinks the pointer is still down
                 return
@@ -208,7 +208,7 @@ function registerEventListeners() {
         const rect = cityCanvasController.canvas.getBoundingClientRect()
         const pixelX = event.x - rect.left
         const pixelY = event.y - rect.top
-        cityCanvasController.getClickedArea(selectedCity, {pixelX, pixelY})
+        cityCanvasController.getClickedArea({pixelX, pixelY})
     })
 
 }
@@ -240,6 +240,7 @@ function bringToFront(element) {
     canvasOrder.unshift(element) // add element to end of array (so it will be in the front when 'setZindex' is called)
     canvasOrder = [...new Set(canvasOrder)];  // creates unique array i.e. removes extra element from array
     setZindex() // set z-index according to order of canvasOrder array
+    console.log(canvasOrder)
     //canvasOrder.forEach
     //for (let i = 0; i < this.canvasOrder.length; i++) {
     //    let column = []
@@ -248,7 +249,7 @@ function bringToFront(element) {
 }
 
 function isAtFront(element) {
-    element.style.zIndex === "0"
+    return element.style.zIndex === "0"
 }
 
 function initializeTestSwipeMotionForMobile() {  // https://stackoverflow.com/questions/2264072/detect-a-finger-swipe-through-javascript-on-the-iphone-and-android

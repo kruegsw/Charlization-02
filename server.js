@@ -16,7 +16,7 @@ const io = require("socket.io")(httpServer, options);
 const Board = require('./Board')
 const Player = require('./Player')
 const Game = require('./Game')
-const game = new Game({players: {}, board: new Board({x: 21, y: 41})})
+const game = new Game({players: {}, board: new Board({x: 5, y: 10})})
 console.log(game.players)
 
 io.on("connection", socket => {
@@ -44,6 +44,10 @@ io.on("connection", socket => {
     socket.on('unitOrders', ({unit, orders}) => {
         console.log({unit, orders})
         game.unitOrders({unit, orders})
+        io.emit('update-game', game)
+    })
+    socket.on('cityOrders', ({city, orders}) => {
+        game.cityOrders({city, orders})
         io.emit('update-game', game)
     })
 

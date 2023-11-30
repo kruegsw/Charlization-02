@@ -1,5 +1,6 @@
 class CityCanvas {
     constructor(canvas) {
+        this.cityObject
         this.canvas = canvas
         this.ctx = this.canvas.getContext("2d")
         this.sounds = {}
@@ -76,14 +77,13 @@ class CityCanvas {
     // █   █    █       █   █ █   █   █   █       █   █     █    █   █ █   █    █
     // █    █   █████   █    ██   ████    █████   █    █   ███   █    ██    ████
 
-    renderCity(cityObject) {
+    renderCity() {
         this.drawCityBackground()
-        this.drawCitizens(cityObject)
-        this.drawInProduction(cityObject)
+        this.drawCitizens()
+        this.drawInProduction()
         this.drawBottomRightButtons()
-        this.drawResources(cityObject)
+        this.drawResources()
         this.#fixPixelBlur()
-        //console.log(cityObject)
     }
 
     drawSpriteScaledToCanvas(spriteSheet, spriteSheetXYWH, canvasXYWH) {
@@ -227,25 +227,25 @@ class CityCanvas {
     // █   █  █  █  █  █   █ ██   █
     // ███ █  █  █ ███ ███ █  █ ███
 
-    drawCitizens(cityObject) {
+    drawCitizens() {
         // for now, assume 16 available spaces 25 px wide (dimension of citizen sprite)
         // if count of citizen is > 16, then citizens will need to overlap, increment = 400 px / citizens
         let era = "ancient" // notice era hard coded to ancient for now
         const canvasXYWH = {...this.sprites.city.citizens} // create clone to avoid mutatation
-        const xIncrement = Math.min(25, 375 / this.#citizenCount(cityObject) )
+        const xIncrement = Math.min(25, 375 / this.#citizenCount() )
         let gapUsed = 0
-        for (let citizenType in cityObject.citizens) {
+        for (let citizenType in this.cityObject.citizens) {
             let genderCounter = 0
             if (citizenType === "entertainer" || citizenType === "taxcollector" || citizenType === "scientist") {
                 if (!gapUsed) {gapUsed = 1; canvasXYWH.x += xIncrement} // make a space between normal citizens and specialists
-                for (let i = 0; i < cityObject.citizens[citizenType]; i++) {    
+                for (let i = 0; i < this.cityObject.citizens[citizenType]; i++) {    
                     //console.log(citizenType)
                     let citizenSprite = this.sprites.people[era]["specialist"][citizenType] //[citizenType][gender] // notice era hard coded to ancient for now
                     this.#drawCitizen(citizenSprite, canvasXYWH)
                     canvasXYWH.x += xIncrement // adjust x position to right for next citizen
                 }
             } else {
-                for (let i = 0; i < cityObject.citizens[citizenType]; i++) {
+                for (let i = 0; i < this.cityObject.citizens[citizenType]; i++) {
                     let gender = this.#getCitizenGender(genderCounter)
                     genderCounter++
                     let citizenSprite = this.sprites.people[era][citizenType][gender] //[citizenType][gender]
@@ -256,8 +256,8 @@ class CityCanvas {
           }
     }
 
-    #citizenCount(cityObject) { // this function exists in City class definition as instance method but could not be called here so I copied it here
-        return Object.values(cityObject.citizens).reduce( (sum, countOfCitizenType) => sum + countOfCitizenType)
+    #citizenCount() { // this function exists in City class definition as instance method but could not be called here so I copied it here
+        return Object.values(this.cityObject.citizens).reduce( (sum, countOfCitizenType) => sum + countOfCitizenType)
     }
 
     #getCitizenGender(n) {
@@ -280,12 +280,12 @@ class CityCanvas {
     // ██  █     █ █ █ █ █ ██  █   █     █
     // █ █ ███ ███ ███ ███ █ █ ███ ███ ███
 
-    drawResources(cityObject) {
-        this.drawResourcesProduction(cityObject)
+    drawResources() {
+        this.drawResourcesProduction()
     }
 
-    drawResourcesProduction(cityObject) {
-        const production = cityObject.resources.production
+    drawResourcesProduction() {
+        const production = this.cityObject.resources.production
         const canvasXYWH = {...this.sprites.city.resources.wasteSupportProduction}
         const spriteSheet = this.sprites.icons
         const iconSprite = this.sprites.icons.production
@@ -317,12 +317,12 @@ class CityCanvas {
     // █ █ ██   ███ ██  █ █ █ █ █ █ █    █  █ █ █ █ ██
     // █ █  █   █   █ █ ███ ██  ███ ███  █  █ ███ █  █
 
-    drawInProduction(cityObject) {
-        this.drawInProductionShadowBorder(cityObject)
+    drawInProduction() {
+        this.drawInProductionShadowBorder()
         this.drawBuyBox()
         this.drawChangeBox()
-        this.drawInProductionProgress(cityObject)
-        this.drawInProductionImage(cityObject)
+        this.drawInProductionProgress()
+        this.drawInProductionImage()
     }
 
     //drawInProductionText() {
@@ -330,8 +330,8 @@ class CityCanvas {
     //    //this.drawGrayButton(ctx, inProductionText.x, inProductionText.y, inProductionText.w, inProductionText.h, 'testText')
     //}
 
-    drawInProductionShadowBorder(cityObject) {
-        const cost = cityObject.inProduction.cost
+    drawInProductionShadowBorder() {
+        const cost = this.cityObject.inProduction.cost
         const rowsOfShields = Math.min(cost / 10, 10)
         const iconSpriteHeight = 14
         const margin = 2
@@ -348,20 +348,20 @@ class CityCanvas {
         this.drawGrayButtonWithCenteredBlackText(this.sprites.city.inProduction.changeButton, "Change", 'black', this.sprites.city.inProduction.changeButton.h/2)
     }
 
-    drawInProductionText(cityObject) {
-        const inProductionText = cityObject.inProduction.inProduction
+    drawInProductionText() {
+        const inProductionText = this.cityObject.inProduction.inProduction
         const canvasXYWH = {...this.sprites.city.inProduction.text}
         const textHeight = canvasXYWH.h
         this.drawTextScaledToCanvas(inProductionText, canvasXYWH, 'SteelBlue', textHeight)
     }
 
-    drawInProductionImage(cityObject) {
-        const inProductionText = cityObject.inProduction.inProduction
+    drawInProductionImage() {
+        const inProductionText = this.cityObject.inProduction.inProduction
         if (this.sprites.icons[inProductionText]) { // if the inProduction is a wonder or improvement
             const spriteSheet = this.sprites.icons
             const spriteSheetXYWH = {... this.sprites.icons[inProductionText]}
             const canvasXYWH = {...this.sprites.city.inProduction.inProductionImage}
-            this.drawInProductionText(cityObject)
+            this.drawInProductionText()
             this.drawSpriteScaledToCanvas(spriteSheet, spriteSheetXYWH, canvasXYWH) // manually scale unit to fix the available area
         } else {
             const spriteSheet = this.sprites.units
@@ -371,9 +371,9 @@ class CityCanvas {
         }
     }
 
-    drawInProductionProgress(cityObject) {
-        const cost = cityObject.inProduction.cost
-        const progress = cityObject.inProduction.progress
+    drawInProductionProgress() {
+        const cost = this.cityObject.inProduction.cost
+        const progress = this.cityObject.inProduction.progress
         const canvasXYWH = {...this.sprites.city.inProduction.progress}
         const spriteSheet = this.sprites.icons
         const iconSprite = this.sprites.icons.production
@@ -420,7 +420,7 @@ class CityCanvas {
     //  ████    ████    █████   █    █      ███   █    ██     █     █████   █    █   █       █   █    ███    █████
 
 
-    getClickedArea(cityObject, {pixelX, pixelY}) {
+    getClickedArea({pixelX, pixelY}) {
         const resourcesXYWH = this.getScaledCanvasXYWH(this.sprites.city.inProduction.buyButton)
         if (pixelX >= resourcesXYWH.x &&
             pixelX <= (resourcesXYWH.x + resourcesXYWH.w) &&
@@ -428,8 +428,9 @@ class CityCanvas {
             pixelY <= (resourcesXYWH.y + resourcesXYWH.h)
         ) {
             this.sounds.buyInProduction.play()
-            cityObject.inProduction.progress = cityObject.inProduction.cost
-            this.renderCity(cityObject)
+            this.cityObject.inProduction.progress = this.cityObject.inProduction.cost
+            this.renderCity()
+            socket.emit('cityOrders', {city: this.cityObject, orders: "buyProduction"})
         } else {
             console.log('did not click the resource box')
         }
