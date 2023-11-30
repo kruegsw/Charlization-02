@@ -14,6 +14,8 @@ class Unit {
         this.orders = {
 
         }
+        this.obsolete = ''
+        this.technology = ''
         this.modifyAttributesBasedOnUnitType()
 }
 
@@ -27,9 +29,28 @@ modifyAttributesBasedOnUnitType() {
             this.firepower = 1
             this.move = 1
             this.orders = {
-                'KeyB': 'buildNewCity'
+                'KeyB': 'buildNewCity',
+                'KeyTBD1': 'increaseCityPopulation', // only up to 8
+                'KeyR': 'buildRoad',
+                'KeyI': 'buildIrrigation',
+                'KeyTBD2': 'cleanUpPollution'
             }
+            this.obsolete = 'explosives'
+            this.technology = ''
+            break
         case 'warrior':
+            this.cost = 10
+            this.attack = 1
+            this.defence = 1
+            this.health = 1
+            this.firepower = 1
+            this.move = 1
+            this.orders = {
+            }
+            this.obsolete = 'feudalism'
+            this.technology = ''
+            break
+        default:
             return
     }
 }
@@ -80,14 +101,41 @@ static UNIT_TYPES = {
     'pikeman': "",
     'rifleman': "",
     'settler': {
-        orders: ["Build New City", "Build Road", "Build Irrigation", "Change (terrain) to _____", "Clean Up Pollution"]
+        cost: 40,
+        attack: 0,
+        defence: 1,
+        health: 2,
+        firepower: 1,
+        move: 1,
+        orders: {
+            'KeyB': 'buildNewCity',
+            'KeyTBD1': 'increaseCityPopulation', // only up to 8
+            'KeyR': 'buildRoad',
+            'KeyI': 'buildIrrigation',
+            'KeyTBD2': 'cleanUpPollution'
+        },
+        obsolete: 'explosives',
+        technology: '',
+        ordersList: ["Build New City", "Build Road", "Build Irrigation", "Change (terrain) to _____", "Clean Up Pollution"]
     },
+    
     'spy': "",
     'stealth': "",
     'submarine': "",
     'transport': "",
     'trireme': "",
-    'warrior': "",
+    'warrior': {
+        cost: 10,
+        attack: 1,
+        defence: 1,
+        health: 1,
+        firepower: 1,
+        move: 1,
+        orders: {
+        },
+        obsolete: 'feudalism',
+        technology: ''
+    },
 }
 }
 

@@ -115,18 +115,11 @@ function registerEventListeners() {
  
     boardCanvas.addEventListener("pointerdown", (event) => {
         event.preventDefault()
-        console.log('listener added')
+        //console.log('listener added')
         pointerDown = true;
         pointerDownPixelLocation.x = event.x;
         pointerDownPixelLocation.y = event.y;
         //transformedPointerDownPixelLocation = canvas.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
-
-        // WILL BE USED LATER ON FOR CITY VIEW //
-        if ( isAtFront(cityCanvas) ) {
-            console.log("clicking on city window")
-            return
-        }
-        ////////////////////////////////////////
         
         const rect = boardCanvasController.canvas.getBoundingClientRect()
         mouse.x = Math.floor((event.x - rect.left) / boardCanvasController.tileSize.x)
@@ -145,7 +138,8 @@ function registerEventListeners() {
         } else {
             let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
             if (targetTile.city) {
-                cityCanvasController.renderCity(targetTile.city)
+                selectedCity = targetTile.city
+                cityCanvasController.renderCity(selectedCity)
                 bringToFront(cityCanvas)
                 pointerDown = false; // otherwise boardCanvas thinks the pointer is still down
                 return
@@ -209,6 +203,13 @@ function registerEventListeners() {
         event.preventDefault() 
         boardCanvasController.scrollZoom(event)
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
+
+    cityCanvas.addEventListener("pointerdown", (event) => {
+        const rect = cityCanvasController.canvas.getBoundingClientRect()
+        const pixelX = event.x - rect.left
+        const pixelY = event.y - rect.top
+        cityCanvasController.getClickedArea(selectedCity, {pixelX, pixelY})
+    })
 
 }
 

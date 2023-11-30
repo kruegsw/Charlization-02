@@ -42,6 +42,7 @@ io.on("connection", socket => {
         io.emit('update-game', game)
     })
     socket.on('unitOrders', ({unit, orders}) => {
+        console.log({unit, orders})
         game.unitOrders({unit, orders})
         io.emit('update-game', game)
     })

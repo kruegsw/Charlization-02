@@ -4,6 +4,7 @@ const boardCanvasController = new Canvas({canvas: boardCanvas, /*board: clientGa
 const popup = document.getElementById('popup');
 const cityCanvas = document.getElementById("cityCanvas")
 const cityCanvasController = new CityCanvas(cityCanvas)
+let selectedCity // will be redefined to render the cityCanvas view for currently selected city
 
 let canvasOrder = [boardCanvas, cityCanvas] // keep track of which html element is in front
 setZindex() // first element in canvasOrder will be in front, last element will be in the back
@@ -13,8 +14,8 @@ const mouse = { x: undefined, y: undefined }
 
 //const socket = io("https://192.168.1.69:4000", {transports: ['websocket', 'polling']} )  // this is for testing in local area network
 //const socket = io("https://0.0.0.0:4000", {transports: ['websocket', 'polling']} )  // this is for testing in local area network
-//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )  // this is for testing on local machine only
-const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )  // this is for server
+const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )  // this is for testing on local machine only
+//const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )  // this is for server
 socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame

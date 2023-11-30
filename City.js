@@ -1,3 +1,5 @@
+const Unit = require('./Unit')
+
 class City {
     constructor({player, coordinates}) {
         this.player = player
@@ -31,14 +33,21 @@ class City {
         }
         this.foodStorage = 0
         this.inProduction = {
-            inProduction: "palace",
-            cost: 40,
-            progress: 32
+            inProduction: "",
+            cost: 10,
+            progress: 0
         }
+        this.getInProduction()
     }
 
     citizenCount() {
         return Object.values(this.citizens).reduce( (sum, countOfCitizenType) => sum + countOfCitizenType)
+    }
+
+    getInProduction() {
+        this.inProduction.inProduction = "warrior"
+        this.inProduction.cost = Unit.UNIT_TYPES[this.inProduction.inProduction].cost
+        // this.inProduction.progress unchanged
     }
 }
 

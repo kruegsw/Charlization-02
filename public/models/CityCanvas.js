@@ -4,6 +4,7 @@ class CityCanvas {
         this.ctx = this.canvas.getContext("2d")
         this.sounds = {}
         this.sprites = {}
+        this.initializeSounds()
         this.initializeSprites()
         this.adjustCanvasSizeToBrowser()
     }
@@ -388,10 +389,10 @@ class CityCanvas {
         let shieldsPainted = 0
         for (let i = 0; i < rowsOfShields; i++) {
             for (let j = 0; j < shieldsPerRow; j++) {
+                if (shieldsPainted >= progress) {return}
                 this.drawSpriteScaledToCanvas(spriteSheet, iconSprite, canvasXYWH)
                 shieldsPainted++
                 canvasXYWH.x += xIncrement // adjust x position to right for next citizen
-                if (shieldsPainted >= progress) {return}
             }
             canvasXYWH.x = rowStartingX
             canvasXYWH.y = canvasXYWH.y + yIncrement
@@ -419,6 +420,20 @@ class CityCanvas {
     //  ████    ████    █████   █    █      ███   █    ██     █     █████   █    █   █       █   █    ███    █████
 
 
+    getClickedArea(cityObject, {pixelX, pixelY}) {
+        const resourcesXYWH = this.getScaledCanvasXYWH(this.sprites.city.inProduction.buyButton)
+        if (pixelX >= resourcesXYWH.x &&
+            pixelX <= (resourcesXYWH.x + resourcesXYWH.w) &&
+            pixelY >= resourcesXYWH.y &&
+            pixelY <= (resourcesXYWH.y + resourcesXYWH.h)
+        ) {
+            this.sounds.buyInProduction.play()
+            cityObject.inProduction.progress = cityObject.inProduction.cost
+            this.renderCity(cityObject)
+        } else {
+            console.log('did not click the resource box')
+        }
+    }
 
     // ████    █   █   █       █████    ████        █    ██ ██    ███    █   █   █████   ██ ██   █████   ██    █   █████
     // █   █   █   █   █       █       █           █     █ █ █   █   █   █   █   █       █ █ █   █       █ █   █     █
@@ -433,6 +448,10 @@ class CityCanvas {
     //     █   █       █   █     █      █     █           █      █           █   █   █   █   █   █   █ █   █   █       █
     // ████    █       █    █   ███     █     █████   ████      █        ████     ███     ███    █    ██   ████    ████
 
+
+    initializeSounds() {
+        this.sounds.buyInProduction = new Audio('/assets/sounds/POS1.WAV');
+    }
 
     initializeSprites() {
         this.initializeCitySprites()
