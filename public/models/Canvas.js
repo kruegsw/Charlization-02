@@ -7,6 +7,7 @@ class Canvas {
         this.orientation = "short diamond"  // short diamond, diamond, or [nothing = standard]
         this.selectedUnit = ""
         this.selectedTile = ""
+        this.selectedCity = ""
         this.sounds = {}
         this.sprites = {}
         this.view = {
@@ -558,6 +559,39 @@ class Canvas {
                 }
             })
         })
+    }
+
+    selectNextCity({board, username}) {
+        let citiesArray = []
+        board.tiles.forEach( (column) => {
+            column.forEach( (tile) => {
+                if (tile.city) { //?.player.username === username) { // want to be able to cycle through all cities for testing purposes
+                    citiesArray.push(tile.city)
+                    this.selectUnit({tile: tile, username: username})
+                    this.selectTile(tile)
+                }
+            })
+        })
+        if (citiesArray.length === 1) { return }
+        let sortedCitiesArray = citiesArray.sort()
+        console.log(this.selectedCity)
+        let indexOfSelectedCity = sortedCitiesArray.indexOf(this.selectedCity)
+        let nextIndex = sortedCitiesArray.length % (indexOfSelectedCity + 1)
+        let nextCity = sortedCitiesArray[nextIndex]
+        console.log(this.selectedCity)
+        console.log(sortedCitiesArray)
+        console.log(sortedCitiesArray.length)
+        console.log(indexOfSelectedCity)
+        console.log(nextIndex)
+        console.log(sortedCitiesArray)
+        console.log(nextCity)
+        let targetTile = board.tiles[nextCity.coordinates.x][nextCity.coordinates.y]
+        this.selectCity({tile: targetTile, username})
+    }
+
+    selectCity({tile, username}) {
+        if (tile.city /*&& this.clientOwnsUnit({unit: tile.unit, username: username})*/) { this.selectedCity = tile.city }
+        console.log(this.selectedCity)
     }
 
     selectUnit({tile, username}) {

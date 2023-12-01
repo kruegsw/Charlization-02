@@ -54,6 +54,7 @@ function registerEventListeners() {
                     socket.emit('unitOrders', {unit: boardCanvasController.selectedUnit, orders: boardCanvasController.selectedUnit.orders[event.code]})
                     boardCanvasController.deselectUnit()
                     boardCanvasController.sounds.buildCity.play()
+                    // need a call-back or something to ... boardCanvasController.selectCity({tile: targetTile, username: socket.id}
                     return
                 case "Tab":
                     event.preventDefault()
@@ -73,8 +74,7 @@ function registerEventListeners() {
             if (event.code === "ArrowLeft") { boardCanvasController.scrollLeft(); return }
             if (event.code === "ArrowRight") { boardCanvasController.scrollRight(); return }
             if (event.code === "Escape") {
-                cityCanvasController.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight) // clear city canvas (akin to close city window)
-                bringToFront(boardCanvas)
+                cityCanvasController.closeCityWindowAndBringBoardCanvasToFront()
                 return
             }
         }
@@ -138,6 +138,7 @@ function registerEventListeners() {
         } else {
             let targetTile = clientGame.board.tiles[clickedTile.x][clickedTile.y]
             if (targetTile.city) {
+                boardCanvasController.selectCity({tile: targetTile, username: socket.id})
                 cityCanvasController.cityObject = targetTile.city
                 cityCanvasController.renderCity()
                 bringToFront(cityCanvas)
@@ -206,9 +207,8 @@ function registerEventListeners() {
 
     cityCanvas.addEventListener("pointerdown", (event) => {
         const rect = cityCanvasController.canvas.getBoundingClientRect()
-        const pixelX = event.x - rect.left
-        const pixelY = event.y - rect.top
-        cityCanvasController.getClickedArea({pixelX, pixelY})
+        const canvasMouseClick = {x: event.x - rect.left, y: event.y - rect.top}
+        cityCanvasController.handleClick(canvasMouseClick)
     })
 
 }

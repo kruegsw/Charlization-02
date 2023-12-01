@@ -7,6 +7,8 @@ class CityCanvas {
         this.sprites = {}
         this.initializeSounds()
         this.initializeSprites()
+        this.unscaledPixelWidth
+        this.unscaledPixelHeight
         this.adjustCanvasSizeToBrowser()
     }
 
@@ -28,13 +30,19 @@ class CityCanvas {
     #adjustCanvasSizeToMatchBrowser() {  // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
 
         const citySpriteXYWH = this.sprites.city.background
+        const cityCanvasXYWH = citySpriteXYWH
+
+        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
+
+        this.unscaledPixelWidth = cityCanvasXYWH.w + borderThicknessLRTB.left + borderThicknessLRTB.right
+        this.unscaledPixelHeight = cityCanvasXYWH.h + borderThicknessLRTB.top + borderThicknessLRTB.bottom
         
-        if (window.innerWidth / window.innerHeight > citySpriteXYWH.w/citySpriteXYWH.h ) {
+        if (window.innerWidth / window.innerHeight > this.unscaledPixelWidth/this.unscaledPixelHeight ) {
             this.canvas.height = window.innerHeight
-            this.canvas.width = this.canvas.height*citySpriteXYWH.w/citySpriteXYWH.h
+            this.canvas.width = this.canvas.height*this.unscaledPixelWidth/this.unscaledPixelHeight
         } else {
             this.canvas.width = window.innerWidth
-            this.canvas.height = this.canvas.width*citySpriteXYWH.h/citySpriteXYWH.w
+            this.canvas.height = this.canvas.width*this.unscaledPixelHeight/this.unscaledPixelWidth
         }
 
         //this.canvas.width = window.innerWidth // * devicePixelRatio
@@ -43,12 +51,12 @@ class CityCanvas {
         const devicePixelRatio = window.devicePixelRatio
         if (devicePixelRatio > 1) {
 
-            if (window.innerWidth / window.innerHeight > citySpriteXYWH.w/citySpriteXYWH.h ) {
+            if (window.innerWidth / window.innerHeight > this.unscaledPixelWidth/this.unscaledPixelHeight ) {
                 this.canvas.height = window.innerHeight
-                this.canvas.width = this.canvas.height*citySpriteXYWH.w/citySpriteXYWH.h
+                this.canvas.width = this.canvas.height*this.unscaledPixelWidth/this.unscaledPixelHeight
             } else {
                 this.canvas.width = window.innerWidth
-                this.canvas.height = this.canvas.width*citySpriteXYWH.h/citySpriteXYWH.w
+                this.canvas.height = this.canvas.width*this.unscaledPixelHeight/this.unscaledPixelWidth
             }
 
             // 2. Force it to display at the original (logical) size with CSS or style attributes
@@ -78,6 +86,7 @@ class CityCanvas {
     // █    █   █████   █    ██   ████    █████   █    █   ███   █    ██    ████
 
     renderCity() {
+        this.drawCityBorder()
         this.drawCityBackground()
         this.drawCitizens()
         this.drawInProduction()
@@ -88,41 +97,34 @@ class CityCanvas {
 
     drawSpriteScaledToCanvas(spriteSheet, spriteSheetXYWH, canvasXYWH) {
         //console.log(spriteSheet, spriteSheetXYWH, canvasXY)
-        const citySpriteXYWH = this.sprites.city.background
+        const scaledCanvasXYWH = this.getScaledCanvasXYWH(canvasXYWH)
+        scaledCanvasXYWH.w = this.canvas.width*(spriteSheetXYWH.w/this.unscaledPixelWidth) // w
+        scaledCanvasXYWH.h = this.canvas.height*(spriteSheetXYWH.h/this.unscaledPixelHeight) // h
         this.ctx.drawImage(
             spriteSheet,
             ...Object.values(spriteSheetXYWH), // x, y, w, h,
-            this.canvas.width*(canvasXYWH.x/citySpriteXYWH.w), this.canvas.height*(canvasXYWH.y/citySpriteXYWH.h), this.canvas.width*(spriteSheetXYWH.w/citySpriteXYWH.w), this.canvas.height*(spriteSheetXYWH.h/citySpriteXYWH.h)
+            ...Object.values(scaledCanvasXYWH), // x, y, w, h
         )
     }
 
     drawSpriteScaledToCanvasAndAvailableWidth(spriteSheet, spriteSheetXYWH, canvasXYWH) {
-        const citySpriteXYWH = this.sprites.city.background
+        const scaledCanvasXYWH = this.getScaledCanvasXYWH(canvasXYWH)
+        scaledCanvasXYWH.h = this.canvas.height*(canvasXYWH.w*(spriteSheetXYWH.h/spriteSheetXYWH.w))/this.unscaledPixelHeight
+        this.ctx.drawImage(
+            spriteSheet,
+            ...Object.values(spriteSheetXYWH), // x, y, w, h
+            ...Object.values(scaledCanvasXYWH), // x, y, w, h
+        )
+        /*
         this.ctx.drawImage(
             spriteSheet,
             ...Object.values(spriteSheetXYWH), // x, y, w, h,
-            this.canvas.width*(canvasXYWH.x/citySpriteXYWH.w), this.canvas.height*(canvasXYWH.y/citySpriteXYWH.h), this.canvas.width*(canvasXYWH.w/citySpriteXYWH.w), this.canvas.height*(canvasXYWH.w*(spriteSheetXYWH.h/spriteSheetXYWH.w)/citySpriteXYWH.h)
+            this.canvas.width*(canvasXYWH.x/citySpriteXYWH.w), // x
+            this.canvas.height*(canvasXYWH.y/citySpriteXYWH.h), // y
+            this.canvas.width*(canvasXYWH.w/citySpriteXYWH.w), //w
+            this.canvas.height*(canvasXYWH.w*(spriteSheetXYWH.h/spriteSheetXYWH.w)/citySpriteXYWH.h) // h
         )
-    }
-
-    getScaledCanvasXYWH(cityXYWH) {
-        const cityBackground = this.sprites.city.background
-        return {
-            x: this.canvas.width*(cityXYWH.x/cityBackground.w),
-            y: this.canvas.height*(cityXYWH.y/cityBackground.h),
-            w: this.canvas.width*(cityXYWH.w/cityBackground.w),
-            h: this.canvas.height*(cityXYWH.h/cityBackground.h)
-        }
-    }
-
-    MOOdrawSpriteScaledToCanvas(spriteSheet, spriteSheetXYWH) {
-        //console.log(spriteSheet, spriteSheetXYWH, canvasXY)
-        const canvasXYWH = this.getScaledCanvasXYWH(spriteSheetXYWH)
-        this.ctx.drawImage(
-            spriteSheet,
-            ...Object.values(spriteSheetXYWH), // x, y, w, h,
-            canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h
-        )
+        */
     }
 
     /*
@@ -179,6 +181,7 @@ class CityCanvas {
     }
 
     drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight) {
+        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
         const citySpriteXYWH = this.sprites.city.background
         //this.ctx.font = "48px serif";
         //this.ctx.strokeText(text, this.canvas.width*(canvasXYWH.x/citySpriteXYWH.w), this.canvas.height*((canvasXYWH.y+canvasXYWH.h)/citySpriteXYWH.h));
@@ -187,25 +190,99 @@ class CityCanvas {
         //ctx.strokeStyle = "#000000";
         this.ctx.fillStyle = textColor;
         //this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h)
-        this.ctx.font=`${this.canvas.height*textHeight/citySpriteXYWH.h}px Helvetica`;
+        this.ctx.font=`${this.canvas.height*(textHeight/this.unscaledPixelHeight)}px Helvetica`;
         this.ctx.textAlign = "center"; 
         this.ctx.textBaseline = "middle";
         //this.ctx.fillStyle = "#000000";
         //this.ctx.fillText("Attack!",rectX+(rectWidth/2),rectY+(rectHeight/2));
         //this.ctx.font = '20pt Times New Roman';
         //this.ctx.fillStyle = '#000000';
-        this.ctx.fillText(text, this.canvas.width*((canvasXYWH.x+canvasXYWH.w/2)/citySpriteXYWH.w), this.canvas.height*((canvasXYWH.y+canvasXYWH.h/2)/citySpriteXYWH.h))
+        this.ctx.fillText(
+            text, // text
+            this.canvas.width*((borderThicknessLRTB.left+canvasXYWH.x+canvasXYWH.w/2)/this.unscaledPixelWidth), // x
+            this.canvas.height*((borderThicknessLRTB.top+canvasXYWH.y+canvasXYWH.h/2)/this.unscaledPixelHeight)) // y
         //this.ctx.fillText(text, x + w / 4, y + 64);
     }
 
     getScaledCanvasXYWH(cityXYWH) {
-        const cityBackground = this.sprites.city.background
+        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
         return {
-            x: this.canvas.width*(cityXYWH.x/cityBackground.w),
-            y: this.canvas.height*(cityXYWH.y/cityBackground.h),
-            w: this.canvas.width*(cityXYWH.w/cityBackground.w),
-            h: this.canvas.height*(cityXYWH.h/cityBackground.h)
+            x: this.canvas.width*(borderThicknessLRTB.left+cityXYWH.x)/this.unscaledPixelWidth,
+            y: this.canvas.height*(borderThicknessLRTB.top+cityXYWH.y)/this.unscaledPixelHeight,
+            w: this.canvas.width*(cityXYWH.w)/this.unscaledPixelWidth,
+            h: this.canvas.height*(cityXYWH.h)/this.unscaledPixelHeight
         }
+    }
+
+    // ███ █ ███ █ █   ██  ███ ██  ██  ███ ██ 
+    // █   █  █  █ █   ███ █ █ █ █ █ █ ██  █ █
+    // █   █  █   █    ███ █ █ ██  █ █ █   ██
+    // ███ █  █   █    ██  ███ █ █ ██  ███ █ █
+
+    drawCityBorder() {
+        this.drawCityBorderPattern()
+        this.drawWhiteOuterBorder()
+        this.drawGrayOuterBorder()
+        this.drawGrayInnerBorder()
+        this.drawTopLeftIcons()
+    }
+
+    drawCityBorderPattern() {
+        const pattern = this.ctx.createPattern(this.sprites.border, "repeat");
+        this.ctx.fillStyle = pattern;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    drawWhiteOuterBorder() {
+        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
+        const thickness = 4
+        const outerBorderXYWH = { // relative to top left corner of cityBackground
+            x: -borderThicknessLRTB.left,
+            y: -borderThicknessLRTB.top,
+            w: this.unscaledPixelWidth,
+            h: this.unscaledPixelHeight
+        }
+        this.drawShadowBorder('snow', 'whitesmoke', outerBorderXYWH, thickness)
+    }
+
+    drawGrayOuterBorder() {
+        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
+        const thickness = 2
+        const outerBorderXYWH = { // relative to top left corner of cityBackground
+            x: -borderThicknessLRTB.left+thickness,
+            y: -borderThicknessLRTB.top+thickness,
+            w: this.unscaledPixelWidth-2*thickness,
+            h: this.unscaledPixelHeight-2*thickness
+        }
+        this.drawShadowBorder('silver', 'gray', outerBorderXYWH, thickness)
+    }
+
+    drawGrayInnerBorder() {
+        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
+        const thickness = 2
+        const outerBorderXYWH = { // relative to top left corner of cityBackground
+            x: 0-thickness/2,
+            y: 0-thickness/2,
+            w: this.unscaledPixelWidth-borderThicknessLRTB.left-borderThicknessLRTB.right+thickness,
+            h: this.unscaledPixelHeight-borderThicknessLRTB.top-borderThicknessLRTB.bottom+thickness
+        }
+        this.drawShadowBorder('darkgray', 'lightgray', outerBorderXYWH, thickness)
+    }
+
+    getCityBorderThicknessLeftRightTopBottom() {
+        const arrowIcon = 16 // using arrow icon as reference to estimate border pixel thickness
+        return {left: (arrowIcon/2), right: (arrowIcon/2), top: (arrowIcon+4+4), bottom: (arrowIcon/2)}
+    }
+
+    drawTopLeftIcons() {
+        const spriteSheet = this.sprites.icons
+        const iconSpritesForBorderTopLeft = [ 'closeWindow', 'upArrow', 'downArrow' ]
+        const canvasXYWH = {...this.sprites.border.topLeftButtons}
+        iconSpritesForBorderTopLeft.forEach( (icon, i) => {
+            const spriteXYWH = spriteSheet[icon]
+            this.drawSpriteScaledToCanvas(spriteSheet, spriteXYWH, canvasXYWH)
+            canvasXYWH.x += 16 + 2
+        } )
     }
 
     // ███ █ ███ █ █   ██  ███ ███ █ █ ███ ██  ███ █ █ █  █ ██ 
@@ -214,10 +291,15 @@ class CityCanvas {
     // ███ █  █   █    ██  █ █ ███ █ █ ███ █ █ ███ ███ █  █ ██
 
     drawCityBackground() {
+        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
+        const spriteXYWH = {...this.sprites.city.background}
         this.ctx.drawImage(
             this.sprites.city,
             ...Object.values(this.sprites.city.background), // x, y, w, h,
-            0, 0, this.canvas.width, this.canvas.height
+            this.canvas.width*(borderThicknessLRTB.left/this.unscaledPixelWidth), // x
+            this.canvas.height*(borderThicknessLRTB.top/this.unscaledPixelHeight), // y
+            this.canvas.width*(spriteXYWH.w/this.unscaledPixelWidth), // w
+            this.canvas.height*(spriteXYWH.h/this.unscaledPixelHeight) // h
         )
     }
     
@@ -420,20 +502,55 @@ class CityCanvas {
     //  ████    ████    █████   █    █      ███   █    ██     █     █████   █    █   █       █   █    ███    █████
 
 
-    getClickedArea({pixelX, pixelY}) {
-        const resourcesXYWH = this.getScaledCanvasXYWH(this.sprites.city.inProduction.buyButton)
-        if (pixelX >= resourcesXYWH.x &&
-            pixelX <= (resourcesXYWH.x + resourcesXYWH.w) &&
-            pixelY >= resourcesXYWH.y &&
-            pixelY <= (resourcesXYWH.y + resourcesXYWH.h)
-        ) {
+    handleClick(canvasMouseClick) {
+        const buyButtonXYWH = this.getScaledCanvasXYWH(this.sprites.city.inProduction.buyButton)
+        const changeButtonXYWH = this.getScaledCanvasXYWH(this.sprites.city.inProduction.changeButton)
+        const closeWindowButtonXYWH = this.getScaledCanvasXYWH(this.sprites.border.closeWindowButton)
+        const upArrowButton = this.getScaledCanvasXYWH(this.sprites.border.upArrowButton)
+        const downArrowButton = this.getScaledCanvasXYWH(this.sprites.border.downArrowButton)
+
+        // Top Left Close Button Clicked
+        if ( this.clickIsWithinXYWH(canvasMouseClick, closeWindowButtonXYWH ) ) { this.closeCityWindowAndBringBoardCanvasToFront() }
+
+        // Top Left upArrow (next city) Button Clicked
+        if ( this.clickIsWithinXYWH(canvasMouseClick, upArrowButton ) ) {
+            boardCanvasController.selectNextCity({board: clientGame.board, username: socket.id})
+            this.cityObject = boardCanvasController.selectedCity
+            this.renderCity()
+        }
+
+        // Buy Button Clicked
+        if ( this.clickIsWithinXYWH(canvasMouseClick, buyButtonXYWH) ) {
+            // if not enough gold, window showing user they don't have required amount of gold
+            // if enough gold, window prompting user if they want to finish production for 'x' gold
             this.sounds.buyInProduction.play()
+            // add later:  reduce player gold to pay
             this.cityObject.inProduction.progress = this.cityObject.inProduction.cost
             this.renderCity()
             socket.emit('cityOrders', {city: this.cityObject, orders: "buyProduction"})
-        } else {
-            console.log('did not click the resource box')
+            //socket.emit to update gold balance (or combine this into a single socket.emit in future)
         }
+
+        // Change Button Clicked
+        if ( this.clickIsWithinXYWH(canvasMouseClick, changeButtonXYWH) ) {
+            console.log('change button clicked')
+            // pop-up window which is populated with available units / improvements for player and city location
+            // listeners on window which detected selected unit
+        }
+    }
+
+    clickIsWithinXYWH(canvasMouseClick, canvasXYWH) {
+        return(
+            canvasMouseClick.x >= canvasXYWH.x &&
+            canvasMouseClick.x <= (canvasXYWH.x + canvasXYWH.w) &&
+            canvasMouseClick.y >= canvasXYWH.y &&
+            canvasMouseClick.y <= (canvasXYWH.y + canvasXYWH.h)
+        )
+    }
+
+    closeCityWindowAndBringBoardCanvasToFront() {
+        this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight) // clear city canvas (akin to close city window)
+        bringToFront(boardCanvas) // !!! this is a function defined in listeners.js !!!
     }
 
     // ████    █   █   █       █████    ████        █    ██ ██    ███    █   █   █████   ██ ██   █████   ██    █   █████
@@ -451,15 +568,25 @@ class CityCanvas {
 
 
     initializeSounds() {
-        this.sounds.buyInProduction = new Audio('/assets/sounds/POS1.WAV');
+        this.sounds.buyInProduction = new Audio('/assets/sounds/POS1.WAV')
     }
 
     initializeSprites() {
+        this.initializePatternSprites()
         this.initializeCitySprites()
         this.initializeIconSprites()
         this.initializePeopleSprites()
-        this.initializeUnitSprites()  // redundant with boardCanvass
+        this.initializeUnitSprites()  // redundant with boardCanvas
         console.log(this.sprites)
+    }
+
+    initializePatternSprites() {
+        this.sprites.border = new Image();
+        this.sprites.border.src = "/assets/images/patternStone1.png"
+        this.sprites.border.topLeftButtons = {x: 0, y: -2-16, w: 16, h: 16 } // relative to top left corner of cityBackground
+        this.sprites.border.closeWindowButton = {x: 0, y: -2-16, w: 16, h: 16 }
+        this.sprites.border.downArrowButton = {x: 0+(16+2), y: -2-16, w: 16, h: 16 }
+        this.sprites.border.upArrowButton = {x: 0+2*(16+2), y: -2-16, w: 16, h: 16 }
     }
 
     initializeCitySprites() {
@@ -501,6 +628,10 @@ class CityCanvas {
                 this.sprites.icons[icon] = {x: 1+j*(14+1), y: 290+i*(14+1), w: 14, h: 14}
             })
         } )
+        let iconSpritesForBorder = [ 'closeWindow', 'upArrow', 'downArrow', 'borderIconNotSure' ]
+        iconSpritesForBorder.forEach( (icon, i) => {
+            this.sprites.icons[icon] = {x: 1+i*(16+1), y: 389, w: 16, h: 16}
+        } )
         let iconSpritesImprovementsBoxes = [
             ['palace', 'barracks', 'granary', 'temple', 'marketplace', 'library', 'courthouse', 'cityWalls'],
             ['aqueduct', 'bank', 'cathedral', 'university', 'massTransit', 'colloseum', 'factory', 'manufacturingPlant'],
@@ -517,6 +648,15 @@ class CityCanvas {
                 this.sprites.icons[icon] = {x: 343+j*((379-343)+1), y: 1+i*((21-1)+1), w: (379-343), h: (21-1)}  //  42  36     23   20
             })
         } )
+        let stoneBackgroundBoxes = [
+            ['stone1', {x: 199, y: 322, w: (263-199), h: (354-322)}],
+            ['stone2', {x: 298, y: 190, w: (330-298), h: (222-190)}],
+            ['stone3', {x: 265, y: 223, w: (297-265), h: (255-223)}],
+            ['stone4', {x: 298, y: 223, w: 32, h: 32}]
+        ]
+        stoneBackgroundBoxes.forEach( (pattern, i) => {
+            this.sprites.icons[pattern[0]] = [pattern[1]]
+        })
     }
 
     initializePeopleSprites() {
