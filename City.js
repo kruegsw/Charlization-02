@@ -3,17 +3,18 @@ const Unit = require('./Unit')
 class City {
     constructor({player, coordinates}) {
         this.uuid = crypto.randomUUID()
+        this.name = "Washington"
         this.player = player
         this.color = this.player.color
         this.coordinates = coordinates
         this.citizens = {
-            happy: 10,
-            content: 4,
-            unhappy: 4,
-            pirate: 6,
-            entertainer: 2,
-            taxcollector: 2,
-            scientist: 2,
+            happy: 1,
+            content: 1,
+            unhappy: 0,
+            pirate: 0,
+            entertainer: 0,
+            taxcollector: 0,
+            scientist: 0,
         }
         this.population = this.citizenCount()*(10000+5000*(this.citizenCount()-1))
         this.unitsSupported = []

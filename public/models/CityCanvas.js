@@ -180,7 +180,7 @@ class CityCanvas {
         this.drawShadowBorder('lightgray', 'gray', spriteXYWH, 4)
     }
 
-    drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight) {
+    drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight, font = "Helvectica") {
         const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
         const citySpriteXYWH = this.sprites.city.background
         //this.ctx.font = "48px serif";
@@ -190,7 +190,7 @@ class CityCanvas {
         //ctx.strokeStyle = "#000000";
         this.ctx.fillStyle = textColor;
         //this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h)
-        this.ctx.font=`${this.canvas.height*(textHeight/this.unscaledPixelHeight)}px Helvetica`;
+        this.ctx.font=`${this.canvas.height*(textHeight/this.unscaledPixelHeight)}px ${font}`;
         this.ctx.textAlign = "center"; 
         this.ctx.textBaseline = "middle";
         //this.ctx.fillStyle = "#000000";
@@ -225,6 +225,7 @@ class CityCanvas {
         this.drawGrayOuterBorder()
         this.drawGrayInnerBorder()
         this.drawTopLeftIcons()
+        this.drawTopBorderText()
     }
 
     drawCityBorderPattern() {
@@ -285,6 +286,15 @@ class CityCanvas {
         } )
     }
 
+    drawTopBorderText() {
+        const text = `City of ${this.cityObject.name}, 123 B.C., Population ${this.cityObject.population.toLocaleString("en-US")} (Treasury: 123 Gold)`
+        const canvasXYWH = {...this.sprites.border.topBorderText}
+        const textColor = "dimgray"
+        const textHeight = canvasXYWH.h
+        const font = "Times New Roman"
+        this.drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight, font)
+    }
+
     // ███ █ ███ █ █   ██  ███ ███ █ █ ███ ██  ███ █ █ █  █ ██ 
     // █   █  █  █ █   ███ █ █ █   ██  █   █ █ █ █ █ █ ██ █ █ █
     // █   █  █   █    ███ ███ █   ██  █ █ ██  █ █ █ █ █ ██ █ █
@@ -316,8 +326,8 @@ class CityCanvas {
         const canvasXYWH = {...this.sprites.city.citizens} // create clone to avoid mutatation
         const xIncrement = Math.min(25, 375 / this.#citizenCount() )
         let gapUsed = 0
+        let genderCounter = 0
         for (let citizenType in this.cityObject.citizens) {
-            let genderCounter = 0
             if (citizenType === "entertainer" || citizenType === "taxcollector" || citizenType === "scientist") {
                 if (!gapUsed) {gapUsed = 1; canvasXYWH.x += xIncrement} // make a space between normal citizens and specialists
                 for (let i = 0; i < this.cityObject.citizens[citizenType]; i++) {    
@@ -594,6 +604,7 @@ class CityCanvas {
         this.sprites.border.closeWindowButton = {x: 0, y: -2-16, w: 16, h: 16 }
         this.sprites.border.downArrowButton = {x: 0+(16+2), y: -2-16, w: 16, h: 16 }
         this.sprites.border.upArrowButton = {x: 0+2*(16+2), y: -2-16, w: 16, h: 16 }
+        this.sprites.border.topBorderText = {x: 0+2*(16+2)+8, y: -2-16, w: 640-( 2*(16+2)+8 ), h: 16 }
     }
 
     initializeCitySprites() {
