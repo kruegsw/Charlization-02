@@ -10,6 +10,10 @@ class CityCanvas {
         this.unscaledPixelWidth
         this.unscaledPixelHeight
         this.adjustCanvasSizeToBrowser()
+        this.inProductionChangeMenu = {
+            IsOpen: false,
+            scrollPosition: 0
+        }
     }
 
 
@@ -92,6 +96,7 @@ class CityCanvas {
         this.drawInProduction()
         this.drawBottomRightButtons()
         this.drawResources()
+        if (this.inProductionChangeMenu.IsOpen) { this.drawInProductionChangeMenu() }
         this.#fixPixelBlur()
     }
 
@@ -180,7 +185,7 @@ class CityCanvas {
         this.drawShadowBorder('lightgray', 'gray', spriteXYWH, 4)
     }
 
-    drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight, font = "Helvectica") {
+    drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight, font = "Times New Roman") {
         const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
         const citySpriteXYWH = this.sprites.city.background
         //this.ctx.font = "48px serif";
@@ -214,6 +219,44 @@ class CityCanvas {
         }
     }
 
+    drawWhiteOuterBorder(boxXYWH) {
+        const thickness = 2
+        const outerBorderXYWH = { // relative to top left corner of cityBackground
+            x: boxXYWH.x,
+            y: boxXYWH.y,
+            w: boxXYWH.w,
+            h: boxXYWH.h
+        }
+        this.drawShadowBorder('snow', 'whitesmoke', outerBorderXYWH, thickness)
+    }
+
+    drawGrayOuterBorder(boxXYWH) {
+        const thickness = 2
+        const outerBorderXYWH = { // relative to top left corner of cityBackground
+            x: boxXYWH.x+thickness,
+            y: boxXYWH.y+thickness,
+            w: boxXYWH.w-2*thickness,
+            h: boxXYWH.h-2*thickness
+        }
+        this.drawShadowBorder('silver', 'gray', outerBorderXYWH, thickness)
+    }
+
+    drawWhiteAndGrayOuterBorder(boxXYWH) {
+        this.drawWhiteOuterBorder(boxXYWH)
+        this.drawGrayOuterBorder(boxXYWH)
+    }
+
+    drawGrayInnerBorder(boxXYWH) {
+        const thickness = 2
+        const outerXYWH = { // relative to top left corner of cityBackground
+            x: boxXYWH.x-thickness/2,
+            y: boxXYWH.y-thickness/2,
+            w: boxXYWH.w+thickness,
+            h: boxXYWH.h+thickness
+        }
+        this.drawShadowBorder('darkgray', 'lightgray', outerXYWH, thickness)
+    }
+
     // ███ █ ███ █ █   ██  ███ ██  ██  ███ ██ 
     // █   █  █  █ █   ███ █ █ █ █ █ █ ██  █ █
     // █   █  █   █    ███ █ █ ██  █ █ █   ██
@@ -221,9 +264,10 @@ class CityCanvas {
 
     drawCityBorder() {
         this.drawCityBorderPattern()
-        this.drawWhiteOuterBorder()
-        this.drawGrayOuterBorder()
-        this.drawGrayInnerBorder()
+        //this.drawWhiteOuterBorder()
+        //this.drawGrayOuterBorder()
+        this.drawCityWhiteAndGrayOuterBorder()
+        this.drawCityGrayInnerBorder()
         this.drawTopLeftIcons()
         this.drawTopBorderText()
     }
@@ -234,40 +278,26 @@ class CityCanvas {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    drawWhiteOuterBorder() {
+    drawCityWhiteAndGrayOuterBorder() {
         const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
-        const thickness = 4
-        const outerBorderXYWH = { // relative to top left corner of cityBackground
+        const boxXYWH = { // relative to top left corner of cityBackground
             x: -borderThicknessLRTB.left,
             y: -borderThicknessLRTB.top,
             w: this.unscaledPixelWidth,
             h: this.unscaledPixelHeight
         }
-        this.drawShadowBorder('snow', 'whitesmoke', outerBorderXYWH, thickness)
+        this.drawWhiteAndGrayOuterBorder(boxXYWH)
     }
 
-    drawGrayOuterBorder() {
+    drawCityGrayInnerBorder() {
         const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
-        const thickness = 2
-        const outerBorderXYWH = { // relative to top left corner of cityBackground
-            x: -borderThicknessLRTB.left+thickness,
-            y: -borderThicknessLRTB.top+thickness,
-            w: this.unscaledPixelWidth-2*thickness,
-            h: this.unscaledPixelHeight-2*thickness
+        const boxXYWH = { // relative to top left corner of cityBackground
+            x: 0,
+            y: 0,
+            w: this.unscaledPixelWidth-borderThicknessLRTB.left-borderThicknessLRTB.right,
+            h: this.unscaledPixelHeight-borderThicknessLRTB.top-borderThicknessLRTB.bottom
         }
-        this.drawShadowBorder('silver', 'gray', outerBorderXYWH, thickness)
-    }
-
-    drawGrayInnerBorder() {
-        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
-        const thickness = 2
-        const outerBorderXYWH = { // relative to top left corner of cityBackground
-            x: 0-thickness/2,
-            y: 0-thickness/2,
-            w: this.unscaledPixelWidth-borderThicknessLRTB.left-borderThicknessLRTB.right+thickness,
-            h: this.unscaledPixelHeight-borderThicknessLRTB.top-borderThicknessLRTB.bottom+thickness
-        }
-        this.drawShadowBorder('darkgray', 'lightgray', outerBorderXYWH, thickness)
+        this.drawGrayInnerBorder(boxXYWH)
     }
 
     getCityBorderThicknessLeftRightTopBottom() {
@@ -362,10 +392,10 @@ class CityCanvas {
         this.drawSpriteScaledToCanvas(spriteSheet, citizenSprite, canvasXYWH)
     }
 
-    // ██  ███ ███ ███ █ █ ██  ███ ███   █████ ███ ███
-    // █ █ ██  █   █ █ █ █ █ █ █   ██    █ █ █ █ █ █ █
+    // ██  ███ ███ ███ █ █ ██  ███ ███   █   █ ███ ███
+    // █ █ ██  █   █ █ █ █ █ █ █   ██    ██ ██ █ █ █ █
     // ██  █     █ █ █ █ █ ██  █   █     █ █ █ ███ ███
-    // █ █ ███ ███ ███ ███ █ █ ███ ███   █ █ █ █ █ █
+    // █ █ ███ ███ ███ ███ █ █ ███ ███   █   █ █ █ █
 
     // ██  ███ ███ ███ █ █ ██  ███ ███ ███
     // █ █ ██  █   █ █ █ █ █ █ █   ██  █  
@@ -491,6 +521,97 @@ class CityCanvas {
         }
     }
 
+    // █ █  █   ███ ██  ███ ██  █ █ ███ ███ █ ███ █  █   ███ █ █ ███ █  █ ███ ███   █   █ ███ █  █ █ █
+    // █ ██ █   █ █ █ █ █ █ █ █ █ █ █    █  █ █ █ ██ █   █   █ █ █ █ ██ █ █   █     ██ ██ █   ██ █ █ █
+    // █ █ ██   ███ ██  █ █ █ █ █ █ █    █  █ █ █ █ ██   █   ███ ███ █ ██ █ █ ██    █ █ █ ██  █ ██ █ █
+    // █ █  █   █   █ █ ███ ██  ███ ███  █  █ ███ █  █   ███ █ █ █ █ █  █ ███ ███   █   █ ███ █  █ ███
+
+    drawInProductionChangeMenu() {
+        this.drawInProductionChangeMenuPattern()
+        this.drawInProgressChangeMenuWhiteAndGrayOuterBorder()
+        this.drawInProductionScrollableSelectionAreaBackground()
+        this.drawInProgressChangeMenuGrayInnerBorder()
+        this.drawInProgressChangeMenuBorderText()
+    }
+
+    drawInProductionChangeMenuPattern() {
+        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
+        const backgroundXYWH = {...this.sprites.city.inProduction.changeMenu}
+        const pattern = this.ctx.createPattern(this.sprites.border, "repeat");
+        this.ctx.fillStyle = pattern;
+        this.ctx.fillRect(
+            this.canvas.width*((borderThicknessLRTB.left+backgroundXYWH.x)/this.unscaledPixelWidth), // x
+            this.canvas.height*((borderThicknessLRTB.top+backgroundXYWH.y)/this.unscaledPixelHeight), // y
+            this.canvas.width*(backgroundXYWH.w/this.unscaledPixelWidth), // w
+            this.canvas.height*(backgroundXYWH.h/this.unscaledPixelHeight) // h
+        )
+    }
+
+    drawInProgressChangeMenuWhiteAndGrayOuterBorder() {
+        const backgroundXYWH = {...this.sprites.city.inProduction.changeMenu}
+        this.drawWhiteAndGrayOuterBorder(backgroundXYWH)
+    }
+
+    drawInProductionScrollableSelectionAreaBackground() {
+        const borderThicknessLRTB = this.getInProgressChangeMenuBorderThicknessLeftRightTopBottom()
+        const backgroundXYWH = {...this.sprites.city.inProduction.changeMenu}
+        this.ctx.fillStyle = "lightgray";
+        this.ctx.fillRect(
+            this.canvas.width*((borderThicknessLRTB.left*2+backgroundXYWH.x)/this.unscaledPixelWidth), // x relative to top left of city canvas including border
+            this.canvas.height*((borderThicknessLRTB.top*2+backgroundXYWH.y)/this.unscaledPixelHeight), // y relative to top left of city canvas including border
+            this.canvas.width*((backgroundXYWH.w-borderThicknessLRTB.left-borderThicknessLRTB.right)/this.unscaledPixelWidth), // w
+            this.canvas.height*((backgroundXYWH.h-borderThicknessLRTB.top-borderThicknessLRTB.bottom)/this.unscaledPixelHeight) // h
+        )
+    }
+
+    drawInProgressChangeMenuGrayInnerBorder() {
+        const borderThicknessLRTB = this.getInProgressChangeMenuBorderThicknessLeftRightTopBottom()
+        const backgroundXYWH = {...this.sprites.city.inProduction.changeMenu}
+        const boxXYWH = { // relative to top left corner of cityBackground
+            x: borderThicknessLRTB.left+backgroundXYWH.x,
+            y: borderThicknessLRTB.top+backgroundXYWH.y,
+            w: backgroundXYWH.w-borderThicknessLRTB.left-borderThicknessLRTB.right,
+            h: backgroundXYWH.h-borderThicknessLRTB.top-borderThicknessLRTB.bottom
+        }
+        this.drawGrayInnerBorder(boxXYWH)
+    }
+    
+    getInProgressChangeMenuBorderThicknessLeftRightTopBottom() {
+        const border = this.getCityBorderThicknessLeftRightTopBottom()
+        border.bottom = border.top
+        return border
+    }
+
+    drawInProgressChangeMenuBorderText() {
+        const borderXYWH = this.getInProgressChangeMenuBorderThicknessLeftRightTopBottom()
+        const text = `What shall we build in ${this.cityObject.name}?`
+        const canvasXYWH = {
+            x: this.sprites.city.inProduction.changeMenu.x,
+            y: this.sprites.city.inProduction.changeMenu.y+4,
+            w: this.sprites.city.inProduction.changeMenu.w,
+            h: borderXYWH.top-4-4
+        }
+        const textColor = "dimgray"
+        const textHeight = canvasXYWH.h
+        const font = "Times New Roman"
+        this.drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight, font)
+    }
+
+    /*
+    drawInProductionChangeMenuBackground() {
+        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
+        const spriteXYWH = {...this.sprites.city.inProduction.changeMenu}
+        this.ctx.drawImage(
+            this.sprites.city,
+            ...Object.values(this.sprites.city.background), // x, y, w, h,
+            this.canvas.width*((borderThicknessLRTB.left+spriteXYWH.x)/this.unscaledPixelWidth), // x
+            this.canvas.height*((borderThicknessLRTB.top+spriteXYWH.y)/this.unscaledPixelHeight), // y
+            this.canvas.width*(spriteXYWH.w/this.unscaledPixelWidth), // w
+            this.canvas.height*(spriteXYWH.h/this.unscaledPixelHeight) // h
+        )
+    }
+    */
+
     // ██  █ █ ███ ███ █ █ █  █ ███
     // ███ █ █  █   █  █ █ ██ █ █
     // █ █ █ █  █   █  █ █ █ ██   █
@@ -520,13 +641,17 @@ class CityCanvas {
         const downArrowButton = this.getScaledCanvasXYWH(this.sprites.border.downArrowButton)
 
         // Top Left Close Button Clicked
-        if ( this.clickIsWithinXYWH(canvasMouseClick, closeWindowButtonXYWH ) ) { this.closeCityWindowAndBringBoardCanvasToFront() }
+        if ( this.clickIsWithinXYWH(canvasMouseClick, closeWindowButtonXYWH ) ) {
+            this.closeCityWindowAndBringBoardCanvasToFront()
+            return
+        }
 
         // Top Left upArrow (next city) Button Clicked
         if ( this.clickIsWithinXYWH(canvasMouseClick, upArrowButton ) ) {
             boardCanvasController.selectNextCity({board: clientGame.board, username: socket.id})
             this.cityObject = boardCanvasController.selectedCity
             this.renderCity()
+            return
         }
 
         // Top Left downArrow (previous city) Button Clicked
@@ -534,6 +659,7 @@ class CityCanvas {
             boardCanvasController.selectPreviousCity({board: clientGame.board, username: socket.id})
             this.cityObject = boardCanvasController.selectedCity
             this.renderCity()
+            return
         }
 
         // Buy Button Clicked
@@ -546,13 +672,16 @@ class CityCanvas {
             this.renderCity()
             socket.emit('cityOrders', {city: this.cityObject, orders: "buyProduction"})
             //socket.emit to update gold balance (or combine this into a single socket.emit in future)
+            return
         }
 
         // Change Button Clicked
         if ( this.clickIsWithinXYWH(canvasMouseClick, changeButtonXYWH) ) {
+            this.inProductionChangeMenu.IsOpen = true
             console.log('change button clicked')
             // pop-up window which is populated with available units / improvements for player and city location
             // listeners on window which detected selected unit
+            return
         }
     }
 
@@ -612,7 +741,7 @@ class CityCanvas {
         this.sprites.city.src = "/assets/images/city.png"
         this.sprites.city.background = {x: 0, y: 0, w: 640, h: 420}
         this.sprites.city.citizens = {x: 6, y: 10, w: 424, h: 26}
-        this.sprites.city.resourceMap = {x: 1, y: 1, w: 1, h: 1}
+        this.sprites.city.resourceMap = {x: 3, y: 61, w: 196, h: 245}
         this.sprites.city.resources = {x: 199, y: 46, w: 238, h: 166,  // 437 212
             wasteSupportProduction: {x: 199, y: 181, w: 238, h: 16},  // 437 197
         }
@@ -627,7 +756,8 @@ class CityCanvas {
             inProductionImage: {x: 516, y: 182, w: 40, h: 23},
             inProductionImageForUnits: {x: 513, y: 170, w: 48, h: 23},
             changeButton: {x: 558, y: 181, w: 64, h: 23},  // 182 /26 = 7   42 for dragon  70 for button
-            progress: {x: 445, y: 208, w: 178, h: 145}
+            progress: {x: 445, y: 208, w: 178, h: 145},
+            changeMenu: {x: 3+196/2, y: 46+3, w: (437+194/2)-(3+196/2), h: (165+190-2)-(46+3)} // width middle resourceMap to middle inProduction, height just below top of resource to just above bottom buttons
         }
         this.sprites.city.buttons = {x: 1, y: 1, w: 1, h: 1}
     }
