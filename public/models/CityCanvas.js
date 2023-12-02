@@ -519,6 +519,13 @@ class CityCanvas {
             this.renderCity()
         }
 
+        // Top Left downArrow (previous city) Button Clicked
+        if ( this.clickIsWithinXYWH(canvasMouseClick, downArrowButton ) ) {
+            boardCanvasController.selectPreviousCity({board: clientGame.board, username: socket.id})
+            this.cityObject = boardCanvasController.selectedCity
+            this.renderCity()
+        }
+
         // Buy Button Clicked
         if ( this.clickIsWithinXYWH(canvasMouseClick, buyButtonXYWH) ) {
             // if not enough gold, window showing user they don't have required amount of gold

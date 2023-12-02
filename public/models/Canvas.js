@@ -566,27 +566,53 @@ class Canvas {
         board.tiles.forEach( (column) => {
             column.forEach( (tile) => {
                 if (tile.city) { //?.player.username === username) { // want to be able to cycle through all cities for testing purposes
-                    citiesArray.push(tile.city)
-                    this.selectUnit({tile: tile, username: username})
-                    this.selectTile(tile)
+                    citiesArray.push(tile.city.coordinates)
                 }
             })
         })
         if (citiesArray.length === 1) { return }
         let sortedCitiesArray = citiesArray.sort()
-        console.log(this.selectedCity)
-        let indexOfSelectedCity = sortedCitiesArray.indexOf(this.selectedCity)
-        let nextIndex = sortedCitiesArray.length % (indexOfSelectedCity + 1)
-        let nextCity = sortedCitiesArray[nextIndex]
-        console.log(this.selectedCity)
-        console.log(sortedCitiesArray)
-        console.log(sortedCitiesArray.length)
-        console.log(indexOfSelectedCity)
-        console.log(nextIndex)
-        console.log(sortedCitiesArray)
-        console.log(nextCity)
-        let targetTile = board.tiles[nextCity.coordinates.x][nextCity.coordinates.y]
+        let indexOfSelectedCity = 0
+        sortedCitiesArray.forEach( (cityCoordinates, i) => {
+            if ((cityCoordinates.x === this.selectedCity.coordinates.x) && (cityCoordinates.y === this.selectedCity.coordinates.y)) {
+                indexOfSelectedCity = i
+            }
+        })
+        let nextIndex = 0
+        if (indexOfSelectedCity < (sortedCitiesArray.length-1)) {
+            nextIndex = indexOfSelectedCity + 1
+        }
+        let nextCityCoordinates = sortedCitiesArray[nextIndex]
+        let targetTile = board.tiles[nextCityCoordinates.x][nextCityCoordinates.y]
         this.selectCity({tile: targetTile, username})
+        this.selectTile(targetTile)
+    }
+
+    selectPreviousCity({board, username}) {
+        let citiesArray = []
+        board.tiles.forEach( (column) => {
+            column.forEach( (tile) => {
+                if (tile.city) { //?.player.username === username) { // want to be able to cycle through all cities for testing purposes
+                    citiesArray.push(tile.city.coordinates)
+                }
+            })
+        })
+        if (citiesArray.length === 1) { return }
+        let sortedCitiesArray = citiesArray.sort()
+        let indexOfSelectedCity = 0
+        sortedCitiesArray.forEach( (cityCoordinates, i) => {
+            if ((cityCoordinates.x === this.selectedCity.coordinates.x) && (cityCoordinates.y === this.selectedCity.coordinates.y)) {
+                indexOfSelectedCity = i
+            }
+        })
+        let nextIndex = (sortedCitiesArray.length-1)
+        if (indexOfSelectedCity > 0) {
+            nextIndex = indexOfSelectedCity - 1
+        }
+        let nextCityCoordinates = sortedCitiesArray[nextIndex]
+        let targetTile = board.tiles[nextCityCoordinates.x][nextCityCoordinates.y]
+        this.selectCity({tile: targetTile, username})
+        this.selectTile(targetTile)
     }
 
     selectCity({tile, username}) {

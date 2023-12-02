@@ -2,6 +2,7 @@ const Unit = require('./Unit')
 
 class City {
     constructor({player, coordinates}) {
+        this.uuid = crypto.randomUUID()
         this.player = player
         this.color = this.player.color
         this.coordinates = coordinates

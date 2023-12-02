@@ -13,6 +13,8 @@ const httpServer = require("https").createServer({
 const options = { /*pingInterval: 2000, pingTimeout: 5000*/ };
 const io = require("socket.io")(httpServer, options);
 
+const crypto = require('crypto');
+
 const Board = require('./Board')
 const Player = require('./Player')
 const Game = require('./Game')
