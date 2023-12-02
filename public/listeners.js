@@ -84,7 +84,7 @@ function registerEventListeners() {
             return
         }
     })
-
+/*
     window.addEventListener("pointermove", (event) => {
 
         const rect = canvas.canvas.getBoundingClientRect()
@@ -110,14 +110,14 @@ function registerEventListeners() {
             popup.style.display = 'none';
         }
     })
- 
+ */
     window.addEventListener("pointerdown", (event) => {
         event.preventDefault()
-        console.log('listener added')
+        //console.log('listener added')
         pointerDown = true;
         pointerDownPixelLocation.x = event.x;
         pointerDownPixelLocation.y = event.y;
-        //transformedPointerDownPixelLocation = canvas.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
+        transformedPointerDownPixelLocation = canvas.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
 
         // WILL BE USED LATER ON FOR CITY VIEW //
         if ( isAtFront(cityCanvas) ) {
@@ -162,38 +162,81 @@ function registerEventListeners() {
     })
 
     const old_event = {x: 0, y: 0}
+    const new_event = {x: 0, y: 0}
+    const old_event_trans = {x: 0, y: 0}
+    const new_event_trans = {x: 0, y: 0}
+    const traj_raw_targ = {x: 0, y: 0}
+    const traj_raw_achv = {x: 0, y: 0}
+    const traj_raw_remain = {x: 0, y: 0}
+    const traj_trans_targ = {x: 0, y: 0}
+    const traj_trans_achv = {x: 0, y: 0}
     let first_pass_pan = true;
     window.addEventListener("pointermove", (event) => {
         //pointerDownPixelLocation
         event.preventDefault()
-        console.log(event)
+        //console.log(event)
 
-        if (pointerDown) {
-            canvas.panMouse(pointerDownPixelLocation, event.movementX, event.movementY)
+        /*if (pointerDown) {
+            canvas.panMouse(pointerDownPixelLocation, event.x, event.y) //event.movementX, event.movementY)
         }
-
+*/
         // mousepan code ////////////////////////////////////////////////////
-        /*
+        
         if (pointerDown) {
             if (first_pass_pan) {
                 first_pass_pan = false;
-                old_event.x = canvas.getTransformedPoint(event.x,event.y).x
-                old_event.y = canvas.getTransformedPoint(event.x,event.y).y
+                //old_event.x = pointerDownPixelLocation.x
+                //old_event.y = pointerDownPixelLocation.y
+                old_event.x = event.x
+                old_event.y = event.y
+                //old_event_trans.x = canvas.getTransformedPoint(old_event.x,old_event.y).x
+                //old_event_trans.y = canvas.getTransformedPoint(old_event.x,old_event.y).y
+                new_event.x = event.x
+                new_event.y = event.y
+                new_event_trans.x = canvas.getTransformedPoint(new_event.x,new_event.y).x
+                new_event_trans.y = canvas.getTransformedPoint(new_event.x,new_event.y).y
+                //traj_raw_targ.x = new_event.x - old_event.x
+                //traj_raw_targ.y = new_event.y - old_event.y
+                //traj_raw_achv.x = old_event.x - pointerDownPixelLocation.x
+                //traj_raw_achv.y = old_event.y - pointerDownPixelLocation.y
+                traj_raw_remain.x = new_event.x - old_event.x
+                traj_raw_remain.y = new_event.y - old_event.y
+                console.log("traj remain x = " + traj_raw_remain.x)
+                console.log("traj remain y = " + traj_raw_remain.y)
+                //traj_trans_achv.x = canvas.getTransformedPoint(traj_raw_achv.x,traj_raw_achv.y).x
+                //traj_trans_achv.y = canvas.getTransformedPoint(traj_raw_achv.x,traj_raw_achv.y).y
+                traj_trans_targ.x = canvas.getTransformedPoint(traj_raw_remain.x,traj_raw_remain.y).x
+                traj_trans_targ.y = canvas.getTransformedPoint(traj_raw_remain.x,traj_raw_remain.y).y
+                canvas.panMouse(traj_trans_targ.x, traj_trans_targ.y)
+                console.log("first pass pointer move")
             } else {
-            canvas.panMouse(
-                old_event.x - canvas.getTransformedPoint(event.x,event.y).x,
-                old_event.y - canvas.getTransformedPoint(event.x,event.y).y)
-                //pointerDownPixelLocation.x - event.x,
-                //pointerDownPixelLocation.y - event.y)
-                old_event.x = canvas.getTransformedPoint(event.x,event.y).x
-                old_event.y = canvas.getTransformedPoint(event.x,event.y).y
-            return
+                old_event.x = pointerDownPixelLocation.x
+                old_event.y = pointerDownPixelLocation.y
+                //old_event_trans.x = canvas.getTransformedPoint(old_event.x,old_event.y).x
+                //old_event_trans.y = canvas.getTransformedPoint(old_event.x,old_event.y).y
+                new_event.x = event.x
+                new_event.y = event.y
+                new_event_trans.x = canvas.getTransformedPoint(new_event.x,new_event.y).x
+                new_event_trans.y = canvas.getTransformedPoint(new_event.x,new_event.y).y
+                //traj_raw_targ.x = new_event.x - old_event.x
+                //traj_raw_targ.y = new_event.y - old_event.y
+                //traj_raw_achv.x = old_event.x - pointerDownPixelLocation.x
+                //traj_raw_achv.y = old_event.y - pointerDownPixelLocation.y
+                traj_raw_remain.x = new_event.x - old_event.x
+                traj_raw_remain.y = new_event.y - old_event.y
+                console.log("traj remain x = " + traj_raw_remain.x)
+                console.log("traj remain y = " + traj_raw_remain.y)
+                //traj_trans_achv.x = canvas.getTransformedPoint(traj_raw_achv.x,traj_raw_achv.y).x
+                //traj_trans_achv.y = canvas.getTransformedPoint(traj_raw_achv.x,traj_raw_achv.y).y
+                traj_trans_targ.x = canvas.getTransformedPoint(traj_raw_remain.x,traj_raw_remain.y).x
+                traj_trans_targ.y = canvas.getTransformedPoint(traj_raw_remain.x,traj_raw_remain.y).y
+                canvas.panMouse(traj_trans_targ.x, traj_trans_targ.y)
             }
         } 
-        */
-        console.log("move event:" + event.x + " " + event.y);
-        console.log("move old event:" + event.x + " " + event.y);
         
+        //console.log("dx dy: " + Math.abs(new_event.x - old_event.x) + " " + Math.abs(new_event.y - old_event.y));
+        //console.log("move old event:" + event.x + " " + event.y);
+        return
         ////////////////////////////////////////////////////////////////////////
         
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript

@@ -601,15 +601,17 @@ class Canvas {
         }
     }
 
-    panMouse(pointerDownPixelLocation, dx, dy) {
+    panMouse(dx, dy) {
+    //panMouse(dx, dy) {
         if (true) {
-            const pointerDownPixelLocationTransformedCursor = this.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
+            //const pointerDownPixelLocationTransformedCursor = this.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
             //const currentTransformedTopLeftScreenPixel = this.getTransformedPoint(0, 0)
-            const pointerCurrentPixelLocationTransformedCursor = this.getTransformedPoint(dx, dy)
+            //const pointerCurrentPixelLocationTransformedCursor = this.getTransformedPoint(dx, dy)
             //console.log(transformedPointerDownPixelLocation)
-            //this.ctx.translate(
-            //    dx*this.view.scale,dy*this.view.scale 
-            //)
+            this.ctx.translate(
+                dx*this.view.scale,dy*this.view.scale 
+                //-dx,-dy 
+            )
             //this.ctx.translate(
             //    pointerDownPixelLocationTransformedCursor.x,
             //    pointerDownPixelLocationTransformedCursor.y
@@ -633,6 +635,7 @@ class Canvas {
             a, b, c, d, e, f
             this.ctx.transform(1, 0.5, -1, 0.5, 0, 0)
             */
+           /*
             let a = -1 // 1 original transform
             let b = 2 // 0.5 original transform
             let c = 1 // -1 original transform 
@@ -645,9 +648,12 @@ class Canvas {
                 newDX,
                 newDY
             )
-            console.log(dx, dy)
-            console.log(newDX, newDY)
-            console.log(pointerCurrentPixelLocationTransformedCursor)  // I know why this doesn't work now ..
+            */
+            console.log("mouse pan " + dx, dy)
+            //console.log("view scale " + this.view.scale)
+            //console.log("ctx scale " + this.ctx.scale)
+            //console.log(newDX, newDY)
+            //console.log(pointerCurrentPixelLocationTransformedCursor)  // I know why this doesn't work now ..
             //console.log("dx,dy = " + dx + " " + dy)
             //console.log("move dx=" + dx + " and dy=" & dy)
         } else {
