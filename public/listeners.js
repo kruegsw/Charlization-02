@@ -18,9 +18,25 @@ let transformedPointerDownPixelLocation
 
 function registerEventListeners() {
 
-    document.addEventListener("keydown", (event) => {
+    window.addEventListener("keydown", (event) => {
         console.log(event)
         console.log(clientGame)
+
+        if (isAtFront(cityCanvas)) {
+            if (cityCanvasController.inProductionChangeMenu.IsOpen) {
+                switch (event.code) {
+                    case "Escape":
+                        cityCanvasController.closeCityInProductionChangeWindow()
+                        return
+                    case "Enter":
+                        cityCanvasController.setCityInProductionChanges()
+                        return
+                    default:
+                        return
+                }
+            }
+        }
+
         if (boardCanvasController.selectedUnit) {
             let unit = boardCanvasController.selectedUnit
             let x = unit.coordinates.x

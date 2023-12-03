@@ -172,17 +172,17 @@ class CityCanvas {
         this.ctx.stroke()
     }
 
-    drawGrayButtonWithCenteredBlackText(spriteXYWH, text, textColor, textHeight) {
-        let canvasXYWH = this.getScaledCanvasXYWH(spriteXYWH)
+    drawGrayButtonWithCenteredBlackText(unscaledCanvasXYWH, text, textColor, textHeight) {
+        let canvasXYWH = this.getScaledCanvasXYWH(unscaledCanvasXYWH)
         this.ctx.beginPath();
         this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h);
         this.ctx.fillStyle = 'rgba(180,180,180,1)';  // color of stone
         this.ctx.fill();
         this.ctx.stroke();
         this.ctx.closePath();
-        canvasXYWH = {...spriteXYWH}
+        canvasXYWH = {...unscaledCanvasXYWH}
         this.drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight)
-        this.drawShadowBorder('lightgray', 'gray', spriteXYWH, 4)
+        this.drawShadowBorder('lightgray', 'gray', unscaledCanvasXYWH, 4)
     }
 
     drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight, font = "Times New Roman") {
@@ -532,6 +532,7 @@ class CityCanvas {
         this.drawInProductionScrollableSelectionAreaBackground()
         this.drawInProgressChangeMenuGrayInnerBorder()
         this.drawInProgressChangeMenuBorderText()
+        this.drawInProductionChangeMenuOkBox()
     }
 
     drawInProductionChangeMenuPattern() {
@@ -597,6 +598,25 @@ class CityCanvas {
         this.drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight, font)
     }
 
+    drawInProductionChangeMenuOkBox() {
+        const unscaledCanvasXYWH = this.getInProductionChangeMenuOkBoxXYWH()
+        this.drawGrayButtonWithCenteredBlackText(unscaledCanvasXYWH, "Ok", 'black', unscaledCanvasXYWH.h/1.5)
+    }
+
+    getInProductionChangeMenuOkBoxXYWH() {
+        const changeMenuXYWH = this.sprites.city.inProduction.changeMenu
+        const borderLRTB = this.getInProgressChangeMenuBorderThicknessLeftRightTopBottom()
+        const margin = 5 // between buttons, above buttons, below buttons
+        const buttonWidth = (changeMenuXYWH.w - borderLRTB.left - borderLRTB.right - margin*2) / 3
+        const unscaledCanvasXYWH = {
+            x: changeMenuXYWH.x + changeMenuXYWH.w - borderLRTB.right - buttonWidth,
+            y: changeMenuXYWH.y + changeMenuXYWH.h - borderLRTB.bottom + margin,
+            w: buttonWidth,
+            h: borderLRTB.bottom - margin*2
+        }
+        return unscaledCanvasXYWH
+    }
+
     /*
     drawInProductionChangeMenuBackground() {
         const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
@@ -639,6 +659,14 @@ class CityCanvas {
         const closeWindowButtonXYWH = this.getScaledCanvasXYWH(this.sprites.border.closeWindowButton)
         const upArrowButton = this.getScaledCanvasXYWH(this.sprites.border.upArrowButton)
         const downArrowButton = this.getScaledCanvasXYWH(this.sprites.border.downArrowButton)
+        const inProductionChangeMenuOkBoxXYWH = this.getScaledCanvasXYWH(this.getInProductionChangeMenuOkBoxXYWH())
+
+        if (this.inProductionChangeMenu.IsOpen) {
+            if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuOkBoxXYWH ) ) {
+                this.setCityInProductionChanges()
+                return
+            }
+        }
 
         // Top Left Close Button Clicked
         if ( this.clickIsWithinXYWH(canvasMouseClick, closeWindowButtonXYWH ) ) {
@@ -699,6 +727,16 @@ class CityCanvas {
         bringToFront(boardCanvas) // !!! this is a function defined in listeners.js !!!
     }
 
+    closeCityInProductionChangeWindow() {
+        this.inProductionChangeMenu.IsOpen = false // close change window
+        this.renderCity()
+    }
+
+    setCityInProductionChanges() {
+        // implement changes
+        this.closeCityInProductionChangeWindow()
+    }
+
     // ████    █   █   █       █████    ████        █    ██ ██    ███    █   █   █████   ██ ██   █████   ██    █   █████
     // █   █   █   █   █       █       █           █     █ █ █   █   █   █   █   █       █ █ █   █       █ █   █     █
     // █████   █   █   █       █████    ███       █      █ █ █   █   █    █ █    ████    █ █ █   █████   █  █  █     █
@@ -757,7 +795,9 @@ class CityCanvas {
             inProductionImageForUnits: {x: 513, y: 170, w: 48, h: 23},
             changeButton: {x: 558, y: 181, w: 64, h: 23},  // 182 /26 = 7   42 for dragon  70 for button
             progress: {x: 445, y: 208, w: 178, h: 145},
-            changeMenu: {x: 3+196/2, y: 46+3, w: (437+194/2)-(3+196/2), h: (165+190-2)-(46+3)} // width middle resourceMap to middle inProduction, height just below top of resource to just above bottom buttons
+            changeMenu: {
+                x: 3+196/2, y: 46+3, w: (437+194/2)-(3+196/2), h: (165+190-2)-(46+3), // width middle resourceMap to middle inProduction, height just below top of resource to just above bottom buttons
+            }
         }
         this.sprites.city.buttons = {x: 1, y: 1, w: 1, h: 1}
     }
