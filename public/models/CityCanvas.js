@@ -154,7 +154,7 @@ class CityCanvas {
     }
     */
 
-    drawShadowBorder(leftAndTopColor, rightAndBottomColor, spriteXYWH, lineWidth) {
+    drawBorder(leftAndTopColor, rightAndBottomColor, spriteXYWH, lineWidth) {
         const boxXYWH = this.getScaledCanvasXYWH(spriteXYWH)
         this.ctx.beginPath()
         this.ctx.moveTo(boxXYWH.x, boxXYWH.y + boxXYWH.h)
@@ -173,16 +173,26 @@ class CityCanvas {
     }
 
     drawGrayButtonWithCenteredBlackText(unscaledCanvasXYWH, text, textColor, textHeight) {
+        this.drawBox({unscaledCanvasXYWH})
+        this.drawCenteredBlackText(unscaledCanvasXYWH, text, textColor, textHeight)
+    }
+
+    drawBox({unscaledCanvasXYWH, boxColor = 'rgba(180,180,180,1)', outlineColor = "", lineWidth = 1}) { // color of stone
         let canvasXYWH = this.getScaledCanvasXYWH(unscaledCanvasXYWH)
+        this.ctx.lineWidth = lineWidth
+        this.ctx.strokeStyle = outlineColor // no color
         this.ctx.beginPath();
         this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h);
-        this.ctx.fillStyle = 'rgba(180,180,180,1)';  // color of stone
+        this.ctx.fillStyle = boxColor;
         this.ctx.fill();
         this.ctx.stroke();
         this.ctx.closePath();
-        canvasXYWH = {...unscaledCanvasXYWH}
+    }
+
+    drawCenteredBlackText(unscaledCanvasXYWH, text, textColor, textHeight) {
+        const canvasXYWH = {...unscaledCanvasXYWH}
         this.drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight)
-        this.drawShadowBorder('lightgray', 'gray', unscaledCanvasXYWH, 4)
+        this.drawBorder('lightgray', 'gray', unscaledCanvasXYWH, 4)
     }
 
     drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight, font = "Times New Roman") {
@@ -227,7 +237,7 @@ class CityCanvas {
             w: boxXYWH.w,
             h: boxXYWH.h
         }
-        this.drawShadowBorder('snow', 'whitesmoke', outerBorderXYWH, thickness)
+        this.drawBorder('snow', 'whitesmoke', outerBorderXYWH, thickness)
     }
 
     drawGrayOuterBorder(boxXYWH) {
@@ -238,7 +248,7 @@ class CityCanvas {
             w: boxXYWH.w-2*thickness,
             h: boxXYWH.h-2*thickness
         }
-        this.drawShadowBorder('silver', 'gray', outerBorderXYWH, thickness)
+        this.drawBorder('silver', 'gray', outerBorderXYWH, thickness)
     }
 
     drawWhiteAndGrayOuterBorder(boxXYWH) {
@@ -254,7 +264,47 @@ class CityCanvas {
             w: boxXYWH.w+thickness,
             h: boxXYWH.h+thickness
         }
-        this.drawShadowBorder('darkgray', 'lightgray', outerXYWH, thickness)
+        this.drawBorder('darkgray', 'lightgray', outerXYWH, thickness)
+    }
+
+    drawTrianglePointingUp(scaledAndCenterTriangleXYWH, unscaledwidth, unscaledHeight) {
+        const centerXY = {
+            x: scaledAndCenterTriangleXYWH.x+scaledAndCenterTriangleXYWH.w/2,
+            y: scaledAndCenterTriangleXYWH.y+scaledAndCenterTriangleXYWH.h/2
+        }
+        const canvasXYWH = this.getScaledCanvasXYWH({
+            x: centerXY.x,
+            y: centerXY.y,
+            w: unscaledwidth,
+            h: unscaledHeight
+        })
+        this.ctx.beginPath();
+        this.ctx.moveTo(canvasXYWH.x, canvasXYWH.y-canvasXYWH.h/2);
+        this.ctx.lineTo(canvasXYWH.x+canvasXYWH.w/2, canvasXYWH.y+canvasXYWH.h/2);
+        this.ctx.lineTo(canvasXYWH.x-canvasXYWH.w/2, canvasXYWH.y+canvasXYWH.h/2);
+        this.ctx.lineTo(canvasXYWH.x, canvasXYWH.y-canvasXYWH.h/2);
+        this.ctx.fillStyle = "black"
+        this.ctx.fill();
+    }
+
+    drawTrianglePointingDown(scaledAndCenterTriangleXYWH, unscaledwidth, unscaledHeight) {
+        const centerXY = {
+            x: scaledAndCenterTriangleXYWH.x+scaledAndCenterTriangleXYWH.w/2,
+            y: scaledAndCenterTriangleXYWH.y+scaledAndCenterTriangleXYWH.h/2
+        }
+        const canvasXYWH = this.getScaledCanvasXYWH({
+            x: centerXY.x,
+            y: centerXY.y,
+            w: unscaledwidth,
+            h: unscaledHeight
+        })
+        this.ctx.beginPath();
+        this.ctx.moveTo(canvasXYWH.x, canvasXYWH.y+canvasXYWH.h/2);
+        this.ctx.lineTo(canvasXYWH.x+canvasXYWH.w/2, canvasXYWH.y-canvasXYWH.h/2);
+        this.ctx.lineTo(canvasXYWH.x-canvasXYWH.w/2, canvasXYWH.y-canvasXYWH.h/2);
+        this.ctx.lineTo(canvasXYWH.x, canvasXYWH.y+canvasXYWH.h/2);
+        this.ctx.fillStyle = "black"
+        this.ctx.fill();
     }
 
     // ███ █ ███ █ █   ██  ███ ██  ██  ███ ██ 
@@ -459,7 +509,7 @@ class CityCanvas {
         const margin = 2
         const inProductionProgressWithAdjustedHeight = {...this.sprites.city.inProduction.progress}
         inProductionProgressWithAdjustedHeight.h = rowsOfShields * (iconSpriteHeight + margin) + margin
-        this.drawShadowBorder('lightblue', 'darkblue', inProductionProgressWithAdjustedHeight, 1)
+        this.drawBorder('lightblue', 'darkblue', inProductionProgressWithAdjustedHeight, 1)
     }
 
     drawBuyBox() {
@@ -533,6 +583,8 @@ class CityCanvas {
         this.drawInProgressChangeMenuGrayInnerBorder()
         this.drawInProgressChangeMenuBorderText()
         this.drawInProductionChangeMenuOkBox()
+        this.drawInProductionChangeMenuRowsOfSelectableOptions()
+        this.drawInProductionChangeMenuScrollBar()
     }
 
     drawInProductionChangeMenuPattern() {
@@ -615,6 +667,120 @@ class CityCanvas {
             h: borderLRTB.bottom - margin*2
         }
         return unscaledCanvasXYWH
+    }
+
+    drawInProductionChangeMenuScrollBar() {
+        this.drawInProductionChangeMenuScrollBarBackground()
+        this.drawTopGrayScrollBoxWithArrow()
+        this.drawBottomGrayScrollBoxWithArrow()
+        this.drawGrayScrollHandle()
+    }
+
+    drawInProductionChangeMenuScrollBarBackground() {
+        const unscaledCanvasXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
+        const boxColor = "#f2f2f2"
+        this.drawBox({unscaledCanvasXYWH, boxColor})
+    }
+
+    /*drawTopGrayScrollBoxWithArrow() {
+        const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
+        const unscaledCanvasXYWH = {x: scrollBarXYWH.x, y: scrollBarXYWH.y, w: scrollBarXYWH.w, h: scrollBarXYWH.w}
+        let canvasXYWH = this.getScaledCanvasXYWH(unscaledCanvasXYWH)
+        this.drawTrianglePointingUp(canvasXYWH)
+    }*/
+
+    
+    drawTopGrayScrollBoxWithArrow() {
+        const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
+        const unscaledCanvasXYWH = {x: scrollBarXYWH.x, y: scrollBarXYWH.y, w: scrollBarXYWH.w, h: scrollBarXYWH.w}
+        const boxColor = "lightgray"
+        this.drawBox({unscaledCanvasXYWH, boxColor})
+        const unscaledwidth = unscaledCanvasXYWH.w/2
+        const unscaledHeight = unscaledCanvasXYWH.h/3
+        this.drawTrianglePointingUp(unscaledCanvasXYWH, unscaledwidth, unscaledHeight)
+
+        
+        //const spriteSheet = this.sprites.icons
+        ////const canvasXYWH = this.getScaledCanvasXYWH(unscaledCanvasXYWH)
+        //const spriteXYWH = spriteSheet.blackUpArrow
+        //this.drawSpriteScaledToCanvasAndAvailableWidth(spriteSheet, spriteXYWH, unscaledCanvasXYWH)
+
+        //const spriteSheet = this.sprites.icons
+        //const iconSpritesForBorderTopLeft = 'blackUpArrow'
+        ////const iconSpritesForBorderTopLeft = 'upArrow'
+        //const canvasXYWH = {...this.sprites.border.topLeftButtons}
+        //const spriteXYWH = spriteSheet[iconSpritesForBorderTopLeft]
+        //this.drawSpriteScaledToCanvas(spriteSheet, spriteXYWH, canvasXYWH)
+        
+    }
+
+    drawBottomGrayScrollBoxWithArrow() {
+        const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
+        const scrollBoxY = scrollBarXYWH.y + scrollBarXYWH.h - scrollBarXYWH.w
+        const unscaledCanvasXYWH = {x: scrollBarXYWH.x, y: scrollBoxY, w: scrollBarXYWH.w, h: scrollBarXYWH.w}
+        const boxColor = "lightgray"
+        this.drawBox({unscaledCanvasXYWH, boxColor})
+        const unscaledwidth = unscaledCanvasXYWH.w/2
+        const unscaledHeight = unscaledCanvasXYWH.h/3
+        this.drawTrianglePointingDown(unscaledCanvasXYWH, unscaledwidth, unscaledHeight)
+    }
+
+    drawGrayScrollHandle() {
+        const unscaledCanvasXYWH = this.getScrollHandleXYWH()
+        const boxColor = "lightgray"
+        this.drawBox({unscaledCanvasXYWH, boxColor})
+    }
+
+    getScrollHandleXYWH() {
+        const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
+        return {x: scrollBarXYWH.x, y: this.getScrollHandleY(), w: scrollBarXYWH.w, h: scrollBarXYWH.w}
+    }
+
+    getScrollHandleY() { // temporary set to top left of scroll bar for testing purposes
+        const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
+        return scrollBarXYWH.y+scrollBarXYWH.w
+    }
+
+    drawInProductionChangeMenuRowsOfSelectableOptions() {
+        const unscaledCanvasXYWH = this.getInProductionChangeMenuCenterXYWH()
+        const availableForProduction = ["settler", "warrior","settler", "warrior","settler", "warrior","settler", "warrior","settler", "warrior","settler", "warrior","settler", "warrior", "settler", "warrior", "settler", "warrior", "settler", "warrior"] // this will be a get function in the future
+        const increment = unscaledCanvasXYWH.h/17
+        let unscaledRowXYWH = {
+            x: unscaledCanvasXYWH.x,
+            y: unscaledCanvasXYWH.y,
+            w: unscaledCanvasXYWH.w + this.sprites.icons.palace.w*2, // leave space to show two columns of icons at left or text
+            h: increment
+        }
+        availableForProduction.forEach( (option, i) => {
+            if (i > (16-1)) { return }  // show maximum 16 options
+            this.drawTextScaledToCanvas(option, unscaledRowXYWH, "black", increment)
+            unscaledRowXYWH.y += increment
+        })
+    }
+
+    getInProductionChangeMenuCenterXYWH() {
+        const backgroundXYWH = {...this.sprites.city.inProduction.changeMenu}
+        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
+        const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
+        return {
+            x: backgroundXYWH.x + borderThicknessLRTB.left,
+            y: backgroundXYWH.y + borderThicknessLRTB.top,
+            w: (backgroundXYWH.x + backgroundXYWH.w - borderThicknessLRTB.right - scrollBarXYWH.w) - (backgroundXYWH.x + borderThicknessLRTB.left),
+            h: (backgroundXYWH.y + backgroundXYWH.h - borderThicknessLRTB.bottom) - (backgroundXYWH.y + borderThicknessLRTB.top)
+        }
+    }
+
+    getInProductionChangeMenuCenterScrollBarXYWH() {
+        const changeMenuXYWH = this.sprites.city.inProduction.changeMenu
+        const borderLRTB = this.getInProgressChangeMenuBorderThicknessLeftRightTopBottom()
+        const scrollBarWidth = 10 // pixels
+        const unscaledInProductionChangeMenuCenterScrollBarXYWH = {
+            x: changeMenuXYWH.x + changeMenuXYWH.w - borderLRTB.right - scrollBarWidth,
+            y: changeMenuXYWH.y + borderLRTB.top,
+            w: scrollBarWidth,
+            h: (changeMenuXYWH.y + changeMenuXYWH.h - borderLRTB.bottom) - (changeMenuXYWH.y + borderLRTB.top)
+        }
+        return unscaledInProductionChangeMenuCenterScrollBarXYWH
     }
 
     /*
@@ -816,7 +982,7 @@ class CityCanvas {
                 this.sprites.icons[icon] = {x: 1+j*(14+1), y: 290+i*(14+1), w: 14, h: 14}
             })
         } )
-        let iconSpritesForBorder = [ 'closeWindow', 'upArrow', 'downArrow', 'borderIconNotSure' ]
+        let iconSpritesForBorder = [ 'closeWindow', 'upArrow', 'downArrow', 'borderIconNotSure', 'graySquare' ]
         iconSpritesForBorder.forEach( (icon, i) => {
             this.sprites.icons[icon] = {x: 1+i*(16+1), y: 389, w: 16, h: 16}
         } )
@@ -836,14 +1002,16 @@ class CityCanvas {
                 this.sprites.icons[icon] = {x: 343+j*((379-343)+1), y: 1+i*((21-1)+1), w: (379-343), h: (21-1)}  //  42  36     23   20
             })
         } )
-        let stoneBackgroundBoxes = [
-            ['stone1', {x: 199, y: 322, w: (263-199), h: (354-322)}],
-            ['stone2', {x: 298, y: 190, w: (330-298), h: (222-190)}],
-            ['stone3', {x: 265, y: 223, w: (297-265), h: (255-223)}],
-            ['stone4', {x: 298, y: 223, w: 32, h: 32}]
+        let adhocIcons = [
+            ['stone1',          {x: 199, y: 322, w: (263-199), h: (354-322)}    ],
+            ['stone2',          {x: 298, y: 190, w: (330-298), h: (222-190)}    ],
+            ['stone3',          {x: 265, y: 223, w: (297-265), h: (255-223)}    ],
+            ['stone4',          {x: 298, y: 223, w: 32,        h: 32}           ],
+            ['blackUpArrow',    {x: 228, y: 393, w: 16,        h: 16}           ],
+            ['blackDownArrow',  {x: 247, y: 393, w: 16,        h: 16}           ]
         ]
-        stoneBackgroundBoxes.forEach( (pattern, i) => {
-            this.sprites.icons[pattern[0]] = [pattern[1]]
+        adhocIcons.forEach( (adhocIcon, i) => {
+            this.sprites.icons[adhocIcon[0]] = adhocIcon[1]
         })
     }
 
