@@ -12,7 +12,8 @@ class CityCanvas {
         this.adjustCanvasSizeToBrowser()
         this.inProductionChangeMenu = {
             IsOpen: false,
-            scrollPosition: 0
+            scrollPosition: 0,
+            availableForProduction: ["0", "1","2", "3","4", "5","6", "7","8", "9","10", "11","12", "13", "14", "15", "16", "17", "18"]
         }
     }
 
@@ -715,14 +716,23 @@ class CityCanvas {
     }
 
     drawBottomGrayScrollBoxWithArrow() {
-        const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
-        const scrollBoxY = scrollBarXYWH.y + scrollBarXYWH.h - scrollBarXYWH.w
-        const unscaledCanvasXYWH = {x: scrollBarXYWH.x, y: scrollBoxY, w: scrollBarXYWH.w, h: scrollBarXYWH.w}
+        const unscaledCanvasXYWH = this.getBottomGrayScrollBoxXYWH()
         const boxColor = "lightgray"
         this.drawBox({unscaledCanvasXYWH, boxColor})
         const unscaledwidth = unscaledCanvasXYWH.w/2
         const unscaledHeight = unscaledCanvasXYWH.h/3
         this.drawTrianglePointingDown(unscaledCanvasXYWH, unscaledwidth, unscaledHeight)
+    }
+
+    getTopGrayScrollBoxXYWH() {
+        const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
+        return {x: scrollBarXYWH.x, y: scrollBarXYWH.y, w: scrollBarXYWH.w, h: scrollBarXYWH.w}
+    }
+
+    getBottomGrayScrollBoxXYWH() {
+        const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
+        const scrollBoxY = scrollBarXYWH.y + scrollBarXYWH.h - scrollBarXYWH.w
+        return {x: scrollBarXYWH.x, y: scrollBoxY, w: scrollBarXYWH.w, h: scrollBarXYWH.w}
     }
 
     drawGrayScrollHandle() {
@@ -743,7 +753,7 @@ class CityCanvas {
 
     drawInProductionChangeMenuRowsOfSelectableOptions() {
         const unscaledCanvasXYWH = this.getInProductionChangeMenuCenterXYWH()
-        const availableForProduction = ["settler", "warrior","settler", "warrior","settler", "warrior","settler", "warrior","settler", "warrior","settler", "warrior","settler", "warrior", "settler", "warrior", "settler", "warrior", "settler", "warrior"] // this will be a get function in the future
+        const availableForProduction = [...this.inProductionChangeMenu.availableForProduction].splice(this.inProductionChangeMenu.scrollPosition)
         const increment = unscaledCanvasXYWH.h/17
         let unscaledRowXYWH = {
             x: unscaledCanvasXYWH.x,
@@ -826,10 +836,22 @@ class CityCanvas {
         const upArrowButton = this.getScaledCanvasXYWH(this.sprites.border.upArrowButton)
         const downArrowButton = this.getScaledCanvasXYWH(this.sprites.border.downArrowButton)
         const inProductionChangeMenuOkBoxXYWH = this.getScaledCanvasXYWH(this.getInProductionChangeMenuOkBoxXYWH())
+        const inProductionChangeMenuTopGrayScrollBoxXYWH = this.getScaledCanvasXYWH(this.getTopGrayScrollBoxXYWH())
+        const inProductionChangeMenuBottomGrayScrollBoxXYWH = this.getScaledCanvasXYWH(this.getBottomGrayScrollBoxXYWH())
 
         if (this.inProductionChangeMenu.IsOpen) {
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuOkBoxXYWH ) ) {
                 this.setCityInProductionChanges()
+                return
+            }
+            if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuBottomGrayScrollBoxXYWH ) ) {
+                if (this.inProductionChangeMenu.scrollPosition >= ((this.inProductionChangeMenu.availableForProduction).length)-16) { return }
+                this.adjustInProductionChangeMenuScrollPosition("down")
+                return
+            }
+            if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuTopGrayScrollBoxXYWH ) ) {
+                if (this.inProductionChangeMenu.scrollPosition <= 0) { return }
+                this.adjustInProductionChangeMenuScrollPosition("up")
                 return
             }
         }
@@ -901,6 +923,19 @@ class CityCanvas {
     setCityInProductionChanges() {
         // implement changes
         this.closeCityInProductionChangeWindow()
+    }
+
+    adjustInProductionChangeMenuScrollPosition(upOrDownOrIndex) {
+        if (upOrDownOrIndex === "down") {
+            this.inProductionChangeMenu.scrollPosition += 1
+            console.log(this.inProductionChangeMenu.scrollPosition)
+        } else if (upOrDownOrIndex === "up") {
+            this.inProductionChangeMenu.scrollPosition -= 1
+            console.log(this.inProductionChangeMenu.scrollPosition)
+        } else {
+            this.inProductionChangeMenu.scrollPosition = upOrDownOrIndex
+            console.log(this.inProductionChangeMenu.scrollPosition)
+        }
     }
 
     // ████    █   █   █       █████    ████        █    ██ ██    ███    █   █   █████   ██ ██   █████   ██    █   █████
