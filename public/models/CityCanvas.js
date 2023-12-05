@@ -781,6 +781,12 @@ class CityCanvas {
         })
     }
 
+    getIndexOfInProductionChangeMenuSelectedOption(scaledCanvasSelectedPixelY) {
+        const scaledInProductionChangeMenuCenterXYWH = this.getScaledCanvasXYWH(this.getInProductionChangeMenuCenterXYWH())
+        const scaledIncrement = scaledInProductionChangeMenuCenterXYWH.h/17
+        return Math.floor((scaledCanvasSelectedPixelY - scaledInProductionChangeMenuCenterXYWH.y) / scaledIncrement)
+    }
+
     getInProductionChangeMenuCenterXYWH() {
         const backgroundXYWH = {...this.sprites.city.inProduction.changeMenu}
         const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
@@ -853,29 +859,41 @@ class CityCanvas {
         const inProductionChangeMenuTopGrayScrollBoxXYWH = this.getScaledCanvasXYWH(this.getTopGrayScrollBoxXYWH())
         const inProductionChangeMenuBottomGrayScrollBoxXYWH = this.getScaledCanvasXYWH(this.getBottomGrayScrollBoxXYWH())
         const inProductionChangeMenuScrollHandleXYWH = this.getScaledCanvasXYWH(this.getScrollHandleXYWH())
+        const inProductionChangeMenuCenterXYWH = this.getScaledCanvasXYWH(this.getInProductionChangeMenuCenterXYWH())
 
         if (this.inProductionChangeMenu.IsOpen) {
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuOkBoxXYWH ) ) {
                 this.setCityInProductionChanges()
                 return
             }
+            // Change Menu Scroll Bar Area Between Bottom Clicked
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuBottomGrayScrollBoxXYWH ) ) {
                 if (this.inProductionChangeMenu.scrollPosition >= ((this.inProductionChangeMenu.availableForProduction).length)-16) { return }
                 this.adjustInProductionChangeMenuScrollPosition("down")
                 return
             }
+            // Change Menu Scroll Bar Area Between Top Clicked
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuTopGrayScrollBoxXYWH ) ) {
                 if (this.inProductionChangeMenu.scrollPosition <= 0) { return }
                 this.adjustInProductionChangeMenuScrollPosition("up")
                 return
             }
+            // Change Menu Scroll Bar Area Between Top and Bottom Arrow Clicked
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuCenterScrollBarWillBeWithinThisRangeXYWH ) ) {
-                if (canvasMouseClick.y < inProductionChangeMenuScrollHandleXYWH.y) { 
+                if (canvasMouseClick.y < inProductionChangeMenuScrollHandleXYWH.y) { // Above Scroll Handle Clicked
                     this.adjustInProductionChangeMenuScrollPosition("up")
                 }
-                if (canvasMouseClick.y > (inProductionChangeMenuScrollHandleXYWH.y + inProductionChangeMenuScrollHandleXYWH.w)) { 
+                if (canvasMouseClick.y > (inProductionChangeMenuScrollHandleXYWH.y + inProductionChangeMenuScrollHandleXYWH.w)) {  // Below Scroll Handle Clicked
                     this.adjustInProductionChangeMenuScrollPosition("down")
                 }
+                return
+            }
+            // Change Menu Main Area Clicked
+            if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuCenterXYWH ) ) {
+                const index = this.getIndexOfInProductionChangeMenuSelectedOption(canvasMouseClick.y)
+                const selectedForProduction = this.inProductionChangeMenu.availableForProduction[this.inProductionChangeMenu.scrollPosition+index]
+                console.log(index)
+                console.log(selectedForProduction)
                 return
             }
         }
@@ -942,6 +960,10 @@ class CityCanvas {
     closeCityInProductionChangeWindow() {
         this.inProductionChangeMenu.IsOpen = false // close change window
         this.renderCity()
+    }
+
+    getCityInProductionSelectedOptionFromIndex(index) {
+
     }
 
     setCityInProductionChanges() {
