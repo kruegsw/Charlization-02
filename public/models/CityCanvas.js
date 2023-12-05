@@ -13,7 +13,7 @@ class CityCanvas {
         this.inProductionChangeMenu = {
             IsOpen: false,
             scrollPosition: 0,
-            availableForProduction: ["0", "1","2", "3","4", "5","6", "7","8", "9","10", "11","12", "13", "14", "15", "16", "17", "18"]
+            availableForProduction: ["0", "1","2", "3","4", "5","6", "7","8", "9","10", "11","12", "13", "14", "15", "16", "17", "18", "19", "20"]
         }
     }
 
@@ -672,6 +672,7 @@ class CityCanvas {
 
     drawInProductionChangeMenuScrollBar() {
         this.drawInProductionChangeMenuScrollBarBackground()
+        if (this.inProductionChangeMenu.availableForProduction.length <= 16) { return } // don't draw a scroll arrows & handle if all options fit into window
         this.drawTopGrayScrollBoxWithArrow()
         this.drawBottomGrayScrollBoxWithArrow()
         this.drawGrayScrollHandle()
@@ -748,7 +749,19 @@ class CityCanvas {
 
     getScrollHandleY() { // temporary set to top left of scroll bar for testing purposes
         const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
-        return scrollBarXYWH.y+scrollBarXYWH.w
+        const overflow = this.inProductionChangeMenu.availableForProduction.length - 16
+        const maxScrollHandleY = scrollBarXYWH.h - scrollBarXYWH.w*3
+        return scrollBarXYWH.y+scrollBarXYWH.w+(maxScrollHandleY/overflow)*this.inProductionChangeMenu.scrollPosition
+    }
+
+    getInProductionChangeMenuCenterScrollBarWillBeWithinThisRangeXYWH() {
+        const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
+        return {
+            x: scrollBarXYWH.x,
+            y: scrollBarXYWH.y + scrollBarXYWH.w,
+            w: scrollBarXYWH.w,
+            h: scrollBarXYWH.h - scrollBarXYWH.w*2
+        }
     }
 
     drawInProductionChangeMenuRowsOfSelectableOptions() {
@@ -835,9 +848,11 @@ class CityCanvas {
         const closeWindowButtonXYWH = this.getScaledCanvasXYWH(this.sprites.border.closeWindowButton)
         const upArrowButton = this.getScaledCanvasXYWH(this.sprites.border.upArrowButton)
         const downArrowButton = this.getScaledCanvasXYWH(this.sprites.border.downArrowButton)
+        const inProductionChangeMenuCenterScrollBarWillBeWithinThisRangeXYWH = this.getScaledCanvasXYWH(this.getInProductionChangeMenuCenterScrollBarWillBeWithinThisRangeXYWH())
         const inProductionChangeMenuOkBoxXYWH = this.getScaledCanvasXYWH(this.getInProductionChangeMenuOkBoxXYWH())
         const inProductionChangeMenuTopGrayScrollBoxXYWH = this.getScaledCanvasXYWH(this.getTopGrayScrollBoxXYWH())
         const inProductionChangeMenuBottomGrayScrollBoxXYWH = this.getScaledCanvasXYWH(this.getBottomGrayScrollBoxXYWH())
+        const inProductionChangeMenuScrollHandleXYWH = this.getScaledCanvasXYWH(this.getScrollHandleXYWH())
 
         if (this.inProductionChangeMenu.IsOpen) {
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuOkBoxXYWH ) ) {
@@ -852,6 +867,15 @@ class CityCanvas {
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuTopGrayScrollBoxXYWH ) ) {
                 if (this.inProductionChangeMenu.scrollPosition <= 0) { return }
                 this.adjustInProductionChangeMenuScrollPosition("up")
+                return
+            }
+            if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuCenterScrollBarWillBeWithinThisRangeXYWH ) ) {
+                if (canvasMouseClick.y < inProductionChangeMenuScrollHandleXYWH.y) { 
+                    this.adjustInProductionChangeMenuScrollPosition("up")
+                }
+                if (canvasMouseClick.y > (inProductionChangeMenuScrollHandleXYWH.y + inProductionChangeMenuScrollHandleXYWH.w)) { 
+                    this.adjustInProductionChangeMenuScrollPosition("down")
+                }
                 return
             }
         }
