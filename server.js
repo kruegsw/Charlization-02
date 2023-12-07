@@ -48,8 +48,8 @@ io.on("connection", socket => {
         game.unitOrders({unit, orders})
         io.emit('update-game', game)
     })
-    socket.on('cityOrders', ({city, orders}) => {
-        game.cityOrders({city, orders})
+    socket.on('cityOrders', ({city, orders, orderDetails}) => {
+        game.cityOrders({city, orders, orderDetails})
         io.emit('update-game', game)
     })
 

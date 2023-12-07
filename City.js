@@ -39,17 +39,26 @@ class City {
             cost: 10,
             progress: 0
         }
-        this.getInProduction()
+        this.getInitialProduction()
     }
 
     citizenCount() {
         return Object.values(this.citizens).reduce( (sum, countOfCitizenType) => sum + countOfCitizenType)
     }
 
-    getInProduction() {
+    getInitialProduction() {
         this.inProduction.inProduction = "warrior"
         this.inProduction.cost = Unit.UNIT_TYPES[this.inProduction.inProduction].cost
         // this.inProduction.progress unchanged
+    }
+
+    buyProduction() {
+        this.inProduction.progress = this.inProduction.cost
+    }
+
+    changeProduction(orderDetails) {
+        this.inProduction.inProduction = orderDetails
+        console.log(this)
     }
 }
 

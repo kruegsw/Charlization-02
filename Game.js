@@ -76,12 +76,15 @@ class Game {
         }
     }
 
-    cityOrders({city, orders}) {
+    cityOrders({city, orders, orderDetails}) {
         let x = city.coordinates.x
         let y = city.coordinates.y
         let tile = this.board.tiles[x][y]
         if (orders === "buyProduction") {
-            tile.city.inProduction.progress = tile.city.inProduction.cost
+            tile.city.buyProduction()
+        }
+        if (orders === "changeProduction") {
+            tile.city.changeProduction(orderDetails)
         }
     }
 }

@@ -13,10 +13,13 @@ class CityCanvas {
         this.inProductionChangeMenu = {
             IsOpen: false,
             scrollPosition: 0,
-            availableForProduction: ["0", "1","2", "3","4", "5","6", "7","8", "9","10", "11","12", "13", "14", "15", "16", "17", "18", "19", "20"]
+            availableForProduction: [
+                'settler', 'warrior', 'phalanx', 'archer', 'horseman', 'chariot', 'elephant',
+                'palace', 'barracks', 'granary', 'temple', 'cityWalls'
+            ],
+            selectedIndexForProduction: 0
         }
     }
-
 
     // █████    █████   █   █   ███   ███    █████        █    ████    ████    ███    █   █    ████   █████   ████
     // █    █   █       █   █    █   █   █   █           █     █   █   █   █  █   █   █   █   █       █       █   █
@@ -186,38 +189,53 @@ class CityCanvas {
         this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h);
         this.ctx.fillStyle = boxColor;
         this.ctx.fill();
-        this.ctx.stroke();
+        if (lineWidth > 0) {this.ctx.stroke()};
         this.ctx.closePath();
     }
 
     drawCenteredBlackText(unscaledCanvasXYWH, text, textColor, textHeight) {
         const canvasXYWH = {...unscaledCanvasXYWH}
-        this.drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight)
+        this.drawTextScaledToCanvasAndCenteredOnProvidedXYWH({text, canvasXYWH, textColor, textHeight, font: "Times New Roman"})
         this.drawBorder('lightgray', 'gray', unscaledCanvasXYWH, 4)
     }
 
-    drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight, font = "Times New Roman") {
+    drawTextScaledToCanvasAndCenteredOnProvidedXYWH({text, canvasXYWH, textColor, textHeight, font}) {
         const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
         const citySpriteXYWH = this.sprites.city.background
-        //this.ctx.font = "48px serif";
-        //this.ctx.strokeText(text, this.canvas.width*(canvasXYWH.x/citySpriteXYWH.w), this.canvas.height*((canvasXYWH.y+canvasXYWH.h)/citySpriteXYWH.h));
-
-        //ctx.lineWidth = 4;
-        //ctx.strokeStyle = "#000000";
         this.ctx.fillStyle = textColor;
-        //this.ctx.rect(canvasXYWH.x, canvasXYWH.y, canvasXYWH.w, canvasXYWH.h)
         this.ctx.font=`${this.canvas.height*(textHeight/this.unscaledPixelHeight)}px ${font}`;
         this.ctx.textAlign = "center"; 
-        this.ctx.textBaseline = "middle";
-        //this.ctx.fillStyle = "#000000";
-        //this.ctx.fillText("Attack!",rectX+(rectWidth/2),rectY+(rectHeight/2));
-        //this.ctx.font = '20pt Times New Roman';
-        //this.ctx.fillStyle = '#000000';
+        this.ctx.textBaseline = "middle"
         this.ctx.fillText(
-            text, // text
+            text,
             this.canvas.width*((borderThicknessLRTB.left+canvasXYWH.x+canvasXYWH.w/2)/this.unscaledPixelWidth), // x
             this.canvas.height*((borderThicknessLRTB.top+canvasXYWH.y+canvasXYWH.h/2)/this.unscaledPixelHeight)) // y
-        //this.ctx.fillText(text, x + w / 4, y + 64);
+    }
+
+    drawTextScaledToCanvasAndLeftAlignedOnProvidedXYWH({text, canvasXYWH, textColor, textHeight, font}) {
+        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
+        const citySpriteXYWH = this.sprites.city.background
+        this.ctx.fillStyle = textColor;
+        this.ctx.font=`${this.canvas.height*(textHeight/this.unscaledPixelHeight)}px ${font}`;
+        this.ctx.textAlign = "left"; 
+        this.ctx.textBaseline = "middle"
+        this.ctx.fillText(
+            text,
+            this.canvas.width*((borderThicknessLRTB.left+canvasXYWH.x)/this.unscaledPixelWidth), // x
+            this.canvas.height*((borderThicknessLRTB.top+canvasXYWH.y+canvasXYWH.h/2)/this.unscaledPixelHeight)) // y
+    }
+
+    drawTextScaledToCanvasAndRightAlignedOnProvidedXYWH({text, canvasXYWH, textColor, textHeight, font}) {
+        const borderThicknessLRTB = this.getCityBorderThicknessLeftRightTopBottom()
+        const citySpriteXYWH = this.sprites.city.background
+        this.ctx.fillStyle = textColor;
+        this.ctx.font=`${this.canvas.height*(textHeight/this.unscaledPixelHeight)}px ${font}`;
+        this.ctx.textAlign = "right"; 
+        this.ctx.textBaseline = "middle"
+        this.ctx.fillText(
+            text,
+            this.canvas.width*((borderThicknessLRTB.left+canvasXYWH.x+canvasXYWH.w)/this.unscaledPixelWidth), // x
+            this.canvas.height*((borderThicknessLRTB.top+canvasXYWH.y+canvasXYWH.h/2)/this.unscaledPixelHeight)) // y
     }
 
     getScaledCanvasXYWH(cityXYWH) {
@@ -372,8 +390,7 @@ class CityCanvas {
         const canvasXYWH = {...this.sprites.border.topBorderText}
         const textColor = "dimgray"
         const textHeight = canvasXYWH.h
-        const font = "Times New Roman"
-        this.drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight, font)
+        this.drawTextScaledToCanvasAndCenteredOnProvidedXYWH({text, canvasXYWH, textColor, textHeight, font: "Times New Roman"})
     }
 
     // ███ █ ███ █ █   ██  ███ ███ █ █ ███ ██  ███ █ █ █  █ ██ 
@@ -525,7 +542,7 @@ class CityCanvas {
         const inProductionText = this.cityObject.inProduction.inProduction
         const canvasXYWH = {...this.sprites.city.inProduction.text}
         const textHeight = canvasXYWH.h
-        this.drawTextScaledToCanvas(inProductionText, canvasXYWH, 'SteelBlue', textHeight)
+        this.drawTextScaledToCanvasAndCenteredOnProvidedXYWH({text: inProductionText, canvasXYWH, textColor: "SteelBlue", textHeight, font: "Times New Roman"})
     }
 
     drawInProductionImage() {
@@ -648,12 +665,12 @@ class CityCanvas {
         const textColor = "dimgray"
         const textHeight = canvasXYWH.h
         const font = "Times New Roman"
-        this.drawTextScaledToCanvas(text, canvasXYWH, textColor, textHeight, font)
+        this.drawTextScaledToCanvasAndCenteredOnProvidedXYWH({text, canvasXYWH, textColor, textHeight, font: "Times New Roman"})
     }
 
     drawInProductionChangeMenuOkBox() {
         const unscaledCanvasXYWH = this.getInProductionChangeMenuOkBoxXYWH()
-        this.drawGrayButtonWithCenteredBlackText(unscaledCanvasXYWH, "Ok", 'black', unscaledCanvasXYWH.h/1.5)
+        this.drawGrayButtonWithCenteredBlackText(unscaledCanvasXYWH, "OK", 'black', unscaledCanvasXYWH.h/1.5)
     }
 
     getInProductionChangeMenuOkBoxXYWH() {
@@ -765,26 +782,58 @@ class CityCanvas {
     }
 
     drawInProductionChangeMenuRowsOfSelectableOptions() {
-        const unscaledCanvasXYWH = this.getInProductionChangeMenuCenterXYWH()
+        const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
+        let unscaledCanvasXYWH = this.getInProductionChangeMenuCenterXYWH()
         const availableForProduction = [...this.inProductionChangeMenu.availableForProduction].splice(this.inProductionChangeMenu.scrollPosition)
         const increment = unscaledCanvasXYWH.h/17
+        const textHeight = increment*4/5
+        const unscaledIconW = this.getInProductionChangeMenuOkBoxXYWH().w/5  // *** this needs to be fixed
+        const margin = 1
         let unscaledRowXYWH = {
-            x: unscaledCanvasXYWH.x,
-            y: unscaledCanvasXYWH.y,
-            w: unscaledCanvasXYWH.w + this.sprites.icons.palace.w*2, // leave space to show two columns of icons at left or text
-            h: increment
+            x: unscaledCanvasXYWH.x + unscaledIconW*2 + margin, // leave space to show two columns of icons at left or text
+            y: unscaledCanvasXYWH.y + margin,
+            w: unscaledCanvasXYWH.w - unscaledIconW*2 - margin*2, // leave space to show two columns of icons at left or text
+            h: increment - margin*2
         }
         availableForProduction.forEach( (option, i) => {
             if (i > (16-1)) { return }  // show maximum 16 options
-            this.drawTextScaledToCanvas(option, unscaledRowXYWH, "black", increment)
+            const textForProperties = this.getInproductionChangeMenuRowsOfSelectedOptionsUnitPropertiesText(option)
+            if (i === this.inProductionChangeMenu.selectedIndexForProduction - this.inProductionChangeMenu.scrollPosition) {
+                // do this
+                this.drawBox({unscaledCanvasXYWH: unscaledRowXYWH, boxColor: "darkgray"})
+                this.drawBorder('silver', 'gray', unscaledRowXYWH, 1)
+                unscaledRowXYWH.x += margin // moved text away from left edge of box by 5 px
+                unscaledRowXYWH.w -= margin*2 // shorten width by 2x amount so right alignment text is also away from the right edge
+                this.drawTextScaledToCanvasAndLeftAlignedOnProvidedXYWH({text: option, canvasXYWH: unscaledRowXYWH, textColor: "white", textHeight, font: "Times New Roman"})
+                this.drawTextScaledToCanvasAndRightAlignedOnProvidedXYWH({text: textForProperties, canvasXYWH: unscaledRowXYWH, textColor: "white", textHeight, font: "Times New Roman"})
+            } else {
+                this.drawTextScaledToCanvasAndLeftAlignedOnProvidedXYWH({text: option, canvasXYWH: unscaledRowXYWH, textColor: "black", textHeight, font: "Times New Roman"})
+                this.drawTextScaledToCanvasAndRightAlignedOnProvidedXYWH({text: textForProperties, canvasXYWH: unscaledRowXYWH, textColor: "black", textHeight, font: "Times New Roman"})
+            }
             unscaledRowXYWH.y += increment
         })
+    }
+
+    getInproductionChangeMenuRowsOfSelectedOptionsUnitPropertiesText(option) {
+        const turns = 1
+        let turnsText = "Turn"
+        if (turns > 1) { turnsText = "Turns"}
+        if (this.sprites.icons[option]) { // if option for production is a wonder or improvement
+            return `(${turns} ${turnsText})`
+        } else { // the option for production is a unit
+            const attack = 1
+            const defense = 1
+            const movement = 1
+            const HP1 = 1
+            const HP2 = 1
+            return `(${turns} ${turnsText}, ADM: ${attack}/${defense}/${movement} HP: ${HP1}/${HP2})`
+        }
     }
 
     getIndexOfInProductionChangeMenuSelectedOption(scaledCanvasSelectedPixelY) {
         const scaledInProductionChangeMenuCenterXYWH = this.getScaledCanvasXYWH(this.getInProductionChangeMenuCenterXYWH())
         const scaledIncrement = scaledInProductionChangeMenuCenterXYWH.h/17
-        return Math.floor((scaledCanvasSelectedPixelY - scaledInProductionChangeMenuCenterXYWH.y) / scaledIncrement)
+        return Math.floor((scaledCanvasSelectedPixelY - scaledInProductionChangeMenuCenterXYWH.y) / scaledIncrement) + this.inProductionChangeMenu.scrollPosition
     }
 
     getInProductionChangeMenuCenterXYWH() {
@@ -862,10 +911,14 @@ class CityCanvas {
         const inProductionChangeMenuCenterXYWH = this.getScaledCanvasXYWH(this.getInProductionChangeMenuCenterXYWH())
 
         if (this.inProductionChangeMenu.IsOpen) {
+            // OK Button Clicked
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuOkBoxXYWH ) ) {
-                this.setCityInProductionChanges()
+                const selectedForProduction = this.inProductionChangeMenu.availableForProduction[this.inProductionChangeMenu.selectedIndexForProduction]
+                socket.emit('cityOrders', {city: this.cityObject, orders: "changeProduction", orderDetails: selectedForProduction})
+                this.closeCityInProductionChangeWindow()
                 return
             }
+
             // Change Menu Scroll Bar Area Between Bottom Clicked
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuBottomGrayScrollBoxXYWH ) ) {
                 if (this.inProductionChangeMenu.scrollPosition >= ((this.inProductionChangeMenu.availableForProduction).length)-16) { return }
@@ -880,6 +933,7 @@ class CityCanvas {
             }
             // Change Menu Scroll Bar Area Between Top and Bottom Arrow Clicked
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuCenterScrollBarWillBeWithinThisRangeXYWH ) ) {
+                if (this.inProductionChangeMenu.availableForProduction.length <= 16) { return } // no overflow, no need to scroll
                 if (canvasMouseClick.y < inProductionChangeMenuScrollHandleXYWH.y) { // Above Scroll Handle Clicked
                     this.adjustInProductionChangeMenuScrollPosition("up")
                 }
@@ -891,9 +945,13 @@ class CityCanvas {
             // Change Menu Main Area Clicked
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuCenterXYWH ) ) {
                 const index = this.getIndexOfInProductionChangeMenuSelectedOption(canvasMouseClick.y)
-                const selectedForProduction = this.inProductionChangeMenu.availableForProduction[this.inProductionChangeMenu.scrollPosition+index]
-                console.log(index)
-                console.log(selectedForProduction)
+                const selectedForProduction = this.getCityInProductionSelectedOptionFromIndex(index)
+                this.inProductionChangeMenu.selectedIndexForProduction = index
+                this.renderCity()
+                // later implement change in production if user presses "enter" or "OK"
+                    //this.cityObject.inProduction.progress = this.cityObject.inProduction.cost
+                    //this.renderCity()
+                    //socket.emit('cityOrders', {city: this.cityObject, orders: "buyProduction"})
                 return
             }
         }
@@ -936,6 +994,8 @@ class CityCanvas {
         // Change Button Clicked
         if ( this.clickIsWithinXYWH(canvasMouseClick, changeButtonXYWH) ) {
             this.inProductionChangeMenu.IsOpen = true
+            this.inProductionChangeMenu.selectedIndexForProduction = (this.inProductionChangeMenu.availableForProduction).indexOf(this.cityObject.inProduction.inProduction)
+            // highlight unit which is selected for production scroll down only as far as needed
             console.log('change button clicked')
             // pop-up window which is populated with available units / improvements for player and city location
             // listeners on window which detected selected unit
@@ -963,12 +1023,7 @@ class CityCanvas {
     }
 
     getCityInProductionSelectedOptionFromIndex(index) {
-
-    }
-
-    setCityInProductionChanges() {
-        // implement changes
-        this.closeCityInProductionChangeWindow()
+        return this.inProductionChangeMenu.availableForProduction[this.inProductionChangeMenu.scrollPosition+index]
     }
 
     adjustInProductionChangeMenuScrollPosition(upOrDownOrIndex) {

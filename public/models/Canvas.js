@@ -617,12 +617,10 @@ class Canvas {
 
     selectCity({tile, username}) {
         if (tile.city /*&& this.clientOwnsUnit({unit: tile.unit, username: username})*/) { this.selectedCity = tile.city }
-        console.log(this.selectedCity)
     }
 
     selectUnit({tile, username}) {
         if (tile.unit && this.clientOwnsUnit({unit: tile.unit, username: username})) { this.selectedUnit = tile.unit }
-        console.log(this.selectedUnit)
     }
 
     selectTile(tile) { this.selectedTile = tile }
