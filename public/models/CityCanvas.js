@@ -14,6 +14,7 @@ class CityCanvas {
             IsOpen: false,
             scrollPosition: 0,
             availableForProduction: [
+                'settler', 'settler', 'settler', 'settler', 'settler', 'settler', 'settler','settler','settler', 'settler', 'settler', 'settler',
                 'settler', 'warrior', 'phalanx', 'archer', 'horseman', 'chariot', 'elephant',
                 'palace', 'barracks', 'granary', 'temple', 'cityWalls'
             ],
@@ -783,16 +784,22 @@ class CityCanvas {
 
     drawInProductionChangeMenuRowsOfSelectableOptions() {
         const scrollBarXYWH = this.getInProductionChangeMenuCenterScrollBarXYWH()
-        let unscaledCanvasXYWH = this.getInProductionChangeMenuCenterXYWH()
+        let unscaledChangeMenuCenterXYWH = this.getInProductionChangeMenuCenterXYWH()
         const availableForProduction = [...this.inProductionChangeMenu.availableForProduction].splice(this.inProductionChangeMenu.scrollPosition)
-        const increment = unscaledCanvasXYWH.h/17
+        const increment = unscaledChangeMenuCenterXYWH.h/17
         const textHeight = increment*4/5
         const unscaledIconW = this.getInProductionChangeMenuOkBoxXYWH().w/5  // *** this needs to be fixed
         const margin = 1
-        let unscaledRowXYWH = {
-            x: unscaledCanvasXYWH.x + unscaledIconW*2 + margin, // leave space to show two columns of icons at left or text
-            y: unscaledCanvasXYWH.y + margin,
-            w: unscaledCanvasXYWH.w - unscaledIconW*2 - margin*2, // leave space to show two columns of icons at left or text
+        const unscaledRowForSelectedBoxXYWH = {
+            x: unscaledChangeMenuCenterXYWH.x + unscaledIconW*2 + margin, // leave space to show two columns of icons at left or text
+            y: unscaledChangeMenuCenterXYWH.y + margin,
+            w: unscaledChangeMenuCenterXYWH.w - unscaledIconW*2 - margin*2, // leave space to show two columns of icons at left or text
+            h: increment - margin*2
+        }
+        const unscaledRowForTextXYWH = {
+            x: unscaledChangeMenuCenterXYWH.x + unscaledIconW*2 + margin*2, // add margin between text and left side of box
+            y: unscaledChangeMenuCenterXYWH.y + margin,
+            w: unscaledChangeMenuCenterXYWH.w - unscaledIconW*2 - margin*3, // add margin between text and right side of box
             h: increment - margin*2
         }
         availableForProduction.forEach( (option, i) => {
@@ -800,17 +807,16 @@ class CityCanvas {
             const textForProperties = this.getInproductionChangeMenuRowsOfSelectedOptionsUnitPropertiesText(option)
             if (i === this.inProductionChangeMenu.selectedIndexForProduction - this.inProductionChangeMenu.scrollPosition) {
                 // do this
-                this.drawBox({unscaledCanvasXYWH: unscaledRowXYWH, boxColor: "darkgray"})
-                this.drawBorder('silver', 'gray', unscaledRowXYWH, 1)
-                unscaledRowXYWH.x += margin // moved text away from left edge of box by 5 px
-                unscaledRowXYWH.w -= margin*2 // shorten width by 2x amount so right alignment text is also away from the right edge
-                this.drawTextScaledToCanvasAndLeftAlignedOnProvidedXYWH({text: option, canvasXYWH: unscaledRowXYWH, textColor: "white", textHeight, font: "Times New Roman"})
-                this.drawTextScaledToCanvasAndRightAlignedOnProvidedXYWH({text: textForProperties, canvasXYWH: unscaledRowXYWH, textColor: "white", textHeight, font: "Times New Roman"})
+                this.drawBox({unscaledCanvasXYWH: unscaledRowForSelectedBoxXYWH, boxColor: "darkgray"})
+                this.drawBorder('silver', 'gray', unscaledRowForSelectedBoxXYWH, 1)
+                this.drawTextScaledToCanvasAndLeftAlignedOnProvidedXYWH({text: option, canvasXYWH: unscaledRowForTextXYWH, textColor: "white", textHeight, font: "Times New Roman"})
+                this.drawTextScaledToCanvasAndRightAlignedOnProvidedXYWH({text: textForProperties, canvasXYWH: unscaledRowForTextXYWH, textColor: "white", textHeight, font: "Times New Roman"})
             } else {
-                this.drawTextScaledToCanvasAndLeftAlignedOnProvidedXYWH({text: option, canvasXYWH: unscaledRowXYWH, textColor: "black", textHeight, font: "Times New Roman"})
-                this.drawTextScaledToCanvasAndRightAlignedOnProvidedXYWH({text: textForProperties, canvasXYWH: unscaledRowXYWH, textColor: "black", textHeight, font: "Times New Roman"})
+                this.drawTextScaledToCanvasAndLeftAlignedOnProvidedXYWH({text: option, canvasXYWH: unscaledRowForTextXYWH, textColor: "black", textHeight, font: "Times New Roman"})
+                this.drawTextScaledToCanvasAndRightAlignedOnProvidedXYWH({text: textForProperties, canvasXYWH: unscaledRowForTextXYWH, textColor: "black", textHeight, font: "Times New Roman"})
             }
-            unscaledRowXYWH.y += increment
+            unscaledRowForSelectedBoxXYWH.y += increment
+            unscaledRowForTextXYWH.y += increment
         })
     }
 
@@ -913,21 +919,18 @@ class CityCanvas {
         if (this.inProductionChangeMenu.IsOpen) {
             // OK Button Clicked
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuOkBoxXYWH ) ) {
-                const selectedForProduction = this.inProductionChangeMenu.availableForProduction[this.inProductionChangeMenu.selectedIndexForProduction]
-                socket.emit('cityOrders', {city: this.cityObject, orders: "changeProduction", orderDetails: selectedForProduction})
+                this.setProductionFromInProductionChangeMenu()
                 this.closeCityInProductionChangeWindow()
                 return
             }
 
             // Change Menu Scroll Bar Area Between Bottom Clicked
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuBottomGrayScrollBoxXYWH ) ) {
-                if (this.inProductionChangeMenu.scrollPosition >= ((this.inProductionChangeMenu.availableForProduction).length)-16) { return }
                 this.adjustInProductionChangeMenuScrollPosition("down")
                 return
             }
             // Change Menu Scroll Bar Area Between Top Clicked
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuTopGrayScrollBoxXYWH ) ) {
-                if (this.inProductionChangeMenu.scrollPosition <= 0) { return }
                 this.adjustInProductionChangeMenuScrollPosition("up")
                 return
             }
@@ -945,7 +948,6 @@ class CityCanvas {
             // Change Menu Main Area Clicked
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuCenterXYWH ) ) {
                 const index = this.getIndexOfInProductionChangeMenuSelectedOption(canvasMouseClick.y)
-                const selectedForProduction = this.getCityInProductionSelectedOptionFromIndex(index)
                 this.inProductionChangeMenu.selectedIndexForProduction = index
                 this.renderCity()
                 // later implement change in production if user presses "enter" or "OK"
@@ -1028,15 +1030,37 @@ class CityCanvas {
 
     adjustInProductionChangeMenuScrollPosition(upOrDownOrIndex) {
         if (upOrDownOrIndex === "down") {
+            if (this.inProductionChangeMenu.scrollPosition >= ((this.inProductionChangeMenu.availableForProduction).length)-16) { return }
             this.inProductionChangeMenu.scrollPosition += 1
             console.log(this.inProductionChangeMenu.scrollPosition)
         } else if (upOrDownOrIndex === "up") {
+            if (this.inProductionChangeMenu.scrollPosition <= 0) { return }
             this.inProductionChangeMenu.scrollPosition -= 1
             console.log(this.inProductionChangeMenu.scrollPosition)
         } else {
             this.inProductionChangeMenu.scrollPosition = upOrDownOrIndex
             console.log(this.inProductionChangeMenu.scrollPosition)
         }
+    }
+
+    adjustInProductionChangeMenuSelectedIndexForProduction(upOrDown) {
+        if (upOrDown === "down") {
+            if (this.inProductionChangeMenu.selectedIndexForProduction >= (this.inProductionChangeMenu.availableForProduction).length -1 ) { return }
+            this.inProductionChangeMenu.selectedIndexForProduction += 1
+            if (this.inProductionChangeMenu.selectedIndexForProduction > (this.inProductionChangeMenu.scrollPosition+(16-1))) { this.adjustInProductionChangeMenuScrollPosition("down") }
+        } else if (upOrDown === "up") {
+            if (this.inProductionChangeMenu.selectedIndexForProduction <= 0) { return }
+            this.inProductionChangeMenu.selectedIndexForProduction -= 1
+            if (this.inProductionChangeMenu.selectedIndexForProduction < this.inProductionChangeMenu.scrollPosition) { this.adjustInProductionChangeMenuScrollPosition("up") }
+        } else {
+            return
+        }
+    }
+
+    setProductionFromInProductionChangeMenu() {
+        if (!this.inProductionChangeMenu.availableForProduction[this.inProductionChangeMenu.selectedIndexForProduction]) { return }
+        const selectedForProduction = this.inProductionChangeMenu.availableForProduction[this.inProductionChangeMenu.selectedIndexForProduction]
+        socket.emit('cityOrders', {city: this.cityObject, orders: "changeProduction", orderDetails: selectedForProduction})
     }
 
     // ████    █   █   █       █████    ████        █    ██ ██    ███    █   █   █████   ██ ██   █████   ██    █   █████

@@ -23,17 +23,36 @@ function registerEventListeners() {
         console.log(clientGame)
 
         if (isAtFront(cityCanvas)) {
+
             if (cityCanvasController.inProductionChangeMenu.IsOpen) {
                 switch (event.code) {
                     case "Escape":
                         cityCanvasController.closeCityInProductionChangeWindow()
                         return
                     case "Enter":
-                        cityCanvasController.setCityInProductionChanges()
+                        cityCanvasController.setProductionFromInProductionChangeMenu()
+                        cityCanvasController.closeCityInProductionChangeWindow()
+                        return
+                    case "ArrowUp":
+                        cityCanvasController.adjustInProductionChangeMenuSelectedIndexForProduction("up")
+                        return
+                    case "ArrowDown":
+                        cityCanvasController.adjustInProductionChangeMenuSelectedIndexForProduction("down")
                         return
                     default:
                         return
                 }
+            }
+
+            switch (event.code) {
+                case "Escape":
+                    cityCanvasController.closeCityWindowAndBringBoardCanvasToFront()
+                    return
+                case "Enter":
+                    cityCanvasController.closeCityWindowAndBringBoardCanvasToFront()
+                    return
+                default:
+                    return
             }
         }
 
@@ -78,8 +97,6 @@ function registerEventListeners() {
                 case "Escape":
                     boardCanvasController.deselectTile()
                     boardCanvasController.deselectUnit()
-                    cityCanvasController.canvas.clearRect(0, 0, window.innerWidth, window.innerHeight)
-                    bringToFront(boardCanvas)
                     return
                 default:
                     return
