@@ -990,9 +990,9 @@ class Canvas {
         let unitSprites = [
             ['settler', 'engineer', 'warrior', 'phalanx', 'archer', 'legion', 'pikeman', 'musketeer', 'fanatic'],
             ['partisan', 'alpine', 'rifleman', 'marine', 'parachuter', 'humvee', 'horseman', 'chariot', 'elephant'],
-            ['crusader', 'knight', 'not sure cavalry', 'cavalary', 'armor', 'catapult', 'cannon', 'artillery', 'howitzer'],
+            ['crusader', 'knight', 'dragoons', 'cavalary', 'armor', 'catapult', 'cannon', 'artillery', 'howitzer'],
             ['plane', 'bomber', 'helicopter', 'fighter', 'stealth', 'trireme', 'caravel', 'galley', 'frigate'],
-            ['ironclad', 'destroyer', 'cruser', 'not sure ship', 'battleship', 'submarine', 'carrier', 'transport', 'missile'],
+            ['ironclad', 'destroyer', 'cruser', 'aegis cruiser', 'battleship', 'submarine', 'carrier', 'transport', 'missile'],
             ['nuclear', 'diplomat', 'spy', 'caravan', 'freight', 'explorer', 'not sure barbarian', 'not sure boat', 'not sure ballon'],
             ['barb1', 'barb2', 'barb3', 'barb4', 'barb5', 'barb6', 'barb7', 'barb8', 'barb9', 'barb10']
         ]

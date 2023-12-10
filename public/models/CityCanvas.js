@@ -15,7 +15,7 @@ class CityCanvas {
             scrollPosition: 0,
             availableForProduction: [
                 'settler', 'settler', 'settler', 'settler', 'settler', 'settler', 'settler','settler','settler', 'settler', 'settler', 'settler',
-                'settler', 'warrior', 'phalanx', 'archer', 'horseman', 'chariot', 'elephant',
+                'settler', 'warrior', 'phalanx', 'archers', 'horsemen', 'chariot', 'elephant',
                 'palace', 'barracks', 'granary', 'temple', 'cityWalls'
             ],
             selectedIndexForProduction: 0
@@ -1058,8 +1058,8 @@ class CityCanvas {
     }
 
     setProductionFromInProductionChangeMenu() {
-        if (!this.inProductionChangeMenu.availableForProduction[this.inProductionChangeMenu.selectedIndexForProduction]) { return }
         const selectedForProduction = this.inProductionChangeMenu.availableForProduction[this.inProductionChangeMenu.selectedIndexForProduction]
+        if (!selectedForProduction) { return }
         socket.emit('cityOrders', {city: this.cityObject, orders: "changeProduction", orderDetails: selectedForProduction})
     }
 
@@ -1203,11 +1203,11 @@ class CityCanvas {
         this.sprites.units = new Image()
         this.sprites.units.src = "/assets/images/units.png"
         let unitSprites = [
-            ['settler', 'engineer', 'warrior', 'phalanx', 'archer', 'legion', 'pikeman', 'musketeer', 'fanatic'],
-            ['partisan', 'alpine', 'rifleman', 'marine', 'parachuter', 'humvee', 'horseman', 'chariot', 'elephant'],
-            ['crusader', 'knight', 'not sure cavalry', 'cavalary', 'armor', 'catapult', 'cannon', 'artillery', 'howitzer'],
+            ['settler', 'engineers', 'warrior', 'phalanx', 'archers', 'legion', 'pikeman', 'musketeer', 'fanatic'],
+            ['partisan', 'alpine', 'rifleman', 'marine', 'parachuter', 'mechanizedInfantry', 'horsemen', 'chariot', 'elephant'],
+            ['crusader', 'knight', 'dragoons', 'cavalary', 'armor', 'catapult', 'cannon', 'artillery', 'howitzer'],
             ['plane', 'bomber', 'helicopter', 'fighter', 'stealth', 'trireme', 'caravel', 'galley', 'frigate'],
-            ['ironclad', 'destroyer', 'cruser', 'not sure ship', 'battleship', 'submarine', 'carrier', 'transport', 'missile'],
+            ['ironclad', 'destroyer', 'cruser', 'aegisCruiser', 'battleship', 'submarine', 'carrier', 'transport', 'missile'],
             ['nuclear', 'diplomat', 'spy', 'caravan', 'freight', 'explorer', 'not sure barbarian', 'not sure boat', 'not sure ballon'],
             ['barb1', 'barb2', 'barb3', 'barb4', 'barb5', 'barb6', 'barb7', 'barb8', 'barb9', 'barb10']
         ]

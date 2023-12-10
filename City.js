@@ -36,8 +36,8 @@ class City {
         this.foodStorage = 0
         this.inProduction = {
             inProduction: "",
-            cost: 10,
-            progress: 0
+            cost: 50,
+            progress: 7
         }
         this.getInitialProduction()
     }
@@ -58,7 +58,16 @@ class City {
 
     changeProduction(orderDetails) {
         this.inProduction.inProduction = orderDetails
+        this.inProduction.cost = this.getCost(orderDetails)
         console.log(this)
+    }
+
+    getCost(inProduction) {
+        if ( Unit.UNIT_TYPES[inProduction] ) {
+            return Unit.UNIT_TYPES[inProduction].cost
+        } else {
+            return 10 // temporary until improvement / wonder cost & other details are added
+        }
     }
 }
 
