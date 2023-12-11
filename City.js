@@ -1,5 +1,5 @@
 const Unit = require('./Unit')
-const CityImprovement = require('./CityImprovement')
+const CityImprovement = require('./CityImprovement.js')
 
 class City {
     constructor({player, coordinates}) {
@@ -69,7 +69,7 @@ class City {
         } else if ( CityImprovement.CITY_IMPROVEMENT_TYPES[inProduction] ) {
             return CityImprovement.CITY_IMPROVEMENT_TYPES[inProduction].cost
         } else {
-            // wonder
+            // wonders included in 'cityImprovements' right now
         }
     }
 }

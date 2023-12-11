@@ -14,9 +14,9 @@ class CityCanvas {
             IsOpen: false,
             scrollPosition: 0,
             availableForProduction: [
-                'settler', 'settler', 'university', 'settler', 'settler', 'settler', 'settler','settler','settler', 'settler', 'settler', 'settler',
-                'settler', 'warrior', 'phalanx', 'archers', 'horsemen', 'chariot', 'elephant',
-                'palace', 'barracks', 'granary', 'temple', 'cityWalls'
+                'settler', 'warrior', 'phalanx', 'archers', 'horsemen', 'chariot', 'elephant', 'nuclearMissile',
+                'palace', 'barracks', 'granary', 'temple', 'cityWalls',
+                'colossus', 'greatLibrary', 'apolloProgram'
             ],
             selectedIndexForProduction: 0
         }
@@ -327,6 +327,16 @@ class CityCanvas {
         this.ctx.fill();
     }
 
+    getUnitOrImprovementName(option) {
+        if ( Unit.UNIT_TYPES[option] ) {
+            return Unit.UNIT_TYPES[option].name
+        } else if ( CityImprovement.CITY_IMPROVEMENT_TYPES[option] ) {
+            return CityImprovement.CITY_IMPROVEMENT_TYPES[option].name
+        } else {
+            // wonders included in 'cityImprovements' right now
+        }
+    }
+
     // ███ █ ███ █ █   ██  ███ ██  ██  ███ ██ 
     // █   █  █  █ █   ███ █ █ █ █ █ █ ██  █ █
     // █   █  █   █    ███ █ █ ██  █ █ █   ██
@@ -545,7 +555,8 @@ class CityCanvas {
         const inProductionText = this.cityObject.inProduction.inProduction
         const canvasXYWH = {...this.sprites.city.inProduction.text}
         const textHeight = canvasXYWH.h
-        this.drawTextScaledToCanvasAndCenteredOnProvidedXYWH({text: inProductionText, canvasXYWH, textColor: "SteelBlue", textHeight, font: "Times New Roman"})
+        const textName = this.getUnitOrImprovementName(inProductionText)
+        this.drawTextScaledToCanvasAndCenteredOnProvidedXYWH({text: textName, canvasXYWH, textColor: "SteelBlue", textHeight, font: "Times New Roman"})
     }
 
     drawInProductionImage() {
@@ -806,15 +817,16 @@ class CityCanvas {
         }
         availableForProduction.forEach( (option, i) => {
             if (i > (16-1)) { return }  // show maximum 16 options
+            const textName = this.getUnitOrImprovementName(option)
             const textForProperties = this.getInproductionChangeMenuRowsOfSelectedOptionsUnitPropertiesText(option)
             if (i === this.inProductionChangeMenu.selectedIndexForProduction - this.inProductionChangeMenu.scrollPosition) {
                 // do this
                 this.drawBox({unscaledCanvasXYWH: unscaledRowForSelectedBoxXYWH, boxColor: "darkgray"})
                 this.drawBorder('silver', 'gray', unscaledRowForSelectedBoxXYWH, 1)
-                this.drawTextScaledToCanvasAndLeftAlignedOnProvidedXYWH({text: option, canvasXYWH: unscaledRowForTextXYWH, textColor: "white", textHeight, font: "Times New Roman"})
+                this.drawTextScaledToCanvasAndLeftAlignedOnProvidedXYWH({text: textName, canvasXYWH: unscaledRowForTextXYWH, textColor: "white", textHeight, font: "Times New Roman"})
                 this.drawTextScaledToCanvasAndRightAlignedOnProvidedXYWH({text: textForProperties, canvasXYWH: unscaledRowForTextXYWH, textColor: "white", textHeight, font: "Times New Roman"})
             } else {
-                this.drawTextScaledToCanvasAndLeftAlignedOnProvidedXYWH({text: option, canvasXYWH: unscaledRowForTextXYWH, textColor: "black", textHeight, font: "Times New Roman"})
+                this.drawTextScaledToCanvasAndLeftAlignedOnProvidedXYWH({text: textName, canvasXYWH: unscaledRowForTextXYWH, textColor: "black", textHeight, font: "Times New Roman"})
                 this.drawTextScaledToCanvasAndRightAlignedOnProvidedXYWH({text: textForProperties, canvasXYWH: unscaledRowForTextXYWH, textColor: "black", textHeight, font: "Times New Roman"})
             }
             unscaledRowForSelectedBoxXYWH.y += increment
@@ -829,12 +841,12 @@ class CityCanvas {
         if (this.sprites.icons[option]) { // if option for production is a wonder or improvement
             return `(${turns} ${turnsText})`
         } else { // the option for production is a unit
-            const attack = 1
-            const defense = 1
-            const movement = 1
-            const HP1 = 1
-            const HP2 = 1
-            return `(${turns} ${turnsText}, ADM: ${attack}/${defense}/${movement} HP: ${HP1}/${HP2})`
+            const attack = Unit.UNIT_TYPES[option].attack
+            const defense = Unit.UNIT_TYPES[option].defense
+            const move = Unit.UNIT_TYPES[option].move
+            const HP1 = Unit.UNIT_TYPES[option].health
+            const HP2 = Unit.UNIT_TYPES[option].firepower
+            return `(${turns} ${turnsText}, ADM: ${attack}/${defense}/${move} HP: ${HP1}/${HP2})`
         }
     }
 
@@ -1154,10 +1166,10 @@ class CityCanvas {
             ['SDIdefence', 'recyclingCenter', 'powerPlant', 'hydroPlant', 'nuclearPlant', 'stockExchange', 'sewerSystem', 'supermarket'],
             ['superhighways', 'reasearchLab', 'SAMmissileBattery', 'coastalFortress', 'solarPlant', 'harbor', 'offshorePlatform', 'airport'],
             ['policeStation', 'SSstructural', 'SScomponent', 'SSmodule', '(Capitalization)'],
-            ['pyramids', 'hangingGardens', 'collosus', 'lighthouse', 'greatLibrary', 'oracle', 'greatWall'],
+            ['pyramids', 'hangingGardens', 'colossus', 'lighthouse', 'greatLibrary', 'oracle', 'greatWall'],
             ['sunTzusWarAcademy', 'kingRichardsCrusade', 'marcoPolosEmbassy', 'michelangelosChapel', 'copernicussObservatory', 'magellansExpedition', 'shakespearesTheatre'],
-            ['leonardosWorkshop', 'JSBachsCathedral', 'isaacNewtonsCollege', 'adamSmithsTradingCo', 'darwinsVoyage', 'statueOfLiberty', 'eiffelTower'],
-            ['womensSuffrage', 'hooverDam', 'manhattanProject', 'unitedNations', 'apolloProgram', 'SETIprogram', 'cureForCancer']
+            ['leonardosWorkshop', 'jsBachsCathedral', 'isaacNewtonsCollege', 'adamSmithsTradingCo', 'darwinsVoyage', 'statueOfLiberty', 'eiffelTower'],
+            ['womensSuffrage', 'hooverDam', 'manhattanProject', 'unitedNations', 'apolloProgram', 'setiProgram', 'cureForCancer']
         ]
         iconSpritesImprovementsBoxes.forEach( (row, i) => {
             row.forEach( (icon, j) => {
@@ -1205,12 +1217,12 @@ class CityCanvas {
         this.sprites.units = new Image()
         this.sprites.units.src = "/assets/images/units.png"
         let unitSprites = [
-            ['settler', 'engineers', 'warrior', 'phalanx', 'archers', 'legion', 'pikeman', 'musketeer', 'fanatic'],
-            ['partisan', 'alpine', 'rifleman', 'marine', 'parachuter', 'mechanizedInfantry', 'horsemen', 'chariot', 'elephant'],
-            ['crusader', 'knight', 'dragoons', 'cavalary', 'armor', 'catapult', 'cannon', 'artillery', 'howitzer'],
-            ['plane', 'bomber', 'helicopter', 'fighter', 'stealth', 'trireme', 'caravel', 'galley', 'frigate'],
+            ['settler', 'engineers', 'warrior', 'phalanx', 'archers', 'legion', 'pikeman', 'musketeers', 'fanatics'],
+            ['partisans', 'alpineTroopers', 'rifleman', 'marine', 'paratroopers', 'mechanizedInfantry', 'horsemen', 'chariots', 'elephant'],
+            ['crusaders', 'knights', 'dragoons', 'cavalry', 'armor', 'catapult', 'cannon', 'artillery', 'howitzer'],
+            ['fighter', 'bomber', 'helicopter', 'stealthFighter', 'stealthBomber', 'trireme', 'caravel', 'galley', 'frigate'],
             ['ironclad', 'destroyer', 'cruser', 'aegisCruiser', 'battleship', 'submarine', 'carrier', 'transport', 'missile'],
-            ['nuclear', 'diplomat', 'spy', 'caravan', 'freight', 'explorer', 'not sure barbarian', 'not sure boat', 'not sure ballon'],
+            ['nuclearMissile', 'diplomat', 'spy', 'caravan', 'freight', 'explorer', 'not sure barbarian', 'not sure boat', 'not sure ballon'],
             ['barb1', 'barb2', 'barb3', 'barb4', 'barb5', 'barb6', 'barb7', 'barb8', 'barb9', 'barb10']
         ]
         unitSprites.forEach( (row, j) => {
