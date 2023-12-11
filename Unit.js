@@ -5,26 +5,28 @@ class Unit {
         this.coordinates = coordinates
         this.selectable = true
         this.unitType = unitType
-        cost: 10
-        attack: 1
+        this.cost = 10
+        this.attack = 1
         this.defence = 1
-        health: 1
-        firepower: 1
-        move: 1
-        this.orders = {
-
-        }
-        obsolete: ''
-        technology: ''
-        this.setBasicAttributesBasedOnUnitType()
+        this.health = 1
+        this.firepower = 1
+        this.move = 1
+        this.orders = {}
+        this.obsolete = ''
+        this.technology = ''
+        this.setBasicAttributesBasedOnUnitType(unitType)
         this.setAbilitiesBasedOnUnitType()
     }
 
-    setBasicAttributesBasedOnUnitType() {
-        switch(this.unitType) {
-            default:
-                return
-        }
+    setBasicAttributesBasedOnUnitType(unitType) {
+        this.cost = Unit.UNIT_TYPES[unitType].cost
+        this.attack = Unit.UNIT_TYPES[unitType].attack
+        this.defense = Unit.UNIT_TYPES[unitType].defense
+        this.health = Unit.UNIT_TYPES[unitType].health
+        this.firepower = Unit.UNIT_TYPES[unitType].firepower
+        this.move = Unit.UNIT_TYPES[unitType].move
+        this.obsolete = Unit.UNIT_TYPES[unitType].obsolete
+        this.technology = Unit.UNIT_TYPES[unitType].technology
     }
     
     setAbilitiesBasedOnUnitType() {

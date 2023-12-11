@@ -14,7 +14,7 @@ class CityCanvas {
             IsOpen: false,
             scrollPosition: 0,
             availableForProduction: [
-                'settler', 'settler', 'settler', 'settler', 'settler', 'settler', 'settler','settler','settler', 'settler', 'settler', 'settler',
+                'settler', 'settler', 'university', 'settler', 'settler', 'settler', 'settler','settler','settler', 'settler', 'settler', 'settler',
                 'settler', 'warrior', 'phalanx', 'archers', 'horsemen', 'chariot', 'elephant',
                 'palace', 'barracks', 'granary', 'temple', 'cityWalls'
             ],
@@ -524,10 +524,12 @@ class CityCanvas {
     drawInProductionShadowBorder() {
         const cost = this.cityObject.inProduction.cost
         const rowsOfShields = Math.min(cost / 10, 10)
-        const iconSpriteHeight = 14
-        const margin = 2
+        const iconSprite = this.sprites.icons.production
+        const margin = 3
+        const canvasXYWH = {...this.sprites.city.inProduction.progress}
+        const yIncrement = Math.min((canvasXYWH.h - 2 - 2) / rowsOfShields, iconSprite.h + 2)
         const inProductionProgressWithAdjustedHeight = {...this.sprites.city.inProduction.progress}
-        inProductionProgressWithAdjustedHeight.h = rowsOfShields * (iconSpriteHeight + margin) + margin
+        inProductionProgressWithAdjustedHeight.h = rowsOfShields * yIncrement + margin
         this.drawBorder('lightblue', 'darkblue', inProductionProgressWithAdjustedHeight, 1)
     }
 

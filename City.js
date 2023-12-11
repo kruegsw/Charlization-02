@@ -1,4 +1,5 @@
 const Unit = require('./Unit')
+const CityImprovement = require('./CityImprovement')
 
 class City {
     constructor({player, coordinates}) {
@@ -36,8 +37,8 @@ class City {
         this.foodStorage = 0
         this.inProduction = {
             inProduction: "",
-            cost: 50,
-            progress: 7
+            cost: 100,
+            progress: 95
         }
         this.getInitialProduction()
     }
@@ -65,8 +66,10 @@ class City {
     getCost(inProduction) {
         if ( Unit.UNIT_TYPES[inProduction] ) {
             return Unit.UNIT_TYPES[inProduction].cost
+        } else if ( CityImprovement.CITY_IMPROVEMENT_TYPES[inProduction] ) {
+            return CityImprovement.CITY_IMPROVEMENT_TYPES[inProduction].cost
         } else {
-            return 10 // temporary until improvement / wonder cost & other details are added
+            // wonder
         }
     }
 }

@@ -1,0 +1,206 @@
+class CityImprovement {
+    constructor({player}) {
+        //this.uuid = crypto.randomUUID()
+        this.name = "Washington"
+        this.player = player
+        //this.color = this.player.color
+        //this.coordinates = coordinates
+        //this.getInitialProduction()
+    }
+
+    static CITY_IMPROVEMENT_TYPES = {
+        'airport': {
+            cost: 160,
+            upkeep: 3,
+            prerequisite: "radio"
+        },
+        'aqueduct': {
+            cost: 80,
+            upkeep: 2,
+            prerequisite: "construction"
+        },
+        'bank': {
+            cost: 120,
+            upkeep: 3,
+            prerequisite: "banking"
+        },
+        'barracks': {
+            cost: 40,
+            upkeep: 1,
+            prerequisite: ""
+        },
+        'capitalization': {
+            cost: "100", // so the production box is drawn as big as possible
+            upkeep: "",
+            prerequisite: "corporation"
+        },
+        'cathedral': {
+            cost: 120,
+            upkeep: 3,
+            prerequisite: "monotheism"
+        },
+        'cityWalls': {
+            cost: 80,
+            upkeep: 0,
+            prerequisite: "masonry"
+        },
+        'coastalFortress': {
+            cost: 80,
+            upkeep: 1,
+            prerequisite: "metallurgy"
+        },
+        'colosseum': {
+            cost: 100,
+            upkeep: 4,
+            prerequisite: "construction"
+        },
+        'courthouse': {
+            cost: 80,
+            upkeep: 1,
+            prerequisite: "codeOfLaws"
+        },
+        'factory': {
+            cost: 200,
+            upkeep: 4,
+            prerequisite: "industrialization"
+        },
+        'granary': {
+            cost: 60,
+            upkeep: 1,
+            prerequisite: "pottery"
+        },
+        'harbor': {
+            cost: 60,
+            upkeep: 1,
+            prerequisite: "seafaring"
+        },
+        'hydroPlant': {
+            cost: 240,
+            upkeep: 4,
+            prerequisite: "electronics"
+        },
+        'library': {
+            cost: 80,
+            upkeep: 1,
+            prerequisite: "writing"
+        },
+        'manufacturingPlant': {
+            cost: 320,
+            upkeep: 6,
+            prerequisite: "robotics"
+        },
+        'marketplace': {
+            cost: 80,
+            upkeep: 1,
+            prerequisite: "currency"
+        },
+        'massTransit': {
+            cost: 160,
+            upkeep: 4,
+            prerequisite: "massProduction"
+        },
+        'nuclearPlant': {
+            cost: 160,
+            upkeep: 2,
+            prerequisite: "nuclearPower"
+        },
+        'offshorePlatform': {
+            cost: 160,
+            upkeep: 3,
+            prerequisite: "miniaturization"
+        },
+        'palace': {
+            cost: 100,
+            upkeep: 0,
+            prerequisite: "masonry"
+        },
+        'policeStation': {
+            cost: 60,
+            upkeep: 2,
+            prerequisite: "communism"
+        },
+        'portFacility': {
+            cost: 80,
+            upkeep: 3,
+            prerequisite: "amphibiousWarfare"
+        },
+        'powerPlant': {
+            cost: 160,
+            upkeep: 4,
+            prerequisite: "refining"
+        },
+        'recyclingCenter': {
+            cost: 200,
+            upkeep: 2,
+            prerequisite: "recycling"
+        },
+        'researchLab': {
+            cost: 160,
+            upkeep: 3,
+            prerequisite: "computers"
+        },
+        'samMissileBattery': {
+            cost: 100,
+            upkeep: 2,
+            prerequisite: "rocketry"
+        },
+        'sdiDefense': {
+            cost: 200,
+            upkeep: 4,
+            prerequisite: "laser"
+        },
+        'ssComponent': {
+            cost: 160,
+            upkeep: 0,
+            prerequisite: "plastics"
+        },
+        'ssModule': {
+            cost: 320,
+            upkeep: 0,
+            prerequisite: "superConductor"
+        },
+        'ssStructural': {
+            cost: 80,
+            upkeep: 0,
+            prerequisite: "spaceFlight"
+        },
+        'sewerSystem': {
+            cost: 120,
+            upkeep: 2,
+            prerequisite: "sanitation"
+        },
+        'solarPlant': {
+            cost: 320,
+            upkeep: 4,
+            prerequisite: "environmentalism"
+        },
+        'stockExchange': {
+            cost: 160,
+            upkeep: 4,
+            prerequisite: "economics"
+        },
+        'superHighway': {
+            cost: 200,
+            upkeep: 5,
+            prerequisite: "automobile"
+        },
+        'supermarket': {
+            cost: 80,
+            upkeep: 3,
+            prerequisite: "refrigeration"
+        },
+        'temple': {
+            cost: 40,
+            upkeep: 1,
+            prerequisite: "ceremonialBurial"
+        },
+        'university': {
+            cost: 160,
+            upkeep: 3,
+            prerequisite: "university"
+        }
+    }
+
+}
+
+module.exports = CityImprovement
