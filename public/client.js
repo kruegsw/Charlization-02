@@ -1,6 +1,6 @@
 let clientGame = ""
 const boardCanvas = document.getElementById("boardCanvas")
-const boardCanvasController = new Canvas({canvas: boardCanvas, /*board: clientGame.board}*/})
+const boardCanvasController = new BoardCanvas({canvas: boardCanvas, /*board: clientGame.board}*/})
 const popup = document.getElementById('popup');
 const cityCanvas = document.getElementById("cityCanvas")
 const cityCanvasController = new CityCanvas(cityCanvas)
@@ -24,9 +24,9 @@ socket.on('init-client-game', serverGame => {
 })
 socket.on("connect_error", err => console.log(`connect_error due to ${err.message}`) )
 socket.on('update-players', serverPlayers => clientGame.players = serverPlayers)
-socket.on('update-gameState', serverBoard => clientGame.board = serverBoard)
+//socket.on('update-gameState', serverBoard => clientGame.board = serverBoard)
 socket.on('update-game', serverGame => Object.assign(clientGame, serverGame) )
-socket.on("message-from-server-to-client", message => console.log(message))
+//socket.on("message-from-server-to-client", message => console.log(message))
 socket.on("disconnect", () => { console.log(`Client ${socket.id} disconnected from WebSocket`) })
 
 function animate() {

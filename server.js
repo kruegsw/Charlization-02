@@ -18,7 +18,7 @@ const crypto = require('crypto');
 const Board = require('./Board')
 const Player = require('./Player')
 const Game = require('./Game')
-const game = new Game({players: {}, board: new Board({x: 5, y: 10})})
+const game = new Game({players: {}, board: new Board({x: 5, y: 10, orientation: "short diamond"})})
 console.log(game.players)
 
 io.on("connection", socket => {

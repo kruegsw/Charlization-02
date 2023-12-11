@@ -1,10 +1,10 @@
-class Canvas {
+class BoardCanvas {
     constructor({canvas, board}) {
         this.canvas = canvas
-        this.ctx = this.canvas.getContext("2d")//, { alpha: false }) // turning off transprency of canvas and makes background black
+        this.ctx = this.canvas.getContext("2d", { alpha: false }) // turning off transprency of canvas and makes background black
         //this.boardSize = {x: board.size.x, y: board.size.y}
         this.tileSize = {}
-        this.orientation = "short diamond"  // short diamond, diamond, or [nothing = standard]
+        this.orientation = ""  // short diamond, diamond, or [nothing = standard]
         this.selectedUnit = ""
         this.selectedTile = ""
         this.selectedCity = ""
@@ -25,6 +25,7 @@ class Canvas {
 
     setBoard(board) {
         this.boardSize = {x: board.size.x, y: board.size.y}
+        this.orientation = board.orientation
         this.adjustCanvasSizeToBrowser(board)
     }
 
@@ -184,7 +185,7 @@ class Canvas {
         this.#renderTerrain(tile)
         this.#renderUnit(tile, username)
         this.#renderCity(tile, username)
-        this.#renderTileOutline(tile)
+        //this.#renderTileOutline(tile)
     }
 
     animateBlinkSelectedUnit() {

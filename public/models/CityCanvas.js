@@ -931,6 +931,7 @@ class CityCanvas {
         const inProductionChangeMenuCenterXYWH = this.getScaledCanvasXYWH(this.getInProductionChangeMenuCenterXYWH())
 
         if (this.inProductionChangeMenu.IsOpen) {
+
             // OK Button Clicked
             if ( this.clickIsWithinXYWH(canvasMouseClick, inProductionChangeMenuOkBoxXYWH ) ) {
                 this.setProductionFromInProductionChangeMenu()

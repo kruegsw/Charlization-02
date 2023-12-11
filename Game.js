@@ -46,9 +46,13 @@ class Game {
     setPlayersInitialLocations(player) {
         let x = Math.floor(Math.random() * this.board.size.x)
         let y = Math.floor(Math.random() * this.board.size.y)
-        let tile = this.board.tiles[x][y]
-        let unitType = "settler"
-        tile.unit = new Unit({player: player, coordinates: {x, y}, unitType})
+        if ( this.board.isValidLocationOnMap({x, y})) {
+            let tile = this.board.tiles[x][y]
+            let unitType = "settler"
+            tile.unit = new Unit({player: player, coordinates: {x, y}, unitType})
+        } else {
+            this.setPlayersInitialLocations(player)
+        }
     }
 
     addUnit({unit, tile}) {
