@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
 let pointerDown = false;
 const pointerDownPixelLocation = { x: undefined, y: undefined }
 let transformedPointerDownPixelLocation
+let transformedEventPixelLocation
 
 function registerEventListeners() {
 
@@ -119,7 +120,7 @@ function registerEventListeners() {
         pointerDown = true;
         pointerDownPixelLocation.x = event.x;
         pointerDownPixelLocation.y = event.y;
-        //transformedPointerDownPixelLocation = canvas.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
+        transformedPointerDownPixelLocation = boardCanvasController.getTransformedPoint(pointerDownPixelLocation.x, pointerDownPixelLocation.y)
         
         const rect = boardCanvasController.canvas.getBoundingClientRect()
         mouse.x = Math.floor((event.x - rect.left) / boardCanvasController.tileSize.x)
@@ -158,43 +159,14 @@ function registerEventListeners() {
         //console.log("mouse up");
     })
 
-    const old_event = {x: 0, y: 0}
-    let first_pass_pan = true;
     boardCanvas.addEventListener("pointermove", (event) => {
-        //pointerDownPixelLocation
         event.preventDefault()
-        //console.log(event)
-
         if (pointerDown) {
-            boardCanvasController.panMouse(pointerDownPixelLocation, event.movementX, event.movementY)
-        }
-
-        // mousepan code ////////////////////////////////////////////////////
-        /*
-        if (pointerDown) {
-            if (first_pass_pan) {
-                first_pass_pan = false;
-                old_event.x = canvas.getTransformedPoint(event.x,event.y).x
-                old_event.y = canvas.getTransformedPoint(event.x,event.y).y
-            } else {
-            canvas.panMouse(
-                old_event.x - canvas.getTransformedPoint(event.x,event.y).x,
-                old_event.y - canvas.getTransformedPoint(event.x,event.y).y)
-                //pointerDownPixelLocation.x - event.x,
-                //pointerDownPixelLocation.y - event.y)
-                old_event.x = canvas.getTransformedPoint(event.x,event.y).x
-                old_event.y = canvas.getTransformedPoint(event.x,event.y).y
-            return
-            }
+            transformedEventPixelLocation = boardCanvasController.getTransformedPoint(event.x, event.y)                
+            boardCanvasController.panMouse(transformedEventPixelLocation.x - transformedPointerDownPixelLocation.x, transformedEventPixelLocation.y - transformedPointerDownPixelLocation.y)
         } 
-        */
-        //console.log("move event:" + event.x + " " + event.y);
-        //console.log("move old event:" + event.x + " " + event.y);
-        
-        ////////////////////////////////////////////////////////////////////////
-        
+        return
     }, { passive: false }) // prevents scrollbar https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript
-
 
     window.addEventListener("resize", () => {
         boardCanvasController.adjustCanvasSizeToBrowser(clientGame.board)
