@@ -46,9 +46,13 @@ class Game {
     setPlayersInitialLocations(player) {
         let x = Math.floor(Math.random() * this.board.size.x)
         let y = Math.floor(Math.random() * this.board.size.y)
-        let tile = this.board.tiles[x][y]
-        let unitType = "settler"
-        tile.unit = new Unit({player: player, coordinates: {x, y}, unitType})
+        if ( this.board.isValidLocationOnMap({x, y})) {
+            let tile = this.board.tiles[x][y]
+            let unitType = "settler"
+            tile.unit = new Unit({player: player, coordinates: {x, y}, unitType})
+        } else {
+            this.setPlayersInitialLocations(player)
+        }
     }
 
     addUnit({unit, tile}) {
@@ -76,12 +80,15 @@ class Game {
         }
     }
 
-    cityOrders({city, orders}) {
+    cityOrders({city, orders, orderDetails}) {
         let x = city.coordinates.x
         let y = city.coordinates.y
         let tile = this.board.tiles[x][y]
         if (orders === "buyProduction") {
-            tile.city.inProduction.progress = tile.city.inProduction.cost
+            tile.city.buyProduction()
+        }
+        if (orders === "changeProduction") {
+            tile.city.changeProduction(orderDetails)
         }
     }
 }

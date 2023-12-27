@@ -1,10 +1,10 @@
-class Canvas {
+class BoardCanvas {
     constructor({canvas, board}) {
         this.canvas = canvas
-        this.ctx = this.canvas.getContext("2d")//, { alpha: false }) // turning off transprency of canvas and makes background black
+        this.ctx = this.canvas.getContext("2d", { alpha: false }) // turning off transprency of canvas and makes background black
         //this.boardSize = {x: board.size.x, y: board.size.y}
         this.tileSize = {}
-        this.orientation = "short diamond"  // short diamond, diamond, or [nothing = standard]
+        this.orientation = ""  // short diamond, diamond, or [nothing = standard]
         this.selectedUnit = ""
         this.selectedTile = ""
         this.selectedCity = ""
@@ -25,6 +25,7 @@ class Canvas {
 
     setBoard(board) {
         this.boardSize = {x: board.size.x, y: board.size.y}
+        this.orientation = board.orientation
         this.adjustCanvasSizeToBrowser(board)
     }
 
@@ -184,7 +185,7 @@ class Canvas {
         this.#renderTerrain(tile)
         this.#renderUnit(tile, username)
         this.#renderCity(tile, username)
-        this.#renderTileOutline(tile)
+        //this.#renderTileOutline(tile)
     }
 
     animateBlinkSelectedUnit() {
@@ -617,12 +618,10 @@ class Canvas {
 
     selectCity({tile, username}) {
         if (tile.city /*&& this.clientOwnsUnit({unit: tile.unit, username: username})*/) { this.selectedCity = tile.city }
-        console.log(this.selectedCity)
     }
 
     selectUnit({tile, username}) {
         if (tile.unit && this.clientOwnsUnit({unit: tile.unit, username: username})) { this.selectedUnit = tile.unit }
-        console.log(this.selectedUnit)
     }
 
     selectTile(tile) { this.selectedTile = tile }
@@ -942,9 +941,9 @@ class Canvas {
         let unitSprites = [
             ['settler', 'engineer', 'warrior', 'phalanx', 'archer', 'legion', 'pikeman', 'musketeer', 'fanatic'],
             ['partisan', 'alpine', 'rifleman', 'marine', 'parachuter', 'humvee', 'horseman', 'chariot', 'elephant'],
-            ['crusader', 'knight', 'not sure cavalry', 'cavalary', 'armor', 'catapult', 'cannon', 'artillery', 'howitzer'],
+            ['crusader', 'knight', 'dragoons', 'cavalary', 'armor', 'catapult', 'cannon', 'artillery', 'howitzer'],
             ['plane', 'bomber', 'helicopter', 'fighter', 'stealth', 'trireme', 'caravel', 'galley', 'frigate'],
-            ['ironclad', 'destroyer', 'cruser', 'not sure ship', 'battleship', 'submarine', 'carrier', 'transport', 'missile'],
+            ['ironclad', 'destroyer', 'cruser', 'aegis cruiser', 'battleship', 'submarine', 'carrier', 'transport', 'missile'],
             ['nuclear', 'diplomat', 'spy', 'caravan', 'freight', 'explorer', 'not sure barbarian', 'not sure boat', 'not sure ballon'],
             ['barb1', 'barb2', 'barb3', 'barb4', 'barb5', 'barb6', 'barb7', 'barb8', 'barb9', 'barb10']
         ]

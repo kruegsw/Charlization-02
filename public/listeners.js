@@ -19,9 +19,44 @@ let transformedEventPixelLocation
 
 function registerEventListeners() {
 
-    document.addEventListener("keydown", (event) => {
+    window.addEventListener("keydown", (event) => {
         console.log(event)
         console.log(clientGame)
+
+        if (isAtFront(cityCanvas)) {
+
+            if (cityCanvasController.inProductionChangeMenu.IsOpen) {
+                switch (event.code) {
+                    case "Escape":
+                        cityCanvasController.closeCityInProductionChangeWindow()
+                        return
+                    case "Enter":
+                        cityCanvasController.setProductionFromInProductionChangeMenu()
+                        cityCanvasController.closeCityInProductionChangeWindow()
+                        return
+                    case "ArrowUp":
+                        cityCanvasController.adjustInProductionChangeMenuSelectedIndexForProduction("up")
+                        return
+                    case "ArrowDown":
+                        cityCanvasController.adjustInProductionChangeMenuSelectedIndexForProduction("down")
+                        return
+                    default:
+                        return
+                }
+            }
+
+            switch (event.code) {
+                case "Escape":
+                    cityCanvasController.closeCityWindowAndBringBoardCanvasToFront()
+                    return
+                case "Enter":
+                    cityCanvasController.closeCityWindowAndBringBoardCanvasToFront()
+                    return
+                default:
+                    return
+            }
+        }
+
         if (boardCanvasController.selectedUnit) {
             let unit = boardCanvasController.selectedUnit
             let x = unit.coordinates.x
@@ -63,8 +98,6 @@ function registerEventListeners() {
                 case "Escape":
                     boardCanvasController.deselectTile()
                     boardCanvasController.deselectUnit()
-                    cityCanvasController.canvas.clearRect(0, 0, window.innerWidth, window.innerHeight)
-                    bringToFront(boardCanvas)
                     return
                 default:
                     return

@@ -1,4 +1,5 @@
 const Unit = require('./Unit')
+const CityImprovement = require('./CityImprovement.js')
 
 class City {
     constructor({player, coordinates}) {
@@ -36,20 +37,40 @@ class City {
         this.foodStorage = 0
         this.inProduction = {
             inProduction: "",
-            cost: 10,
-            progress: 0
+            cost: 100,
+            progress: 95
         }
-        this.getInProduction()
+        this.getInitialProduction()
     }
 
     citizenCount() {
         return Object.values(this.citizens).reduce( (sum, countOfCitizenType) => sum + countOfCitizenType)
     }
 
-    getInProduction() {
+    getInitialProduction() {
         this.inProduction.inProduction = "warrior"
         this.inProduction.cost = Unit.UNIT_TYPES[this.inProduction.inProduction].cost
         // this.inProduction.progress unchanged
+    }
+
+    buyProduction() {
+        this.inProduction.progress = this.inProduction.cost
+    }
+
+    changeProduction(orderDetails) {
+        this.inProduction.inProduction = orderDetails
+        this.inProduction.cost = this.getCost(orderDetails)
+        console.log(this)
+    }
+
+    getCost(inProduction) {
+        if ( Unit.UNIT_TYPES[inProduction] ) {
+            return Unit.UNIT_TYPES[inProduction].cost
+        } else if ( CityImprovement.CITY_IMPROVEMENT_TYPES[inProduction] ) {
+            return CityImprovement.CITY_IMPROVEMENT_TYPES[inProduction].cost
+        } else {
+            // wonders included in 'cityImprovements' right now
+        }
     }
 }
 
