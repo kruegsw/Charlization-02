@@ -127,7 +127,7 @@ class Unit {
             obsolete: 'stealth',
             prerequisite: 'advancedFlight'
         },
-        'cannot': {
+        'cannon': {
             name: "Canon",
             cost: 40,
             attack: 8,
@@ -193,8 +193,8 @@ class Unit {
             obsolete: 'mobileWarfare',
             prerequisite: 'leadership'
         },
-        'chariot': {
-            name: "Chariot",
+        'chariots': {
+            name: "Chariots",
             cost: 30,
             attack: 3,
             defense: 1,

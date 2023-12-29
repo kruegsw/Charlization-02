@@ -14,7 +14,7 @@ class CityCanvas {
             IsOpen: false,
             scrollPosition: 0,
             availableForProduction: [
-                'settler', 'warrior', 'phalanx', 'archers', 'horsemen', 'chariot', 'elephant', 'nuclearMissile',
+                'settler', 'warrior', 'phalanx', 'archers', 'horsemen', 'chariots', 'elephant', 'nuclearMissile',
                 'palace', 'barracks', 'granary', 'temple', 'cityWalls',
                 'colossus', 'greatLibrary', 'apolloProgram'
             ],
