@@ -902,11 +902,21 @@ class CityCanvas {
     // ██  ███  █   █  ███ █  █ ███
 
     drawBottomRightButtons() {
+        this.drawInfoButton()
+        this.drawRenameButton()
         //this.drawGrayButton(100, 100, 200, 200, 'testText')
     }
 
     // production area is 438, 166 to 632, 356  ...  632 - 438 = 194 pixels wide, 365 - 166 = 190 high
     // width ... 4 voids at 4 px each... 178 left ... assume inProduction takes 
+
+    drawInfoButton() {
+        this.drawGrayButtonWithCenteredBlackText(this.sprites.city.buttons.infoButton, "Info", 'black', this.sprites.city.buttons.infoButton.h/2)
+    }
+
+    drawRenameButton() {   
+        this.drawGrayButtonWithCenteredBlackText(this.sprites.city.buttons.renameButton, "Rename", 'black', this.sprites.city.buttons.renameButton.h/2)
+    }
 
 
 
@@ -1140,7 +1150,17 @@ class CityCanvas {
                 x: 3+196/2, y: 46+3, w: (437+194/2)-(3+196/2), h: (165+190-2)-(46+3), // width middle resourceMap to middle inProduction, height just below top of resource to just above bottom buttons
             }
         }
-        this.sprites.city.buttons = {x: 1, y: 1, w: 1, h: 1}
+        this.sprites.city.buttons = {  //  h = 62 = buttonHeight*(2+2/3)+2  ... 22
+            x: 437, y: 356, w: 195, h: 62,  // 632-437=195, 418-356=62      buttonWidth*(3 + 1/3) = w[195] - spaceBetween[2]*3 ... buttonWidth = 57
+            upArrowButton: {x: 437, y: 356+7, w: 19, h: 22},
+            infoButton: {x: 437+19+2, y: 356+7, w: 57, h: 22},
+            mapButton: {x: 437+19+2+57+2, y: 356+7, w: 57, h: 22},
+            renameButton: {x: 437+19+2+57+2+57+2, y: 356+7, w: 57, h: 22},
+            downArrowButton: {x: 437, y: 356+7+22+2, w: 19, h: 22},
+            happyButton: {x: 437+19+2, y: 356+7+22+2, w: 57, h: 22},
+            viewButton: {x: 437+19+2+57+2, y: 356+7+22+2, w: 57, h: 22},
+            exitButton: {x: 437+19+2+57+2+57+2, y: 356+7+22+2, w: 57, h: 22},
+        }
     }
 
     initializeIconSprites() {
