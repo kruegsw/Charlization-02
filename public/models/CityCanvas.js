@@ -902,21 +902,41 @@ class CityCanvas {
     // ██  ███  █   █  ███ █  █ ███
 
     drawBottomRightButtons() {
-        this.drawInfoButton()
-        this.drawRenameButton()
+        this.drawBottomRightArrowButtons()
+        this.drawInfoMapRenameHappyViewExitButtons()
         //this.drawGrayButton(100, 100, 200, 200, 'testText')
     }
 
     // production area is 438, 166 to 632, 356  ...  632 - 438 = 194 pixels wide, 365 - 166 = 190 high
     // width ... 4 voids at 4 px each... 178 left ... assume inProduction takes 
 
-    drawInfoButton() {
-        this.drawGrayButtonWithCenteredBlackText(this.sprites.city.buttons.infoButton, "Info", 'black', this.sprites.city.buttons.infoButton.h/2)
+    drawBottomRightArrowButtons() {
+        this.drawGrayButtonWithCenteredBlackText(this.sprites.city.buttons.upArrowButton, "up", 'black', this.sprites.city.buttons.upArrowButton.h/2)
+        this.drawGrayButtonWithCenteredBlackText(this.sprites.city.buttons.downArrowButton, "down", 'black', this.sprites.city.buttons.downArrowButton.h/2)
     }
 
-    drawRenameButton() {   
+    drawInfoMapRenameHappyViewExitButtons() {
+        this.drawGrayButtonWithCenteredBlackText(this.sprites.city.buttons.infoButton, "Info", 'black', this.sprites.city.buttons.infoButton.h/2)
+        this.drawGrayButtonWithCenteredBlackText(this.sprites.city.buttons.mapButton, "Map", 'black', this.sprites.city.buttons.mapButton.h/2)
         this.drawGrayButtonWithCenteredBlackText(this.sprites.city.buttons.renameButton, "Rename", 'black', this.sprites.city.buttons.renameButton.h/2)
+        this.drawGrayButtonWithCenteredBlackText(this.sprites.city.buttons.happyButton, "Happy", 'black', this.sprites.city.buttons.happyButton.h/2)
+        this.drawGrayButtonWithCenteredBlackText(this.sprites.city.buttons.viewButton, "View", 'black', this.sprites.city.buttons.viewButton.h/2)
+        this.drawGrayButtonWithCenteredBlackText(this.sprites.city.buttons.exitButton, "Exit", 'black', this.sprites.city.buttons.exitButton.h/2)
     }
+
+    /*
+    this.sprites.city.buttons = {  //  h = 62 = buttonHeight*(2+2/3)+2  ... 22
+            x: 437, y: 356, w: 195, h: 62,  // 632-437=195, 418-356=62      buttonWidth*(3 + 1/3) = w[195] - spaceBetween[2]*3 ... buttonWidth = 57
+            upArrowButton: {x: 437, y: 356+7, w: 19, h: 22},
+            infoButton: {x: 437+19+2, y: 356+7, w: 57, h: 22},
+            mapButton: {x: 437+19+2+57+2, y: 356+7, w: 57, h: 22},
+            renameButton: {x: 437+19+2+57+2+57+2, y: 356+7, w: 57, h: 22},
+            downArrowButton: {x: 437, y: 356+7+22+2, w: 19, h: 22},
+            happyButton: {x: 437+19+2, y: 356+7+22+2, w: 57, h: 22},
+            viewButton: {x: 437+19+2+57+2, y: 356+7+22+2, w: 57, h: 22},
+            exitButton: {x: 437+19+2+57+2+57+2, y: 356+7+22+2, w: 57, h: 22},
+        }
+    */
 
 
 
@@ -939,6 +959,14 @@ class CityCanvas {
         const inProductionChangeMenuBottomGrayScrollBoxXYWH = this.getScaledCanvasXYWH(this.getBottomGrayScrollBoxXYWH())
         const inProductionChangeMenuScrollHandleXYWH = this.getScaledCanvasXYWH(this.getScrollHandleXYWH())
         const inProductionChangeMenuCenterXYWH = this.getScaledCanvasXYWH(this.getInProductionChangeMenuCenterXYWH())
+        const bottomRightButtonsUpArrowButtonXYWH = this.getScaledCanvasXYWH(this.sprites.city.buttons.upArrowButton)
+        const bottomRightButtonsInfoButtonXYWH = this.getScaledCanvasXYWH(this.sprites.city.buttons.infoButton)
+        const bottomRightButtonsMapButtonXYWH = this.getScaledCanvasXYWH(this.sprites.city.buttons.mapButton)
+        const bottomRightButtonsRenameButtonXYWH = this.getScaledCanvasXYWH(this.sprites.city.buttons.renameButton)
+        const bottomRightButtonsDownArrowButtonXYWH = this.getScaledCanvasXYWH(this.sprites.city.buttons.downArrowButton)
+        const bottomRightButtonsHappyButtonXYWH = this.getScaledCanvasXYWH(this.sprites.city.buttons.happyButton)
+        const bottomRightButtonsViewButtonXYWH = this.getScaledCanvasXYWH(this.sprites.city.buttons.viewButton)
+        const bottomRightButtonsExitButtonXYWH = this.getScaledCanvasXYWH(this.sprites.city.buttons.exitButton)
 
         if (this.inProductionChangeMenu.IsOpen) {
 
@@ -1026,6 +1054,12 @@ class CityCanvas {
             console.log('change button clicked')
             // pop-up window which is populated with available units / improvements for player and city location
             // listeners on window which detected selected unit
+            return
+        }
+
+        // Exit Button Clicked
+        if ( this.clickIsWithinXYWH(canvasMouseClick, bottomRightButtonsExitButtonXYWH) ) {
+            this.closeCityWindowAndBringBoardCanvasToFront()
             return
         }
     }
@@ -1152,14 +1186,14 @@ class CityCanvas {
         }
         this.sprites.city.buttons = {  //  h = 62 = buttonHeight*(2+2/3)+2  ... 22
             x: 437, y: 356, w: 195, h: 62,  // 632-437=195, 418-356=62      buttonWidth*(3 + 1/3) = w[195] - spaceBetween[2]*3 ... buttonWidth = 57
-            upArrowButton: {x: 437, y: 356+7, w: 19, h: 22},
-            infoButton: {x: 437+19+2, y: 356+7, w: 57, h: 22},
-            mapButton: {x: 437+19+2+57+2, y: 356+7, w: 57, h: 22},
-            renameButton: {x: 437+19+2+57+2+57+2, y: 356+7, w: 57, h: 22},
-            downArrowButton: {x: 437, y: 356+7+22+2, w: 19, h: 22},
-            happyButton: {x: 437+19+2, y: 356+7+22+2, w: 57, h: 22},
-            viewButton: {x: 437+19+2+57+2, y: 356+7+22+2, w: 57, h: 22},
-            exitButton: {x: 437+19+2+57+2+57+2, y: 356+7+22+2, w: 57, h: 22},
+            upArrowButton: {x: 438, y: 356+7, w: 18, h: 22},
+            infoButton: {x: 438+18+4, y: 356+7, w: 54, h: 22},
+            mapButton: {x: 438+18+4+54+4, y: 356+7, w: 54, h: 22},
+            renameButton: {x: 438+18+4+54+4+54+4, y: 356+7, w: 54, h: 22},
+            downArrowButton: {x: 438, y: 356+7+22+4, w: 18, h: 22},
+            happyButton: {x: 438+18+4, y: 356+7+22+4, w: 54, h: 22},
+            viewButton: {x: 438+18+4+54+4, y: 356+7+22+4, w: 54, h: 22},
+            exitButton: {x: 438+18+4+54+4+54+4, y: 356+7+22+4, w: 54, h: 22},
         }
     }
 
