@@ -182,6 +182,11 @@ class CityCanvas {
         this.drawCenteredBlackText(unscaledCanvasXYWH, text, textColor, textHeight)
     }
 
+    drawCustomColorButtonWithCenteredBlackText(unscaledCanvasXYWH, boxColor, text, textColor, textHeight) {
+        this.drawBox({unscaledCanvasXYWH, boxColor})
+        this.drawCenteredBlackText(unscaledCanvasXYWH, text, textColor, textHeight)
+    }
+
     drawBox({unscaledCanvasXYWH, boxColor = 'rgba(180,180,180,1)', outlineColor = "", lineWidth = 1}) { // color of stone
         let canvasXYWH = this.getScaledCanvasXYWH(unscaledCanvasXYWH)
         this.ctx.lineWidth = lineWidth
@@ -490,8 +495,43 @@ class CityCanvas {
         const canvasXYWH = {...this.sprites.city.resources.wasteSupportProduction}
         const spriteSheet = this.sprites.icons
         const iconSprite = this.sprites.icons.production
-        this.drawSpriteScaledToCanvas(spriteSheet, iconSprite, canvasXYWH)
+
+        const sideMargin = iconSprite.w / 2
+        const xIncrement = (canvasXYWH.w - (sideMargin * 2)) / production
+
+        for (let i = 0; i < production; i++) {
+            this.drawSpriteScaledToCanvas(spriteSheet, iconSprite, canvasXYWH)
+            canvasXYWH.x += xIncrement
+        }
     }
+
+    //drawInProductionProgress() {
+    //    const cost = this.cityObject.inProduction.cost
+    //    const progress = this.cityObject.inProduction.progress
+    //    const canvasXYWH = {...this.sprites.city.inProduction.progress}
+    //    const spriteSheet = this.sprites.icons
+    //    const iconSprite = this.sprites.icons.production
+    //    const rowsOfShields = Math.min(cost / 10, 10)
+    //    const shieldsPerRow = cost / rowsOfShields
+    //    const sideMargin = iconSprite.w / 2
+    //    const overhangWithoutAdjustment = sideMargin * 2 * ( (shieldsPerRow * (1/10)) - 1 ) * (10 / shieldsPerRow)
+    //    const rowStartingX = canvasXYWH.x + sideMargin
+    //    const xIncrement = (canvasXYWH.w - (sideMargin * 2) - overhangWithoutAdjustment) / shieldsPerRow//, (canvasXYWH.w - iconSprite.w) / (10 / (cost / 100)) )
+    //    const yIncrement = Math.min((canvasXYWH.h - 2 - 2) / rowsOfShields, iconSprite.h + 2)
+    //    canvasXYWH.x = canvasXYWH.x + sideMargin // left margin will be one half of a shield width
+    //    canvasXYWH.y = canvasXYWH.y + 2
+    //    let shieldsPainted = 0
+    //    for (let i = 0; i < rowsOfShields; i++) {
+    //        for (let j = 0; j < shieldsPerRow; j++) {
+    //            if (shieldsPainted >= progress) {return}
+    //            this.drawSpriteScaledToCanvas(spriteSheet, iconSprite, canvasXYWH)
+    //            shieldsPainted++
+    //            canvasXYWH.x += xIncrement // adjust x position to right for next citizen
+    //        }
+    //        canvasXYWH.x = rowStartingX
+    //        canvasXYWH.y = canvasXYWH.y + yIncrement
+    //    }
+    //}
 
     // ███ ███ ███ ██    ███ ███ ███ ██  ███ ███ ███
     // █   █ █ █ █ █ █   █    █  █ █ █ █ █ █ █   ██
@@ -530,6 +570,8 @@ class CityCanvas {
     //    this.drawSpriteScaledToCanvas(this.sprites.city, this.sprites.people.ancient.content.woman, this.sprites.city.inProduction.text)
     //    //this.drawGrayButton(ctx, inProductionText.x, inProductionText.y, inProductionText.w, inProductionText.h, 'testText')
     //}
+
+    
 
     drawInProductionShadowBorder() {
         const cost = this.cityObject.inProduction.cost
