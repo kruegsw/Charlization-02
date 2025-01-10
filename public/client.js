@@ -11,10 +11,25 @@ setZindex() // first element in canvasOrder will be in front, last element will 
 let localPlayer = ""
 const mouse = { x: undefined, y: undefined }
 
+/////// LOCAL VERSION ONLY ///////////////
+let apiUrl;  // Define it in the broader scope
+
+fetch('/api/config')
+  .then((response) => response.json())
+  .then((data) => {
+    apiUrl = data.apiUrl;
+    console.log(`API URL: ${apiUrl}`);
+    // You can now access apiUrl here and later in the code
+  })
+  .catch((error) => console.error('Error fetching API URL:', error));
+
+/////////////////////////////////
+
 //const socket = io("https://192.168.1.69:4000", {transports: ['websocket', 'polling']} )  // this is for testing in local area network
 //const socket = io("https://0.0.0.0:4000", {transports: ['websocket', 'polling']} )  // this is for testing in local area network
-//const socket = io("https://localhost:4000", {transports: ['websocket', 'polling']} )  // this is for testing on local machine only
-const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )  // this is for server
+//const socket = io("https://192.168.99.103:8080", {transports: ['websocket', 'polling']} )  // this is for testing on local machine only
+const socket = io(apiUrl, { transports: ['websocket', 'polling'] }); //LOCAL VERSION
+//const socket = io("https://charlization.com:4000", {transports: ['websocket', 'polling']} )  // this is for server
 socket.on("connect", () => { console.log(`You are socket.id ${socket.id}`) })
 socket.on('init-client-game', serverGame => {
     clientGame = serverGame

@@ -2,7 +2,12 @@ require('dotenv').config()
 
 const express = require('express')
 const app = express()
+const apiUrl = process.env.API_URL;
+
 app.use(express.static('public'))
+app.get('/api/config', (req, res) => {
+    res.json({ apiUrl: process.env.API_URL });
+  });
 app.get('/', (req, res) => {res.sendFile(__dirname + '/public/client.html')})
 
 const fs = require("fs");
