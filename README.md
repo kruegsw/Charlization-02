@@ -1,0 +1,1 @@
+Charlization-02 is a browser based version of Civ2 (under construction).  It consists of a NodeJS server handling the game logic and facilitating multiplayer socket connectivity, and a client which handles all the aspects of rendering and communicating user commands to the server over the socket connection.
